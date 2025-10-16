@@ -1,0 +1,16 @@
+[
+  {
+    "Name": "Build and Run Client & Server",
+    "Projects": [
+      {
+        "Path": "Server\\Server.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "Client\\Client.csproj",
+        "Action": "Start",
+        "DebugTarget": "Client"
+      }
+    ]
+  }
+]
