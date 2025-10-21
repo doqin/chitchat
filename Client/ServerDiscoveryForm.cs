@@ -36,7 +36,14 @@ namespace Client
                 string[] parts = lsbxServers.SelectedItem.ToString().Split(':');
                 Application.OpenForms["ChatForm"]?.Close();
                 ChatForm chatForm = new ChatForm(txtbxUsername.Text, parts[0], int.Parse(parts[1]));
-                chatForm.Show();
+                if (chatForm.DialogResult == DialogResult.Abort)
+                {
+                    lsbxServers.Items.Clear();
+                }
+                else
+                {
+                    chatForm.Show();
+                }
             }
             else
             {
