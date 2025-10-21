@@ -77,7 +77,7 @@ namespace Client
                                 break;
                         }
                     }
-                    
+
                 }
                 catch (Exception e)
                 {
@@ -124,6 +124,11 @@ namespace Client
                 e.Handled = true;
                 e.SuppressKeyPress = true;
             }
+        }
+
+        private void ChatForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }
