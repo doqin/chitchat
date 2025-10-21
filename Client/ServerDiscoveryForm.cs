@@ -1,30 +1,26 @@
+using System.ComponentModel;
+
 namespace Client
 {
     public partial class ServerDiscoveryForm : Form
     {
 
         private readonly int timeoutMs = 10000;
+        private BindingList<string> serverList = new BindingList<string>();
 
         public ServerDiscoveryForm()
         {
             InitializeComponent();
+            lsbxServers.DataSource = serverList;
         }
 
         public void btnDiscoverServer_Click(object sender, EventArgs e)
         {
-            lsbxServers.Items.Clear();
+            serverList.Clear();
             Cursor.Current = Cursors.WaitCursor;
             int udpPort = int.Parse(tbxPort.Text);
             Discoverer discoverer = new Discoverer(udpPort);
-            var server = discoverer.ListenForServer(timeoutMs);
-            if (server != null)
-            {
-                lsbxServers.Items.Add($"{server?.ip}:{server?.port}");
-            }
-            else
-            {
-                MessageBox.Show("No server found.");
-            }
+            discoverer.ListenForServer(serverList, timeoutMs);
             Cursor.Current = Cursors.Default;
         }
 
