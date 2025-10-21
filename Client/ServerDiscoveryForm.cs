@@ -50,5 +50,10 @@ namespace Client
                 Console.WriteLine("Selected item is null.");
             }
         }
+
+        private void ServerDiscoveryForm_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }
