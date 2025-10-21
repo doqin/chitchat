@@ -87,7 +87,7 @@
             flowLayoutPanel2.Location = new Point(46, 184);
             flowLayoutPanel2.Margin = new Padding(4, 5, 4, 5);
             flowLayoutPanel2.Name = "flowLayoutPanel2";
-            flowLayoutPanel2.Size = new Size(227, 198);
+            flowLayoutPanel2.Size = new Size(227, 237);
             flowLayoutPanel2.TabIndex = 3;
             // 
             // label1
