@@ -1,3 +1,4 @@
+using Protocol;
 using System.ComponentModel;
 
 namespace Client
@@ -6,7 +7,7 @@ namespace Client
     {
 
         private readonly int timeoutMs = 10000;
-        private BindingList<string> serverList = new BindingList<string>();
+        private BindingList<Server> serverList = new BindingList<Server>();
 
         public ServerDiscoveryForm()
         {
@@ -29,9 +30,9 @@ namespace Client
             if (lsbxServers.SelectedItem != null)
             {
                 Console.WriteLine($"Selected server: {lsbxServers.SelectedItem}");
-                string[] parts = lsbxServers.SelectedItem.ToString().Split(':');
+                Server selectedServer = (Server)lsbxServers.SelectedItem;
                 Application.OpenForms["ChatForm"]?.Close();
-                ChatForm chatForm = new ChatForm(txtbxUsername.Text, parts[0], int.Parse(parts[1]));
+                ChatForm chatForm = new ChatForm(txtbxUsername.Text, selectedServer.Name, selectedServer.IPAddress, selectedServer.Port);
                 if (chatForm.DialogResult == DialogResult.Abort)
                 {
                     lsbxServers.Items.Clear();
