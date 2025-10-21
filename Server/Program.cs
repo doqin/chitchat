@@ -1,25 +1,44 @@
-﻿using System;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Configuration.Json;
+using Protocol;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Server
 {
     internal class Program
     {
-        static private readonly int port = 8080;
         static readonly List<TcpClient> clients = new List<TcpClient>();
         static readonly object clientsLock = new object();
-        static TcpListener listener = new TcpListener(IPAddress.Any, port);
+        static TcpListener listener;
 
         static void Main(string[] args)
         {
+            // Set up configuration
+            var builder = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory()) // Sets the base path to the app's folder
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
+            IConfiguration config = builder.Build();
+
+            // Read the settings
+            string serverName = config["ServerSettings:Name"];
+            int tcpPort = int.Parse(config["ServerSettings:TCPPort"]);
+            int udpPort = int.Parse(config["ServerSettings:UDPPort"]);
+
+            listener = new TcpListener(IPAddress.Any, tcpPort);
+
             listener.Start();
-            Console.WriteLine($"Server started on port {port}.");
-            Broadcaster broadcaster = new Broadcaster(port);
+            Console.WriteLine($"Server started on port {tcpPort}.");
+            Broadcaster broadcaster = new Broadcaster(serverName, tcpPort, udpPort);
             broadcaster.Start();
             Console.WriteLine("Broadcasting server presence...");
 
@@ -52,8 +71,25 @@ namespace Server
                     if (bytesRead == 0) break; // Client disconnected
 
                     string msg = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                    Console.WriteLine($"Received: {msg} from {client.Client.RemoteEndPoint}");
-                    BroadcastMessage(msg, client);
+                    Wrapper wrapper = JsonSerializer.Deserialize<Wrapper>(msg);
+                    if (wrapper != null)
+                    {
+                        switch (wrapper.Type)
+                        {
+                            case Types.ChatMessage:
+                                ChatMessage message = JsonSerializer.Deserialize<ChatMessage>(wrapper.Payload);
+                                if (message != null)
+                                {
+                                    Console.WriteLine($"Received: [{message.TimeSent:HH:mm}] {message.Message} from {message.Username} @ {client.Client.RemoteEndPoint}");
+                                    BroadcastMessage(message, client);
+                                }
+                                break;
+                            default:
+                                Console.WriteLine("Unknown message type received.");
+                                continue;
+                        }
+                    }
+                    
                 }
             }
             catch (Exception e)
@@ -73,9 +109,16 @@ namespace Server
         /// </summary>
         /// <param name="message">Nội dung tin nhắn</param>
         /// <param name="sender">Client người gửi tin nhắn</param>
-        static void BroadcastMessage(string message, TcpClient sender)
+        static void BroadcastMessage(ChatMessage message, TcpClient sender)
         {
-            byte[] data = Encoding.UTF8.GetBytes(message);
+            string payload = JsonSerializer.Serialize(message);
+            Wrapper wrapper = new Wrapper
+            {
+                Type = Types.ChatMessage,
+                Payload = payload
+            };
+            string finalJson = JsonSerializer.Serialize(wrapper);
+            byte[] data = Encoding.UTF8.GetBytes(finalJson);
             lock (clientsLock)
             {
                 foreach (var c in clients)

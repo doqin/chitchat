@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Protocol;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -6,6 +7,7 @@ using System.Drawing;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Net.Mime.MediaTypeNames;
@@ -15,20 +17,22 @@ namespace Client
     public partial class ChatForm : Form
     {
         private readonly string username;
+        private readonly string serverName;
         private readonly string serverIp;
         private readonly int serverPort;
         private TcpClient tcpClient;
 
-        public ChatForm(string username, string ip, int port)
+        public ChatForm(string username, string serverName, string ip, int port)
         {
             this.username = username;
+            this.serverName = serverName;
             serverIp = ip;
             serverPort = port;
             tcpClient = new TcpClient();
             try
             {
                 tcpClient.Connect(serverIp, serverPort);
-                System.Diagnostics.Debug.WriteLine("Connected to server.");
+                System.Diagnostics.Debug.WriteLine($"Connected to {serverName}");
                 Task.Run(() => ListenForMessages(tcpClient));
             }
             catch (Exception e)
@@ -38,7 +42,7 @@ namespace Client
                 this.Close();
             }
             InitializeComponent();
-            Text = $"Chat - {username} @ {serverIp}:{serverPort}";
+            Text = $"Chat - {username} @ {serverName} | {serverIp}:{serverPort}";
         }
 
         private void ListenForMessages(TcpClient client)
@@ -53,15 +57,27 @@ namespace Client
                     if (bytesRead == 0) break; // Server disconnected
 
                     string msg = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                    System.Diagnostics.Debug.WriteLine($"Received: {msg.Trim()}");
-                    if (lsbxMessages.InvokeRequired)
+                    Wrapper wrapper = JsonSerializer.Deserialize<Wrapper>(msg);
+                    if (wrapper != null)
                     {
-                        lsbxMessages.BeginInvoke(new Action(() => lsbxMessages.Items.Add(msg.Trim())));
+                        switch (wrapper.Type)
+                        {
+                            case Types.ChatMessage:
+                                ChatMessage chatMessage = JsonSerializer.Deserialize<ChatMessage>(wrapper.Payload);
+                                System.Diagnostics.Debug.WriteLine($"Received: {chatMessage.Message} from {chatMessage.Username} at {chatMessage.TimeSent}");
+                                string formattedMsg = $"[{chatMessage.TimeSent:HH:mm}] {chatMessage.Username}: {chatMessage.Message}";
+                                if (lsbxMessages.InvokeRequired)
+                                {
+                                    lsbxMessages.BeginInvoke(new Action(() => lsbxMessages.Items.Add(formattedMsg)));
+                                }
+                                else
+                                {
+                                    lsbxMessages.Items.Add(formattedMsg);
+                                }
+                                break;
+                        }
                     }
-                    else
-                    {
-                        lsbxMessages.Items.Add(msg.Trim());
-                    }
+                    
                 }
                 catch (Exception e)
                 {
@@ -74,9 +90,22 @@ namespace Client
         /// <summary>
         /// Gửi tin nhắn cho máy chủ
         /// </summary>
-        private void SendMessage(string message)
+        private void SendMessage(DateTime timeSent, string username, string message)
         {
-            byte[] data = Encoding.UTF8.GetBytes(message);
+            ChatMessage chatMessage = new ChatMessage
+            {
+                TimeSent = timeSent,
+                Username = username,
+                Message = message
+            };
+            string payload = JsonSerializer.Serialize(chatMessage);
+            Wrapper wrapper = new Wrapper
+            {
+                Type = Types.ChatMessage,
+                Payload = payload
+            };
+            string finalJson = JsonSerializer.Serialize(wrapper);
+            byte[] data = Encoding.UTF8.GetBytes(finalJson);
             NetworkStream stream = tcpClient.GetStream();
             stream.Write(data, 0, data.Length);
         }
@@ -90,8 +119,7 @@ namespace Client
         {
             if (e.KeyCode == Keys.Enter && !string.IsNullOrWhiteSpace(txtbxMessage.Text))
             {
-                string message = $"{username}: {txtbxMessage.Text.Trim()}\n";
-                SendMessage(message);
+                SendMessage(DateTime.Now, username, txtbxMessage.Text.Trim());
                 txtbxMessage.Clear();
                 e.Handled = true;
                 e.SuppressKeyPress = true;
