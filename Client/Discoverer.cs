@@ -1,20 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace Client
 {
     /// <summary>
     /// Lớp đơn giản để phát hiện máy chủ qua UDP broadcast.
+    /// Updates to UI-bound BindingList are marshaled to the captured SynchronizationContext.
     /// </summary>
     internal class Discoverer
     {
         private readonly int udpPort;
         private bool found = false;
+        private System.Threading.Timer timer;
 
         public Discoverer(int udpPort = 9999)
         {
@@ -22,44 +27,80 @@ namespace Client
         }
 
         /// <summary>
-        /// Lắng nghe các broadcast từ máy chủ. Trả về (ip, port) nếu tìm thấy, ngược lại trả về null.
+        /// Lắng nghe các broadcast từ máy chủ. Cập nhật binding danh sách máy chủ tìm thấy.
         /// </summary>
         /// <param name="timeoutMs">Thời gian chờ trước khi thoát nếu không tìm thấy máy chủ</param>
-        /// <returns>Trả về địa chỉ và port của máy chủ nếu tìm thấy hoặc null nếu không tìm thấy</returns>
-        public (string ip, int port)? ListenForServer(int timeoutMs = 10000)
+        public void ListenForServer(BindingList<string> servers, int timeoutMs = 10000)
         {
-            UdpClient udp = new UdpClient(udpPort);
-            udp.EnableBroadcast = true;
-            udp.Client.ReceiveTimeout = timeoutMs;
+            // Capture the current SynchronizationContext (UI thread) so we can marshal updates.
+            var uiContext = SynchronizationContext.Current;
 
-            Console.WriteLine("Listening for server broadcasts...");
-
-            try
+            _ = Task.Run(async () =>
             {
-                IPEndPoint remoteEP = new IPEndPoint(IPAddress.Any, 0);
-                byte[] data = udp.Receive(ref remoteEP);
-                string msg = Encoding.UTF8.GetString(data);
+                using var udp = new UdpClient(udpPort) { EnableBroadcast = true };
+                udp.Client.ReceiveTimeout = timeoutMs;
+                var deadline = DateTime.UtcNow + TimeSpan.FromMilliseconds(timeoutMs);
 
-                if (msg.StartsWith("chitchat_server|"))
+                while (DateTime.UtcNow < deadline)
                 {
-                    string[] parts = msg.Split('|');
-                    int port = int.Parse(parts[1]);
-                    string ip = remoteEP.Address.ToString();
-                    Console.WriteLine($"Found server at {ip}:{port}");
-                    found = true;
-                    return (ip, port);
-                }
-            }
-            catch (SocketException)
-            {
-                Console.WriteLine("No server found (timeout).");
-            }
-            finally
-            {
-                udp.Close();
-            }
+                    try
+                    {
+                        var result = await udp.ReceiveAsync();
+                        string msg = Encoding.UTF8.GetString(result.Buffer);
+                        if (msg.StartsWith("chitchat_server|"))
+                        {
+                            var parts = msg.Split('|');
+                            if (parts.Length >= 2 && int.TryParse(parts[1], out int port))
+                            {
+                                string ip = result.RemoteEndPoint.Address.ToString();
+                                string serverEntry = $"{ip}:{port}";
+                                System.Diagnostics.Debug.WriteLine($"Found server: {serverEntry}");
 
-            return null;
+                                // Action that updates the BindingList
+                                void AddServerIfMissing()
+                                {
+                                    if (!servers.Contains(serverEntry))
+                                        servers.Add(serverEntry);
+                                }
+
+                                if (uiContext != null)
+                                {
+                                    // Marshal to UI thread
+                                    uiContext.Post(_ => AddServerIfMissing(), null);
+                                }
+                                else
+                                {
+                                    // No UI context — safe to add directly
+                                    AddServerIfMissing();
+                                }
+
+                                found = true;
+                            }
+                        }
+                    }
+                    catch (SocketException)
+                    {
+                        // receive timed out — exit loop
+                        if (uiContext != null)
+                        {
+                            uiContext.Post(_ => MessageBox.Show("Không tìm thấy máy chủ!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error), null);
+                        }
+                        else
+                        {
+                            // If no UI context, fallback to debug output
+                            System.Diagnostics.Debug.WriteLine("Không tìm thấy máy chủ! (no UI context to show MessageBox)");
+                        }
+
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        // Unexpected error — report to debug and continue or break as appropriate
+                        System.Diagnostics.Debug.WriteLine($"Discoverer error: {ex}");
+                        break;
+                    }
+                }
+            });
         }
     }
 }

@@ -25,10 +25,18 @@ namespace Client
             serverIp = ip;
             serverPort = port;
             tcpClient = new TcpClient();
-            tcpClient.Connect(serverIp, serverPort);
-            System.Diagnostics.Debug.WriteLine("Connected to server.");
-            Task.Run(() => ListenForMessages(tcpClient));
-
+            try
+            {
+                tcpClient.Connect(serverIp, serverPort);
+                System.Diagnostics.Debug.WriteLine("Connected to server.");
+                Task.Run(() => ListenForMessages(tcpClient));
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show("Cannot connect to server! Try again.");
+                this.DialogResult = DialogResult.Abort;
+                this.Close();
+            }
             InitializeComponent();
             Text = $"Chat - {username} @ {serverIp}:{serverPort}";
         }

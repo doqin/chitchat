@@ -1,30 +1,26 @@
+using System.ComponentModel;
+
 namespace Client
 {
     public partial class ServerDiscoveryForm : Form
     {
 
         private readonly int timeoutMs = 10000;
+        private BindingList<string> serverList = new BindingList<string>();
 
         public ServerDiscoveryForm()
         {
             InitializeComponent();
+            lsbxServers.DataSource = serverList;
         }
 
         public void btnDiscoverServer_Click(object sender, EventArgs e)
         {
-            lsbxServers.Items.Clear();
+            serverList.Clear();
             Cursor.Current = Cursors.WaitCursor;
             int udpPort = int.Parse(tbxPort.Text);
             Discoverer discoverer = new Discoverer(udpPort);
-            var server = discoverer.ListenForServer(timeoutMs);
-            if (server != null)
-            {
-                lsbxServers.Items.Add($"{server?.ip}:{server?.port}");
-            }
-            else
-            {
-                MessageBox.Show("No server found.");
-            }
+            discoverer.ListenForServer(serverList, timeoutMs);
             Cursor.Current = Cursors.Default;
         }
 
@@ -36,7 +32,14 @@ namespace Client
                 string[] parts = lsbxServers.SelectedItem.ToString().Split(':');
                 Application.OpenForms["ChatForm"]?.Close();
                 ChatForm chatForm = new ChatForm(txtbxUsername.Text, parts[0], int.Parse(parts[1]));
-                chatForm.Show();
+                if (chatForm.DialogResult == DialogResult.Abort)
+                {
+                    lsbxServers.Items.Clear();
+                }
+                else
+                {
+                    chatForm.Show();
+                }
             }
             else
             {
