@@ -60,47 +60,82 @@ namespace Server
         /// <param name="client">client</param>
         static void HandleClient(TcpClient client)
         {
-            NetworkStream stream = client.GetStream();
-            byte[] buffer = new byte[1024];
-
-            try
+            using (NetworkStream stream = client.GetStream())
             {
-                while (true)
+                byte[] buffer = new byte[1024];
+                try
                 {
-                    int bytesRead = stream.Read(buffer, 0, buffer.Length);
-                    if (bytesRead == 0) break; // Client disconnected
-
-                    string msg = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                    Wrapper wrapper = JsonSerializer.Deserialize<Wrapper>(msg);
-                    if (wrapper != null)
+                    while (true)
                     {
-                        switch (wrapper.Type)
+                        int bytesRead = stream.Read(buffer, 0, buffer.Length);
+                        if (bytesRead == 0) break; // Client disconnected
+
+                        string msg = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                        Wrapper wrapper = JsonSerializer.Deserialize<Wrapper>(msg);
+                        if (wrapper != null)
                         {
-                            case Types.ChatMessage:
-                                ChatMessage message = JsonSerializer.Deserialize<ChatMessage>(wrapper.Payload);
-                                if (message != null)
-                                {
-                                    Console.WriteLine($"Received: [{message.TimeSent:HH:mm}] {message.Message} from {message.Username} @ {client.Client.RemoteEndPoint}");
-                                    BroadcastMessage(message, client);
-                                }
-                                break;
-                            default:
-                                Console.WriteLine("Unknown message type received.");
-                                continue;
+                            switch (wrapper.Type)
+                            {
+                                case Types.ChatMessage:
+                                    HandleChatMessage(client, wrapper);
+                                    break;
+                                case Types.Files:
+                                    HandleFiles(client, stream, wrapper);
+                                    break;
+                                default:
+                                    Console.WriteLine("Unknown message type received.");
+                                    continue;
+                            }
                         }
                     }
-                    
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Error with client {client.Client.RemoteEndPoint}: {e.Message}");
+                }
+                finally
+                {
+                    lock (clientsLock) clients.Remove(client);
+                    Console.WriteLine($"Client disconnected: {client.Client.RemoteEndPoint}");
+                    client.Close();
                 }
             }
-            catch (Exception e)
+        }
+
+        private static void HandleFiles(TcpClient client, NetworkStream ns, Wrapper wrapper)
+        {
+            Protocol.Files files = JsonSerializer.Deserialize<Protocol.Files>(wrapper.Payload);
+            if (files != null)
             {
-                Console.WriteLine($"Error with client {client.Client.RemoteEndPoint}: {e.Message}");
+                Console.WriteLine($"Received: {files.FileCount} file(s) from {client.Client.RemoteEndPoint}");
+                foreach (var file in files.FileList)
+                {
+                    Console.WriteLine($"Preparing to receive file: {file.FileName} ({file.FileSize} bytes)");
+                    // Here you would implement the logic to receive the actual file data.
+                    using (FileStream fs = new FileStream(file.FileName, FileMode.Create, FileAccess.Write))
+                    {
+                        byte[] buffer = new byte[8192];
+                        long totalRead = 0;
+                        int bytesRead;
+
+                        while (totalRead < file.FileSize && (bytesRead = ns.Read(buffer, 0, buffer.Length)) > 0)
+                        {
+                            fs.Write(buffer, 0, bytesRead);
+                            totalRead += bytesRead;
+                        }
+                    }
+                    Console.WriteLine($"File received: {file.FileName}");
+                }
             }
-            finally
+        }
+
+        private static void HandleChatMessage(TcpClient client, Wrapper wrapper)
+        {
+            ChatMessage message = JsonSerializer.Deserialize<ChatMessage>(wrapper.Payload);
+            if (message != null)
             {
-                lock (clientsLock) clients.Remove(client);
-                Console.WriteLine($"Client disconnected: {client.Client.RemoteEndPoint}");
-                client.Close();
+                Console.WriteLine($"Received: [{message.TimeSent:HH:mm}] {message.Message} from {message.Username} @ {client.Client.RemoteEndPoint}");
+                BroadcastMessage(message, client);
             }
         }
 

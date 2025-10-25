@@ -10,6 +10,7 @@ namespace Protocol
     {
         Broadcast,
         ChatMessage,
+        Files,
     }
     public class Wrapper
     {
@@ -48,5 +49,18 @@ namespace Protocol
         {
             return $"{Name} @ {IPAddress}:{Port}";
         }
+    }
+
+    public class Files
+    {
+        public string FileCount { get; set; }
+        public List<File> FileList { get; set; }
+    }
+
+    public class File
+    {
+        public string FileName { get; set; }
+
+        public long FileSize { get; set; }
     }
 }

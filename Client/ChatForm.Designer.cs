@@ -28,22 +28,28 @@
         /// </summary>
         private void InitializeComponent()
         {
-            flowLayoutPanel1 = new FlowLayoutPanel();
-            lsbxMessages = new ListBox();
+            openFileDialog1 = new OpenFileDialog();
             txtbxMessage = new TextBox();
-            flowLayoutPanel1.SuspendLayout();
+            lsbxMessages = new ListBox();
+            btnPickFiles = new Button();
+            lblSelectedFilesPrompt = new Label();
+            lblSelectedFiles = new Label();
             SuspendLayout();
             // 
-            // flowLayoutPanel1
+            // openFileDialog1
             // 
-            flowLayoutPanel1.Controls.Add(lsbxMessages);
-            flowLayoutPanel1.Controls.Add(txtbxMessage);
-            flowLayoutPanel1.FlowDirection = FlowDirection.TopDown;
-            flowLayoutPanel1.Location = new Point(17, 20);
-            flowLayoutPanel1.Margin = new Padding(4, 5, 4, 5);
-            flowLayoutPanel1.Name = "flowLayoutPanel1";
-            flowLayoutPanel1.Size = new Size(1109, 710);
-            flowLayoutPanel1.TabIndex = 0;
+            openFileDialog1.FileName = "openFileDialog1";
+            openFileDialog1.Multiselect = true;
+            // 
+            // txtbxMessage
+            // 
+            txtbxMessage.BackColor = SystemColors.Window;
+            txtbxMessage.Location = new Point(112, 458);
+            txtbxMessage.Margin = new Padding(3, 4, 3, 4);
+            txtbxMessage.Name = "txtbxMessage";
+            txtbxMessage.Size = new Size(790, 27);
+            txtbxMessage.TabIndex = 1;
+            txtbxMessage.KeyDown += txtbxMessage_KeyDown;
             // 
             // lsbxMessages
             // 
@@ -51,43 +57,70 @@
             lsbxMessages.Font = new Font("Sans Serif Collection", 14F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lsbxMessages.ForeColor = SystemColors.InactiveBorder;
             lsbxMessages.FormattingEnabled = true;
-            lsbxMessages.ItemHeight = 95;
-            lsbxMessages.Location = new Point(4, 5);
-            lsbxMessages.Margin = new Padding(4, 5, 4, 5);
+            lsbxMessages.ItemHeight = 78;
+            lsbxMessages.Location = new Point(12, 13);
+            lsbxMessages.Margin = new Padding(3, 4, 3, 4);
             lsbxMessages.Name = "lsbxMessages";
-            lsbxMessages.Size = new Size(1087, 574);
+            lsbxMessages.Size = new Size(890, 394);
             lsbxMessages.TabIndex = 0;
             // 
-            // txtbxMessage
+            // btnPickFiles
             // 
-            txtbxMessage.Location = new Point(4, 589);
-            txtbxMessage.Margin = new Padding(4, 5, 4, 5);
-            txtbxMessage.Name = "txtbxMessage";
-            txtbxMessage.Size = new Size(1087, 31);
-            txtbxMessage.TabIndex = 1;
-            txtbxMessage.KeyDown += txtbxMessage_KeyDown;
+            btnPickFiles.Location = new Point(12, 456);
+            btnPickFiles.Name = "btnPickFiles";
+            btnPickFiles.Size = new Size(94, 29);
+            btnPickFiles.TabIndex = 2;
+            btnPickFiles.Text = "Pick files";
+            btnPickFiles.UseVisualStyleBackColor = true;
+            btnPickFiles.Click += btnPickFiles_Click;
+            // 
+            // lblSelectedFilesPrompt
+            // 
+            lblSelectedFilesPrompt.AutoSize = true;
+            lblSelectedFilesPrompt.ForeColor = SystemColors.Window;
+            lblSelectedFilesPrompt.Location = new Point(12, 421);
+            lblSelectedFilesPrompt.Name = "lblSelectedFilesPrompt";
+            lblSelectedFilesPrompt.Size = new Size(104, 20);
+            lblSelectedFilesPrompt.TabIndex = 3;
+            lblSelectedFilesPrompt.Text = "Selected files: ";
+            // 
+            // lblSelectedFiles
+            // 
+            lblSelectedFiles.AutoSize = true;
+            lblSelectedFiles.ForeColor = SystemColors.Window;
+            lblSelectedFiles.Location = new Point(112, 421);
+            lblSelectedFiles.Name = "lblSelectedFiles";
+            lblSelectedFiles.Size = new Size(52, 20);
+            lblSelectedFiles.TabIndex = 4;
+            lblSelectedFiles.Text = "(none)";
             // 
             // ChatForm
             // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(23, 21, 32);
-            ClientSize = new Size(1143, 750);
-            Controls.Add(flowLayoutPanel1);
-            Margin = new Padding(4, 5, 4, 5);
+            ClientSize = new Size(914, 498);
+            Controls.Add(lblSelectedFiles);
+            Controls.Add(lblSelectedFilesPrompt);
+            Controls.Add(btnPickFiles);
+            Controls.Add(lsbxMessages);
+            Controls.Add(txtbxMessage);
+            Margin = new Padding(3, 4, 3, 4);
             Name = "ChatForm";
             Text = "ChatForm";
             FormClosing += ChatForm_FormClosing;
             Load += ChatForm_Load;
-            flowLayoutPanel1.ResumeLayout(false);
-            flowLayoutPanel1.PerformLayout();
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
 
-        private FlowLayoutPanel flowLayoutPanel1;
-        private ListBox lsbxMessages;
+        private OpenFileDialog openFileDialog1;
         private TextBox txtbxMessage;
+        private ListBox lsbxMessages;
+        private Button btnPickFiles;
+        private Label lblSelectedFilesPrompt;
+        private Label lblSelectedFiles;
     }
 }
