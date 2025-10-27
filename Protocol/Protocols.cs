@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using System.IO;
+using System.Net.Sockets;
 
 namespace Protocol
 {
@@ -13,7 +14,7 @@ namespace Protocol
         Broadcast,
         ChatMessage,
         SendFiles,
-        GetFiles,
+        GetFile,
         FileConfirmation,
     }
 
@@ -21,6 +22,69 @@ namespace Protocol
     {
         public Types Type { get; set; }
         public string Payload { get; set; }
+
+      /// <summary>
+      /// Sends a wrapper with a 4-byte length prefix followed by the JSON data.
+        /// </summary>
+    /// <param name="stream">The network stream to write to</param>
+        /// <param name="json">The JSON string to send</param>
+     /// <exception cref="ArgumentNullException">Thrown when stream or json is null</exception>
+        /// <exception cref="IOException">Thrown when an I/O error occurs</exception>
+        public static void SendJson(NetworkStream stream, string json)
+        {
+  if (stream == null)
+     throw new ArgumentNullException(nameof(stream));
+       if (json == null)
+             throw new ArgumentNullException(nameof(json));
+
+            byte[] data = Encoding.UTF8.GetBytes(json);
+            byte[] lengthPrefix = BitConverter.GetBytes(data.Length);
+
+            // Send length prefix (4 bytes)
+stream.Write(lengthPrefix, 0, lengthPrefix.Length);
+            // Send JSON data
+          stream.Write(data, 0, data.Length);
+  }
+
+        /// <summary>
+        /// Reads JSON from the stream by first reading a 4-byte length prefix, then reading the exact number of bytes.
+ /// </summary>
+   /// <param name="stream">The network stream to read from</param>
+        /// <returns>The JSON string, or null if the connection was closed</returns>
+        /// <exception cref="ArgumentNullException">Thrown when stream is null</exception>
+        /// <exception cref="IOException">Thrown when an I/O error occurs</exception>
+        public static string ReadJson(NetworkStream stream)
+        {
+   if (stream == null)
+              throw new ArgumentNullException(nameof(stream));
+
+  // Read the 4-byte length prefix
+     byte[] lengthBuffer = new byte[4];
+            int bytesRead = 0;
+     while (bytesRead < 4)
+      {
+        int read = stream.Read(lengthBuffer, bytesRead, 4 - bytesRead);
+    if (read == 0)
+      return null; // Connection closed
+      bytesRead += read;
+            }
+
+        int messageLength = BitConverter.ToInt32(lengthBuffer, 0);
+
+            // Read the exact message
+      byte[] buffer = new byte[messageLength];
+            bytesRead = 0;
+      while (bytesRead < messageLength)
+          {
+      int read = stream.Read(buffer, bytesRead, messageLength - bytesRead);
+  if (read == 0)
+         return null; // Connection closed
+    bytesRead += read;
+            }
+
+   string json = Encoding.UTF8.GetString(buffer, 0, messageLength);
+            return json;
+        }
     }
 
     public class ChatMessage
@@ -28,13 +92,19 @@ namespace Protocol
         public DateTime TimeSent { get; set; }
         public string Username { get; set; }
         public string Message { get; set; }
-        public string[] Attachments { get; set; }
+        public Attachment[] Attachments { get; set; }
+    }
+
+    public class Attachment
+    {
+        public string FileName { get; set; }
+        public bool IsImage { get; set; }
     }
 
     public class FileConfirmation
     {
-        public string[] AcceptedFiles { get; set; }
-        public string[] RejectedFiles { get; set; }
+        public Attachment[] AcceptedFiles { get; set; }
+        public Attachment[] RejectedFiles { get; set; }
     }
 
     public class Broadcast
@@ -65,7 +135,7 @@ namespace Protocol
 
     public class Files
     {
-        public string FileCount { get; set; }
+        public long FileCount { get; set; }
         public List<File> FileList { get; set; }
     }
 
@@ -73,7 +143,6 @@ namespace Protocol
     {
         public string FileName { get; set; }
 
-        // Not important when using GetFiles protocol
         public long FileSize { get; set; }
 
         /// <summary>
