@@ -79,7 +79,7 @@ namespace Server
                                 case Types.ChatMessage:
                                     HandleChatMessage(client, wrapper);
                                     break;
-                                case Types.Files:
+                                case Types.SendFiles:
                                     HandleFiles(client, stream, wrapper);
                                     break;
                                 default:
@@ -108,23 +108,64 @@ namespace Server
             if (files != null)
             {
                 Console.WriteLine($"Received: {files.FileCount} file(s) from {client.Client.RemoteEndPoint}");
-                foreach (var file in files.FileList)
+                string[] savedFiles = new string[files.FileList.Count];
+                int i = 0;
+                try
                 {
-                    Console.WriteLine($"Preparing to receive file: {file.FileName} ({file.FileSize} bytes)");
-                    // Here you would implement the logic to receive the actual file data.
-                    using (FileStream fs = new FileStream(file.FileName, FileMode.Create, FileAccess.Write))
+                    foreach (var file in files.FileList)
                     {
-                        byte[] buffer = new byte[8192];
-                        long totalRead = 0;
-                        int bytesRead;
-
-                        while (totalRead < file.FileSize && (bytesRead = ns.Read(buffer, 0, buffer.Length)) > 0)
+                        Console.WriteLine($"Preparing to receive file: {file.FileName} ({file.FileSize} bytes)");
+                        var path = Path.Combine("Received Files", file.FileName);
+                        // Ensure the directory exists
+                        string directoryPath = Path.GetDirectoryName(path);
+                        if (!string.IsNullOrEmpty(directoryPath))
                         {
-                            fs.Write(buffer, 0, bytesRead);
-                            totalRead += bytesRead;
+                            Directory.CreateDirectory(directoryPath);
                         }
+                        else
+                        {
+                            Console.WriteLine("Invalid file path: no directory specified.");
+                            return;
+                        }
+                        // Saving files
+                        using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write))
+                        {
+                            byte[] buffer = new byte[8192];
+                            long totalRead = 0;
+                            int bytesRead;
+
+                            while (totalRead < file.FileSize && (bytesRead = ns.Read(buffer, 0, buffer.Length)) > 0)
+                            {
+                                fs.Write(buffer, 0, bytesRead);
+                                totalRead += bytesRead;
+                            }
+                        }
+                        Console.WriteLine($"File received: {file.FileName}");
+                        var newFileName = Protocol.File.RenameToUniqueName(path);
+                        Console.WriteLine($"File renamed to unique name: {newFileName}");
+                        savedFiles[i] = newFileName;
+                        i++;
                     }
-                    Console.WriteLine($"File received: {file.FileName}");
+                    // Send file info back to the client
+                    FileConfirmation fileMessage = new FileConfirmation
+                    {
+                        AcceptedFiles = savedFiles,
+                    };
+                    string payload = JsonSerializer.Serialize(fileMessage);
+                    Wrapper responseWrapper = new Wrapper
+                    {
+                        Type = Types.FileConfirmation,
+                        Payload = payload
+                    };
+                    string finalJson = JsonSerializer.Serialize(responseWrapper);
+                    byte[] data = Encoding.UTF8.GetBytes(finalJson);
+                    ns.Write(data, 0, data.Length);
+                    Console.WriteLine("Sent file receipt confirmation to client.");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Error receiving files: {e.Message}");
+                    return;
                 }
             }
         }
@@ -135,7 +176,7 @@ namespace Server
             if (message != null)
             {
                 Console.WriteLine($"Received: [{message.TimeSent:HH:mm}] {message.Message} from {message.Username} @ {client.Client.RemoteEndPoint}");
-                BroadcastMessage(message, client);
+                BroadcastMessage(message);
             }
         }
 
@@ -144,7 +185,7 @@ namespace Server
         /// </summary>
         /// <param name="message">Nội dung tin nhắn</param>
         /// <param name="sender">Client người gửi tin nhắn</param>
-        static void BroadcastMessage(ChatMessage message, TcpClient sender)
+        static void BroadcastMessage(ChatMessage message)
         {
             string payload = JsonSerializer.Serialize(message);
             Wrapper wrapper = new Wrapper

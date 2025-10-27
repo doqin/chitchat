@@ -24,6 +24,8 @@ namespace Client
 
         private string[] selectedFiles = Array.Empty<string>();
 
+        private TaskCompletionSource<string[]>? fileConfirmationTcs;
+
         public ChatForm(string username, string serverName, string ip, int port)
         {
             this.username = username;
@@ -37,7 +39,7 @@ namespace Client
                 System.Diagnostics.Debug.WriteLine($"Connected to {serverName}");
                 Task.Run(() => HandleResponse(tcpClient));
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 MessageBox.Show("Cannot connect to server! Try again.");
                 this.DialogResult = DialogResult.Abort;
@@ -68,7 +70,10 @@ namespace Client
                             case Types.ChatMessage:
                                 ChatMessage chatMessage = JsonSerializer.Deserialize<ChatMessage>(wrapper.Payload);
                                 System.Diagnostics.Debug.WriteLine($"Received: {chatMessage.Message} from {chatMessage.Username} at {chatMessage.TimeSent}");
-                                string formattedMsg = $"[{chatMessage.TimeSent:HH:mm}] {chatMessage.Username}: {chatMessage.Message}";
+                                string attachments = chatMessage.Attachments != null && chatMessage.Attachments.Length > 0
+                                    ? $" [Attachments: {string.Join(", ", chatMessage.Attachments)}]"
+                                    : string.Empty;
+                                string formattedMsg = $"[{chatMessage.TimeSent:HH:mm}] {chatMessage.Username}: {chatMessage.Message} {attachments}";
                                 if (lsbxMessages.InvokeRequired)
                                 {
                                     lsbxMessages.BeginInvoke(new Action(() => lsbxMessages.Items.Add(formattedMsg)));
@@ -76,6 +81,15 @@ namespace Client
                                 else
                                 {
                                     lsbxMessages.Items.Add(formattedMsg);
+                                }
+                                break;
+                            case Types.FileConfirmation:
+                                FileConfirmation confirmation = JsonSerializer.Deserialize<FileConfirmation>(wrapper.Payload);
+                                System.Diagnostics.Debug.WriteLine($"Received confirmation: {confirmation?.AcceptedFiles.Length}");
+                                // If someone is waiting for the confirmation, deliver attachments
+                                if (fileConfirmationTcs != null)
+                                {
+                                    fileConfirmationTcs.TrySetResult(confirmation?.AcceptedFiles ?? Array.Empty<string>());
                                 }
                                 break;
                         }
@@ -93,13 +107,14 @@ namespace Client
         /// <summary>
         /// Gửi tin nhắn cho máy chủ
         /// </summary>
-        private void SendMessage(DateTime timeSent, string username, string message)
+        private void SendMessage(DateTime timeSent, string username, string message, string[] attachments)
         {
-            ChatMessage chatMessage = new ChatMessage
+            ChatMessage chatMessage = new()
             {
                 TimeSent = timeSent,
                 Username = username,
-                Message = message
+                Message = message,
+                Attachments = attachments
             };
             string payload = JsonSerializer.Serialize(chatMessage);
             Wrapper wrapper = new Wrapper
@@ -113,44 +128,64 @@ namespace Client
             stream.Write(data, 0, data.Length);
         }
 
-        private void SendFiles(string[] filePaths)
+        /// <summary>
+        /// Send files to the server
+        /// </summary>
+        /// <param name="filePaths">Array of file paths</param>
+        private string[] SendFiles(string[] filePaths)
         {
-            Files files = new Files
+            Files files = new()
             {
                 FileCount = filePaths.Length.ToString(),
-                FileList = new List<Protocol.File>()
-            };
-            foreach (string file in filePaths) {
-                System.IO.FileInfo fi = new System.IO.FileInfo(file);
-                files.FileList.Add(new Protocol.File
+                FileList = filePaths.Select(file =>
                 {
-                    FileName = fi.Name,
-                    FileSize = fi.Length
-                });
-            }
+                    System.IO.FileInfo fi = new System.IO.FileInfo(file);
+                    return new Protocol.File
+                    {
+                        FileName = fi.Name,
+                        FileSize = fi.Length
+                    };
+                }).ToList()
+            };
             string payload = JsonSerializer.Serialize(files);
-            Wrapper wrapper = new Wrapper
+            Wrapper wrapper = new()
             {
-                Type = Types.Files,
+                Type = Types.SendFiles,
                 Payload = payload
             };
             string finalJson = JsonSerializer.Serialize(wrapper);
             byte[] data = Encoding.UTF8.GetBytes(finalJson);
             NetworkStream stream = tcpClient.GetStream();
             stream.Write(data, 0, data.Length);
-            foreach (var filePath in filePaths)
+            try
             {
-                System.Diagnostics.Debug.WriteLine($"Preparing to send file: {filePath}");
-                using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                foreach (var filePath in filePaths)
                 {
-                    byte[] buffer = new byte[8192];
-                    int bytesRead;
-                    while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) > 0)
+                    System.Diagnostics.Debug.WriteLine($"Preparing to send file: {filePath}");
+                    using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
                     {
-                        stream.Write(buffer, 0, bytesRead);
+                        byte[] fileBuffer = new byte[8192];
+                        int fileBytesRead;
+                        while ((fileBytesRead = fs.Read(fileBuffer, 0, fileBuffer.Length)) > 0)
+                        {
+                            stream.Write(fileBuffer, 0, fileBytesRead);
+                        }
                     }
                 }
+                System.Diagnostics.Debug.WriteLine("File data sent successfully.");
+                System.Diagnostics.Debug.WriteLine("Waiting file confirmation from server...");
+                fileConfirmationTcs = new TaskCompletionSource<string[]>();
+                var confirmationTask = fileConfirmationTcs.Task;
+                confirmationTask.Wait();
+                System.Diagnostics.Debug.WriteLine("File confirmation received from server.");
+                return confirmationTask.Result;
             }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error sending file data: {e.Message}");
+                MessageBox.Show("An error has occurred", "Error sending files to server. Please try again", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            return [];
         }
 
         private void ChatForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -162,15 +197,16 @@ namespace Client
         {
             if (e.KeyCode == Keys.Enter)
             {
+                string[] attachments = Array.Empty<string>();
                 if (selectedFiles.Length > 0)
                 {
-                    SendFiles(selectedFiles);
+                    attachments = SendFiles(selectedFiles);
                     lblSelectedFiles.Text = "(none)";
                     selectedFiles = Array.Empty<string>();
                 }
                 if (!string.IsNullOrWhiteSpace(txtbxMessage.Text))
                 {
-                    SendMessage(DateTime.Now, username, txtbxMessage.Text.Trim());
+                    SendMessage(DateTime.Now, username, txtbxMessage.Text.Trim(), attachments);
                     txtbxMessage.Clear();
                 }
                 e.Handled = true;
@@ -188,7 +224,7 @@ namespace Client
             var result = openFileDialog1.ShowDialog();
             if (result == DialogResult.OK)
             {
-                lblSelectedFiles.Text = string.Join(',', openFileDialog1.FileNames);
+                lblSelectedFiles.Text = string.Join(", ", openFileDialog1.FileNames);
                 selectedFiles = openFileDialog1.FileNames;
             }
         }
