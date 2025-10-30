@@ -92,7 +92,7 @@ namespace Client
 
         private void ServerDiscoveryForm_Load(object sender, EventArgs e)
         {
-
+            Extensions.DarkMode.EnableDarkTitleBar(this);
         }
 
         private void splitContainerMain_Panel2_Paint(object sender, PaintEventArgs e)
@@ -112,6 +112,28 @@ namespace Client
                     Application.Exit();
                 }
             }
+        }
+
+        private void ServerDiscoveryForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            // Clean up hosted chat form if it exists
+            if (hostedChatForm != null)
+            {
+                try
+                {
+                    hostedChatForm.Close();
+                }
+                catch { }
+                try
+                {
+                    hostedChatForm.Dispose();
+                }
+                catch { }
+                hostedChatForm = null;
+            }
+            
+            // Exit the application when this form closes
+            Application.Exit();
         }
     }
 }

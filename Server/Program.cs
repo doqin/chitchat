@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -108,12 +109,19 @@ namespace Server
             }
         }
 
+        /// <summary>
+        /// Hàm xử lý việc gửi file đến client
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="stream"></param>
+        /// <param name="wrapper"></param>
         private static void SendFiles(TcpClient client, NetworkStream stream, Wrapper wrapper)
         {
             var fileName = wrapper.Payload;
             var filePath = Path.Combine("Received Files", fileName);
             if (System.IO.File.Exists(filePath))
             {
+                // Creating file info
                 Files files = new Files
                 {
                     FileCount = 1,
@@ -173,6 +181,12 @@ namespace Server
             }
         }
 
+        /// <summary>
+        /// Hàm xử lý nhận file từ client
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="ns"></param>
+        /// <param name="wrapper"></param>
         private static void HandleFiles(TcpClient client, NetworkStream ns, Wrapper wrapper)
         {
             Protocol.Files files = JsonSerializer.Deserialize<Protocol.Files>(wrapper.Payload);
@@ -183,13 +197,15 @@ namespace Server
                 int i = 0;
                 try
                 {
+                    byte[] excessBuffer = new byte[8192];
+                    int excessBufferLength = 0;
                     foreach (var file in files.FileList)
                     {
                         Console.WriteLine($"Preparing to receive file: {file.FileName} ({file.FileSize} bytes)");
-                        var fileName = Guid.NewGuid().ToString("N") + Path.GetExtension(file.FileName);
-                        var path = Path.Combine("Received Files", fileName);
+                        var savedPath = Path.Combine(Guid.NewGuid().ToString("N"), Path.GetFileName(file.FileName));
+                        var fullPath = Path.Combine("Received Files", savedPath);
                         // Ensure the directory exists
-                        string directoryPath = Path.GetDirectoryName(path);
+                        string directoryPath = Path.GetDirectoryName(fullPath);
                         if (!string.IsNullOrEmpty(directoryPath))
                         {
                             Directory.CreateDirectory(directoryPath);
@@ -200,7 +216,7 @@ namespace Server
                             return;
                         }
                         // Saving files
-                        using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write))
+                        using (FileStream fs = new FileStream(fullPath, FileMode.Create, FileAccess.Write))
                         {
                             byte[] buffer = new byte[8192];
                             long totalRead = 0;
@@ -208,12 +224,30 @@ namespace Server
 
                             while (totalRead < file.FileSize && (bytesRead = ns.Read(buffer, 0, buffer.Length)) > 0)
                             {
-                                fs.Write(buffer, 0, bytesRead);
-                                totalRead += bytesRead;
+                                if (excessBufferLength > 0)
+                                {
+                                    // Write excess buffer first
+                                    fs.Write(excessBuffer, 0, excessBufferLength);
+                                    totalRead += excessBufferLength;
+                                    excessBufferLength = 0;
+                                    Console.WriteLine($"Wrote excess buffer of {excessBufferLength} bytes. Total read: {totalRead}");
+                                }
+                                int bytesToWrite = bytesRead;
+                                // Check for excess data
+                                if (bytesToWrite + totalRead > file.FileSize)
+                                {
+                                    excessBufferLength = (int)((long)bytesRead + totalRead - file.FileSize);
+                                    Array.Copy(buffer, bytesRead - excessBufferLength, excessBuffer, 0, excessBufferLength);
+                                    bytesToWrite = bytesRead - excessBufferLength;
+                                    Console.WriteLine($"Excess data detected ({excessBufferLength}), storing in excess buffer.");
+                                }
+                                fs.Write(buffer, 0, bytesToWrite);
+                                totalRead += bytesToWrite;
+                                Console.WriteLine($"Read {bytesToWrite} bytes. Total read: {totalRead}");
                             }
                         }
-                        Console.WriteLine($"File received: {file.FileName} ({fileName})");
-                        savedFiles[i] = fileName;
+                        Console.WriteLine($"File received: {file.FileName} ({savedPath})");
+                        savedFiles[i] = savedPath;
                         i++;
                     }
                     // Send file info back to the client
@@ -243,6 +277,11 @@ namespace Server
             }
         }
 
+        /// <summary>
+        /// Hàm xử lý nhận tin nhắn từ client
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="wrapper"></param>
         private static void HandleChatMessage(TcpClient client, Wrapper wrapper)
         {
             ChatMessage message = JsonSerializer.Deserialize<ChatMessage>(wrapper.Payload);
