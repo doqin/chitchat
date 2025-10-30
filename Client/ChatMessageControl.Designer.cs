@@ -47,10 +47,11 @@
             rndCtrlChatBubble.BorderWidth = 1F;
             rndCtrlChatBubble.Controls.Add(lblMessage);
             rndCtrlChatBubble.Controls.Add(lblUsername);
-            rndCtrlChatBubble.Location = new Point(3, 3);
+            rndCtrlChatBubble.Location = new Point(3, 2);
+            rndCtrlChatBubble.Margin = new Padding(3, 2, 3, 2);
             rndCtrlChatBubble.Name = "rndCtrlChatBubble";
             rndCtrlChatBubble.Radius = 10;
-            rndCtrlChatBubble.Size = new Size(96, 84);
+            rndCtrlChatBubble.Size = new Size(87, 79);
             rndCtrlChatBubble.TabIndex = 0;
             rndCtrlChatBubble.Load += rndCtrlChatBubble_Load;
             // 
@@ -60,8 +61,8 @@
             lblMessage.ForeColor = Color.White;
             lblMessage.Location = new Point(10, 39);
             lblMessage.Name = "lblMessage";
-            lblMessage.Padding = new Padding(5, 5, 5, 20);
-            lblMessage.Size = new Size(77, 45);
+            lblMessage.Padding = new Padding(5, 5, 10, 20);
+            lblMessage.Size = new Size(68, 40);
             lblMessage.TabIndex = 2;
             lblMessage.Text = "message";
             // 
@@ -71,8 +72,8 @@
             lblUsername.ForeColor = Color.White;
             lblUsername.Location = new Point(10, 9);
             lblUsername.Name = "lblUsername";
-            lblUsername.Padding = new Padding(5);
-            lblUsername.Size = new Size(83, 30);
+            lblUsername.Padding = new Padding(5, 5, 10, 5);
+            lblUsername.Size = new Size(74, 25);
             lblUsername.TabIndex = 1;
             lblUsername.Text = "username";
             // 
@@ -80,10 +81,10 @@
             // 
             lblTimestamp.AutoSize = true;
             lblTimestamp.ForeColor = Color.White;
-            lblTimestamp.Location = new Point(3, 96);
+            lblTimestamp.Location = new Point(3, 87);
             lblTimestamp.Name = "lblTimestamp";
-            lblTimestamp.Padding = new Padding(5, 0, 0, 0);
-            lblTimestamp.Size = new Size(85, 20);
+            lblTimestamp.Padding = new Padding(4, 0, 0, 0);
+            lblTimestamp.Size = new Size(68, 15);
             lblTimestamp.TabIndex = 3;
             lblTimestamp.Text = "timestamp";
             // 
@@ -95,9 +96,10 @@
             flowPanelLayout.Controls.Add(flowPanelAttachments);
             flowPanelLayout.Controls.Add(lblTimestamp);
             flowPanelLayout.FlowDirection = FlowDirection.TopDown;
-            flowPanelLayout.Location = new Point(3, 3);
+            flowPanelLayout.Location = new Point(3, 2);
+            flowPanelLayout.Margin = new Padding(3, 2, 3, 2);
             flowPanelLayout.Name = "flowPanelLayout";
-            flowPanelLayout.Size = new Size(102, 116);
+            flowPanelLayout.Size = new Size(93, 102);
             flowPanelLayout.TabIndex = 4;
             flowPanelLayout.WrapContents = false;
             // 
@@ -105,21 +107,23 @@
             // 
             flowPanelAttachments.AutoSize = true;
             flowPanelAttachments.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            flowPanelAttachments.Location = new Point(3, 93);
+            flowPanelAttachments.Location = new Point(3, 85);
+            flowPanelAttachments.Margin = new Padding(3, 2, 3, 2);
             flowPanelAttachments.Name = "flowPanelAttachments";
             flowPanelAttachments.Size = new Size(0, 0);
             flowPanelAttachments.TabIndex = 4;
             // 
             // ChatMessageControl
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
             BackColor = Color.Transparent;
             Controls.Add(flowPanelLayout);
+            Margin = new Padding(3, 2, 3, 2);
             Name = "ChatMessageControl";
-            Size = new Size(108, 122);
+            Size = new Size(99, 106);
             rndCtrlChatBubble.ResumeLayout(false);
             rndCtrlChatBubble.PerformLayout();
             flowPanelLayout.ResumeLayout(false);

@@ -36,8 +36,12 @@ namespace Client
         {
             mainTimer.Stop();
             animationTimer.Stop();
+
             this.Hide();
-            new ServerDiscoveryForm().Show(); // Form chính của app
+
+            // Create and show the main form
+            var mainForm = new ServerDiscoveryForm();
+            mainForm.Show();
         }
 
         private void Animation_Tick(object sender, EventArgs e)

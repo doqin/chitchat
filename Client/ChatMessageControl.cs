@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -16,7 +17,7 @@ namespace Client
     {
         private readonly ChatMessage _chatMessage;
         private TcpClient _client;
-        private Dictionary<string, TaskCompletionSource<string>> pendingFetches;
+        private Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingFetches;
 
         public string Username
         {
@@ -28,7 +29,7 @@ namespace Client
             }
         }
 
-        public ChatMessageControl(Dictionary<string, TaskCompletionSource<string>> pendingAttachmentFetches, TcpClient client, ChatMessage chatMessage)
+        public ChatMessageControl(Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingAttachmentFetches, TcpClient client, ChatMessage chatMessage)
         {
             pendingFetches = pendingAttachmentFetches;
             _chatMessage = chatMessage;
@@ -42,18 +43,24 @@ namespace Client
             lblUsername.Text = _chatMessage.Username;
             lblMessage.Text = _chatMessage.Message;
             lblTimestamp.Text = _chatMessage.TimeSent.ToString("HH:mm");
-            foreach (var attachment in _chatMessage.Attachments)
+            Task.Run(() =>
             {
-                System.Diagnostics.Debug.WriteLine($"Checking attachment: {attachment.FileName}");
-                if (attachment.IsImage)
+                foreach (var attachment in _chatMessage.Attachments)
                 {
-                    System.Diagnostics.Debug.WriteLine($"Fetching image attachment: {attachment.FileName}");
-                    Task.Run(() =>
+                    System.Diagnostics.Debug.WriteLine($"Checking attachment: {attachment.FileName}");
+                    if (attachment.IsImage)
                     {
+                        System.Diagnostics.Debug.WriteLine($"Fetching image attachment: {attachment.FileName}");
                         try
                         {
+                            var request = new Wrapper
+                            {
+                                Type = Types.GetFile,
+                                Payload = attachment.FileName
+                            };
+                            string requestJson = JsonSerializer.Serialize(request);
                             // Fetch the attachment data from the server
-                            var filePath = FetchImage(attachment.FileName);
+                            var filePath = Protocol.File.FetchFile(_client, pendingFetches, attachment.FileName, Path.Combine("Cached", attachment.FileName), requestJson);
                             if (string.IsNullOrEmpty(filePath) || (!string.IsNullOrEmpty(filePath) && filePath == "Not found"))
                             {
                                 throw new FileNotFoundException("Image not found on server.");
@@ -64,7 +71,8 @@ namespace Client
                             {
                                 Image = image,
                                 SizeMode = PictureBoxSizeMode.Zoom,
-                                Padding = new Padding(5)
+                                Padding = new Padding(5),
+                                Size = new Size(400, image.Height * 400 / image.Width)
                             };
                             // Update the UI on the main thread
                             flowPanelAttachments.Invoke((MethodInvoker)(() =>
@@ -76,25 +84,19 @@ namespace Client
                         {
                             System.Diagnostics.Debug.WriteLine($"Error fetching image: {ex.Message}");
                         }
-                    });
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Adding attachment control for: {attachment.FileName}");
+                        AttachmentControl attachmentControl = new AttachmentControl(pendingFetches, _client, attachment.FileName);
+                        // Update the UI on the main thread
+                        flowPanelAttachments.Invoke((MethodInvoker)(() =>
+                        {
+                            flowPanelAttachments.Controls.Add(attachmentControl);
+                        }));
+                    }
                 }
-            }
-        }
-
-        private string FetchImage(string filePath)
-        {
-            var request = new Protocol.Wrapper
-            {
-                Type = Protocol.Types.GetFile,
-                Payload = filePath
-            };
-            string requestJson = System.Text.Json.JsonSerializer.Serialize(request);
-            NetworkStream ns = _client.GetStream();
-            Wrapper.SendJson(ns, requestJson);
-            var tcs = new TaskCompletionSource<string>();
-            pendingFetches[filePath] = tcs;
-            tcs.Task.Wait();
-            return tcs.Task.Result;
+            });
         }
     }
 }
