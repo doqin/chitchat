@@ -43,19 +43,19 @@
             roundControl1.BorderWidth = 1F;
             roundControl1.Controls.Add(pictureBox1);
             roundControl1.Controls.Add(textBox1);
-            roundControl1.Location = new Point(4, 4);
-            roundControl1.Margin = new Padding(4, 4, 4, 4);
+            roundControl1.Location = new Point(3, 2);
+            roundControl1.Margin = new Padding(3, 2, 3, 2);
             roundControl1.Name = "roundControl1";
             roundControl1.Radius = 10;
-            roundControl1.Size = new Size(326, 87);
+            roundControl1.Size = new Size(297, 79);
             roundControl1.TabIndex = 0;
             // 
             // pictureBox1
             // 
             pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
-            pictureBox1.Location = new Point(19, 31);
+            pictureBox1.Location = new Point(19, 23);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(54, 24);
+            pictureBox1.Size = new Size(35, 34);
             pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBox1.TabIndex = 1;
             pictureBox1.TabStop = false;
@@ -64,23 +64,24 @@
             // 
             textBox1.BackColor = SystemColors.Control;
             textBox1.BorderStyle = BorderStyle.None;
-            textBox1.Location = new Point(79, 31);
+            textBox1.Location = new Point(60, 32);
             textBox1.Name = "textBox1";
             textBox1.PlaceholderText = "Search for conversations...";
-            textBox1.Size = new Size(225, 24);
+            textBox1.Size = new Size(225, 16);
             textBox1.TabIndex = 0;
             textBox1.TextChanged += textBox1_TextChanged;
             // 
             // SearchControl
             // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoSize = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
             BackColor = Color.Transparent;
             Controls.Add(roundControl1);
+            Margin = new Padding(2, 2, 2, 2);
             Name = "SearchControl";
-            Size = new Size(334, 95);
+            Size = new Size(303, 83);
             roundControl1.ResumeLayout(false);
             roundControl1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
