@@ -26,7 +26,7 @@ namespace Client
         private string[] selectedFiles = Array.Empty<string>();
 
         private TaskCompletionSource<Attachment[]>? fileConfirmationTcs;
-        private Dictionary<string, TaskCompletionSource<string>> pendingAttachmentFetches = new();
+        private Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingAttachmentFetches = new();
 
         public ChatForm(string username, string serverName, string ip, int port)
         {
@@ -51,6 +51,10 @@ namespace Client
             Text = $"Chat - {username} @ {serverName} | {serverIp}:{serverPort}";
         }
 
+        /// <summary>
+        /// Hàm chính để xử lý phản hồi từ máy chủ
+        /// </summary>
+        /// <param name="client">Client TCP</param>
         private void HandleResponse(TcpClient client)
         {
             NetworkStream stream = client.GetStream();
@@ -81,20 +85,22 @@ namespace Client
                                 var item = new ChatMessageControl(pendingAttachmentFetches, client, chatMessage);
                                 flowPanelMessages.Invoke(() => flowPanelMessages.Controls.Add(item));
                                 break;
+                            // If the message is a file confirmation, set result to the pending TaskCompletionSource
                             case Types.FileConfirmation:
                                 FileConfirmation confirmation = JsonSerializer.Deserialize<FileConfirmation>(wrapper.Payload);
                                 System.Diagnostics.Debug.WriteLine($"ChatForm | Received confirmation: {confirmation?.AcceptedFiles.Length}");
-                                foreach (var file in confirmation?.AcceptedFiles)
+                                foreach (var file in confirmation?.AcceptedFiles ?? [])
                                 {
                                     System.Diagnostics.Debug.WriteLine($"ChatForm | File: {file.FileName}");
                                 }
                                 // If someone is waiting for the confirmation, deliver attachments
                                 if (fileConfirmationTcs != null)
                                 {
-                                    var result = fileConfirmationTcs.TrySetResult(confirmation?.AcceptedFiles);
+                                    var result = fileConfirmationTcs.TrySetResult(confirmation?.AcceptedFiles ?? []);
                                     System.Diagnostics.Debug.WriteLine($"ChatForm | Set Result: {result}");
                                 }
                                 break;
+                            // If the message is a file sending prompt, prepare to receive it
                             case Types.SendFiles:
                                 HandleFiles(client, stream, wrapper);
                                 break;
@@ -111,14 +117,21 @@ namespace Client
             System.Diagnostics.Debug.WriteLine("ChatForm | Disconnected from server");
         }
 
+        /// <summary>
+        /// Sử lý việc nhận file từ máy chủ
+        /// </summary>
+        /// <param name="client">Client TCP</param>
+        /// <param name="stream">Network Stream</param>
+        /// <param name="wrapper">Đối tượng cần giải nén</param>
         private void HandleFiles(TcpClient client, NetworkStream stream, Wrapper wrapper)
         {
             Files files = JsonSerializer.Deserialize<Files>(wrapper.Payload);
             if (files?.FileCount == 0)
             {
                 var fileName = files.FileList[0].FileName;
-                if (pendingAttachmentFetches.TryGetValue(fileName, out var tcs))
+                if (pendingAttachmentFetches.TryGetValue(fileName, out var tuple))
                 {
+                    var tcs = tuple.Item1;
                     tcs.SetResult("Not found");
                     pendingAttachmentFetches.Remove(fileName);
                 }
@@ -129,39 +142,39 @@ namespace Client
             {
                 foreach (var file in files.FileList)
                 {
-                    var fileName = Path.GetFileName(file.FileName); // Sanitize filename
-                    System.Diagnostics.Debug.WriteLine($"ChatForm | Preparing to receive file: {fileName} ({file.FileSize} bytes)");
-                    var path = Path.Combine("Cached", file.FileName);
-                    // Ensure the directory exists
-                    string directoryPath = Path.GetDirectoryName(path);
-                    if (!string.IsNullOrEmpty(directoryPath))
-                    {
-                        Directory.CreateDirectory(directoryPath);
-                    }
-                    else
-                    {
-                        System.Diagnostics.Debug.WriteLine("ChatForm | Invalid file path: no directory specified.");
-                        return;
-                    }
-                    // Saving files
-                    using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write))
-                    {
-                        byte[] buffer = new byte[8192];
-                        long totalRead = 0;
-                        int bytesRead;
-
-                        while (totalRead < file.FileSize && (bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
-                        {
-                            fs.Write(buffer, 0, bytesRead);
-                            totalRead += bytesRead;
-                        }
-                    }
-                    System.Diagnostics.Debug.WriteLine($"ChatForm | File received: {fileName}");
                     // Notify any pending fetches for this attachment
-                    if (pendingAttachmentFetches.TryGetValue(fileName, out var tcs))
+                    if (pendingAttachmentFetches.TryGetValue(file.FileName, out var tuple))
                     {
+                        System.Diagnostics.Debug.WriteLine($"ChatForm | Preparing to receive file: {file.FileName} ({file.FileSize} bytes)");
+                        var path = tuple.Item2;
+                        // Ensure the directory exists
+                        string directoryPath = Path.GetDirectoryName(path);
+                        if (!string.IsNullOrEmpty(directoryPath))
+                        {
+                            Directory.CreateDirectory(directoryPath);
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine("ChatForm | Invalid file path: no directory specified.");
+                            return;
+                        }
+                        // Saving files
+                        using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write))
+                        {
+                            byte[] buffer = new byte[8192];
+                            long totalRead = 0;
+                            int bytesRead;
+
+                            while (totalRead < file.FileSize && (bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
+                            {
+                                fs.Write(buffer, 0, bytesRead);
+                                totalRead += bytesRead;
+                            }
+                        }
+                        System.Diagnostics.Debug.WriteLine($"ChatForm | File received: {file.FileName}");
+                        var tcs = tuple.Item1;
                         tcs.SetResult(path);
-                        pendingAttachmentFetches.Remove(fileName);
+                        pendingAttachmentFetches.Remove(file.FileName);
                     }
                 }
             }
@@ -235,6 +248,7 @@ namespace Client
                         while ((fileBytesRead = fs.Read(fileBuffer, 0, fileBuffer.Length)) > 0)
                         {
                             stream.Write(fileBuffer, 0, fileBytesRead);
+                            System.Diagnostics.Debug.WriteLine($"Wrote {fileBytesRead} bytes.");
                         }
                     }
                 }

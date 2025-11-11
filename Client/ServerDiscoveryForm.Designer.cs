@@ -198,6 +198,7 @@
             MaximizeBox = false;
             Name = "ServerDiscoveryForm";
             Text = "Tìm máy chủ";
+            FormClosed += ServerDiscoveryForm_FormClosed;
             Load += ServerDiscoveryForm_Load;
             KeyDown += ServerDiscoveryForm_KeyDown;
             flowLayoutPanel2.ResumeLayout(false);
