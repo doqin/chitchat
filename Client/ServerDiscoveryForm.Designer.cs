@@ -28,16 +28,21 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ServerDiscoveryForm));
             tbxPort = new TextBox();
             lblPort = new Label();
             btnDiscoverServer = new Button();
-            flowLayoutPanel1 = new FlowLayoutPanel();
             flowLayoutPanel2 = new FlowLayoutPanel();
-            lsbxServers = new ListBox();
-            txtbxUsername = new TextBox();
             label1 = new Label();
-            flowLayoutPanel1.SuspendLayout();
+            txtbxUsername = new TextBox();
+            lsbxServers = new ListBox();
+            splitContainerMain = new SplitContainer();
+            pictureBox1 = new PictureBox();
             flowLayoutPanel2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)splitContainerMain).BeginInit();
+            splitContainerMain.Panel1.SuspendLayout();
+            splitContainerMain.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
             // tbxPort
@@ -51,6 +56,7 @@
             // lblPort
             // 
             lblPort.AutoSize = true;
+            lblPort.BackColor = Color.White;
             lblPort.Location = new Point(3, 44);
             lblPort.Name = "lblPort";
             lblPort.Size = new Size(29, 15);
@@ -67,15 +73,6 @@
             btnDiscoverServer.UseVisualStyleBackColor = true;
             btnDiscoverServer.Click += btnDiscoverServer_Click;
             // 
-            // flowLayoutPanel1
-            // 
-            flowLayoutPanel1.Controls.Add(flowLayoutPanel2);
-            flowLayoutPanel1.Controls.Add(lsbxServers);
-            flowLayoutPanel1.Location = new Point(12, 12);
-            flowLayoutPanel1.Name = "flowLayoutPanel1";
-            flowLayoutPanel1.Size = new Size(533, 337);
-            flowLayoutPanel1.TabIndex = 3;
-            // 
             // flowLayoutPanel2
             // 
             flowLayoutPanel2.Controls.Add(label1);
@@ -84,20 +81,20 @@
             flowLayoutPanel2.Controls.Add(tbxPort);
             flowLayoutPanel2.Controls.Add(btnDiscoverServer);
             flowLayoutPanel2.FlowDirection = FlowDirection.TopDown;
-            flowLayoutPanel2.Location = new Point(3, 3);
+            flowLayoutPanel2.Location = new Point(32, 110);
             flowLayoutPanel2.Name = "flowLayoutPanel2";
-            flowLayoutPanel2.Size = new Size(159, 334);
+            flowLayoutPanel2.Size = new Size(159, 142);
             flowLayoutPanel2.TabIndex = 3;
             // 
-            // lsbxServers
+            // label1
             // 
-            lsbxServers.FormattingEnabled = true;
-            lsbxServers.ItemHeight = 15;
-            lsbxServers.Location = new Point(168, 3);
-            lsbxServers.Name = "lsbxServers";
-            lsbxServers.Size = new Size(356, 334);
-            lsbxServers.TabIndex = 4;
-            lsbxServers.DoubleClick += lsbxServers_DoubleClick;
+            label1.AutoSize = true;
+            label1.BackColor = Color.White;
+            label1.Location = new Point(3, 0);
+            label1.Name = "label1";
+            label1.Size = new Size(60, 15);
+            label1.TabIndex = 4;
+            label1.Text = "Username";
             // 
             // txtbxUsername
             // 
@@ -107,28 +104,71 @@
             txtbxUsername.TabIndex = 3;
             txtbxUsername.Text = "anonymous";
             // 
-            // label1
+            // lsbxServers
             // 
-            label1.AutoSize = true;
-            label1.Location = new Point(3, 0);
-            label1.Name = "label1";
-            label1.Size = new Size(60, 15);
-            label1.TabIndex = 4;
-            label1.Text = "Username";
+            lsbxServers.FormattingEnabled = true;
+            lsbxServers.ItemHeight = 15;
+            lsbxServers.Location = new Point(35, 272);
+            lsbxServers.Name = "lsbxServers";
+            lsbxServers.Size = new Size(160, 289);
+            lsbxServers.TabIndex = 4;
+            lsbxServers.DoubleClick += lsbxServers_DoubleClick;
+            // 
+            // splitContainerMain
+            // 
+            splitContainerMain.Dock = DockStyle.Fill;
+            splitContainerMain.Location = new Point(0, 0);
+            splitContainerMain.Margin = new Padding(2);
+            splitContainerMain.Name = "splitContainerMain";
+            // 
+            // splitContainerMain.Panel1
+            // 
+            splitContainerMain.Panel1.AutoScroll = true;
+            splitContainerMain.Panel1.BackColor = Color.FromArgb(17, 7, 70);
+            splitContainerMain.Panel1.Controls.Add(pictureBox1);
+            splitContainerMain.Panel1.Controls.Add(lsbxServers);
+            splitContainerMain.Panel1.Controls.Add(flowLayoutPanel2);
+            // 
+            // splitContainerMain.Panel2
+            // 
+            splitContainerMain.Panel2.AutoScroll = true;
+            splitContainerMain.Panel2.BackColor = Color.DimGray;
+            splitContainerMain.Panel2.Paint += splitContainerMain_Panel2_Paint;
+            splitContainerMain.Size = new Size(1196, 600);
+            splitContainerMain.SplitterDistance = 249;
+            splitContainerMain.SplitterWidth = 3;
+            splitContainerMain.TabIndex = 5;
+            // 
+            // pictureBox1
+            // 
+            pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
+            pictureBox1.Location = new Point(-2, 0);
+            pictureBox1.Margin = new Padding(2);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new Size(254, 84);
+            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBox1.TabIndex = 5;
+            pictureBox1.TabStop = false;
             // 
             // ServerDiscoveryForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(557, 361);
-            Controls.Add(flowLayoutPanel1);
-            FormBorderStyle = FormBorderStyle.FixedSingle;
+            ClientSize = new Size(1196, 600);
+            Controls.Add(splitContainerMain);
+            ForeColor = Color.Black;
             MaximizeBox = false;
             Name = "ServerDiscoveryForm";
             Text = "Tìm máy chủ";
-            flowLayoutPanel1.ResumeLayout(false);
+            FormClosed += ServerDiscoveryForm_FormClosed;
+            Load += ServerDiscoveryForm_Load;
+            KeyDown += ServerDiscoveryForm_KeyDown;
             flowLayoutPanel2.ResumeLayout(false);
             flowLayoutPanel2.PerformLayout();
+            splitContainerMain.Panel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)splitContainerMain).EndInit();
+            splitContainerMain.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ResumeLayout(false);
         }
 
@@ -137,10 +177,11 @@
         private TextBox tbxPort;
         private Label lblPort;
         private Button btnDiscoverServer;
-        private FlowLayoutPanel flowLayoutPanel1;
         private FlowLayoutPanel flowLayoutPanel2;
         private ListBox lsbxServers;
         private Label label1;
         private TextBox txtbxUsername;
+        private SplitContainer splitContainerMain;
+        private PictureBox pictureBox1;
     }
 }
