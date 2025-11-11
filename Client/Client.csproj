@@ -12,4 +12,10 @@
     <ProjectReference Include="..\Protocol\Protocol.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="LoginControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+  </ItemGroup>
+
 </Project>

@@ -39,14 +39,13 @@
             panelSearch = new FlowLayoutPanel();
             label2 = new Label();
             searchControl1 = new SearchControl();
-            panel1 = new Panel();
-            profileControl1 = new ProfileControl();
+            pnlProfileArea = new Panel();
             flowLayoutPanel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainerMain).BeginInit();
             splitContainerMain.Panel1.SuspendLayout();
+            splitContainerMain.Panel2.SuspendLayout();
             splitContainerMain.SuspendLayout();
             panelSearch.SuspendLayout();
-            panel1.SuspendLayout();
             SuspendLayout();
             // 
             // tbxPort
@@ -71,7 +70,7 @@
             // 
             // btnDiscoverServer
             // 
-            btnDiscoverServer.Location = new Point(4, 137);
+            btnDiscoverServer.Location = new Point(64, 808);
             btnDiscoverServer.Margin = new Padding(4, 5, 4, 5);
             btnDiscoverServer.Name = "btnDiscoverServer";
             btnDiscoverServer.Size = new Size(218, 48);
@@ -86,9 +85,8 @@
             flowLayoutPanel2.Controls.Add(txtbxUsername);
             flowLayoutPanel2.Controls.Add(lblPort);
             flowLayoutPanel2.Controls.Add(tbxPort);
-            flowLayoutPanel2.Controls.Add(btnDiscoverServer);
             flowLayoutPanel2.FlowDirection = FlowDirection.TopDown;
-            flowLayoutPanel2.Location = new Point(13, 199);
+            flowLayoutPanel2.Location = new Point(288, 183);
             flowLayoutPanel2.Margin = new Padding(4, 5, 4, 5);
             flowLayoutPanel2.Name = "flowLayoutPanel2";
             flowLayoutPanel2.Size = new Size(228, 238);
@@ -118,10 +116,10 @@
             // 
             lsbxServers.FormattingEnabled = true;
             lsbxServers.ItemHeight = 25;
-            lsbxServers.Location = new Point(17, 394);
+            lsbxServers.Location = new Point(31, 213);
             lsbxServers.Margin = new Padding(4, 5, 4, 5);
             lsbxServers.Name = "lsbxServers";
-            lsbxServers.Size = new Size(226, 479);
+            lsbxServers.Size = new Size(293, 554);
             lsbxServers.TabIndex = 4;
             lsbxServers.DoubleClick += lsbxServers_DoubleClick;
             // 
@@ -135,16 +133,17 @@
             // splitContainerMain.Panel1
             // 
             splitContainerMain.Panel1.AutoScroll = true;
-            splitContainerMain.Panel1.BackColor = Color.FromArgb(17, 7, 70);
+            splitContainerMain.Panel1.BackColor = Color.SlateGray;
             splitContainerMain.Panel1.Controls.Add(lsbxServers);
             splitContainerMain.Panel1.Controls.Add(panelSearch);
-            splitContainerMain.Panel1.Controls.Add(panel1);
-            splitContainerMain.Panel1.Controls.Add(flowLayoutPanel2);
+            splitContainerMain.Panel1.Controls.Add(pnlProfileArea);
+            splitContainerMain.Panel1.Controls.Add(btnDiscoverServer);
             // 
             // splitContainerMain.Panel2
             // 
             splitContainerMain.Panel2.AutoScroll = true;
             splitContainerMain.Panel2.BackColor = Color.DimGray;
+            splitContainerMain.Panel2.Controls.Add(flowLayoutPanel2);
             splitContainerMain.Panel2.Paint += splitContainerMain_Panel2_Paint;
             splitContainerMain.Size = new Size(1709, 1000);
             splitContainerMain.SplitterDistance = 356;
@@ -182,26 +181,14 @@
             searchControl1.Size = new Size(334, 95);
             searchControl1.TabIndex = 0;
             // 
-            // panel1
+            // pnlProfileArea
             // 
-            panel1.BackColor = SystemColors.WindowText;
-            panel1.Controls.Add(profileControl1);
-            panel1.Dock = DockStyle.Bottom;
-            panel1.Location = new Point(0, 886);
-            panel1.Name = "panel1";
-            panel1.Size = new Size(356, 114);
-            panel1.TabIndex = 6;
-            // 
-            // profileControl1
-            // 
-            profileControl1.AutoSize = true;
-            profileControl1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            profileControl1.BackColor = Color.Transparent;
-            profileControl1.Dock = DockStyle.Fill;
-            profileControl1.Location = new Point(0, 0);
-            profileControl1.Name = "profileControl1";
-            profileControl1.Size = new Size(356, 114);
-            profileControl1.TabIndex = 7;
+            pnlProfileArea.BackColor = Color.Transparent;
+            pnlProfileArea.Dock = DockStyle.Bottom;
+            pnlProfileArea.Location = new Point(0, 886);
+            pnlProfileArea.Name = "pnlProfileArea";
+            pnlProfileArea.Size = new Size(356, 114);
+            pnlProfileArea.TabIndex = 6;
             // 
             // ServerDiscoveryForm
             // 
@@ -219,12 +206,11 @@
             flowLayoutPanel2.ResumeLayout(false);
             flowLayoutPanel2.PerformLayout();
             splitContainerMain.Panel1.ResumeLayout(false);
+            splitContainerMain.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainerMain).EndInit();
             splitContainerMain.ResumeLayout(false);
             panelSearch.ResumeLayout(false);
             panelSearch.PerformLayout();
-            panel1.ResumeLayout(false);
-            panel1.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -238,10 +224,9 @@
         private Label label1;
         private TextBox txtbxUsername;
         private SplitContainer splitContainerMain;
-        private Panel panel1;
+        private Panel pnlProfileArea;
         private FlowLayoutPanel panelSearch;
         private SearchControl searchControl1;
         private Label label2;
-        private ProfileControl profileControl1;
     }
 }

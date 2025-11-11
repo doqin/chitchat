@@ -45,13 +45,13 @@
             roundControl1.Margin = new Padding(4, 4, 4, 4);
             roundControl1.Name = "roundControl1";
             roundControl1.Radius = 10;
-            roundControl1.Size = new Size(329, 118);
+            roundControl1.Size = new Size(345, 113);
             roundControl1.TabIndex = 0;
             // 
             // pictureBox1
             // 
             pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
-            pictureBox1.Location = new Point(20, 28);
+            pictureBox1.Location = new Point(24, 25);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(69, 64);
             pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -67,7 +67,7 @@
             BackColor = Color.Transparent;
             Controls.Add(roundControl1);
             Name = "ProfileControl";
-            Size = new Size(337, 126);
+            Size = new Size(353, 121);
             roundControl1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ResumeLayout(false);
