@@ -90,18 +90,11 @@ namespace Client
                                 if (chatMessage.Address == localEndPoint.Address.ToString() && chatMessage.Port == localEndPoint.Port.ToString())
                                 {
                                     item.Anchor = AnchorStyles.Right;
-                                    flwLytPnlMessages.Invoke(() =>
-                                    {
-                                        flwLytPnlMessages.Controls.Add(item);
-                                    });
                                 }
-                                else
+                                flwLytPnlMessages.Invoke(() =>
                                 {
-                                    flwLytPnlMessages.Invoke(() =>
-                                    {
-                                        flwLytPnlMessages.Controls.Add(item);
-                                    });
-                                }
+                                    flwLytPnlMessages.Controls.Add(item);
+                                });
                                 break;
                             // If the message is a file confirmation, set result to the pending TaskCompletionSource
                             case Types.FileConfirmation:
