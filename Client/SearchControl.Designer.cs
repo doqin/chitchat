@@ -38,16 +38,17 @@
             // 
             // roundControl1
             // 
+            roundControl1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             roundControl1.backgroundColor = SystemColors.Control;
             roundControl1.BorderColor = SystemColors.Control;
             roundControl1.BorderWidth = 1F;
             roundControl1.Controls.Add(pictureBox1);
             roundControl1.Controls.Add(textBox1);
-            roundControl1.Location = new Point(3, 2);
+            roundControl1.Location = new Point(0, 2);
             roundControl1.Margin = new Padding(3, 2, 3, 2);
             roundControl1.Name = "roundControl1";
             roundControl1.Radius = 10;
-            roundControl1.Size = new Size(297, 79);
+            roundControl1.Size = new Size(242, 79);
             roundControl1.TabIndex = 0;
             // 
             // pictureBox1
@@ -62,12 +63,13 @@
             // 
             // textBox1
             // 
+            textBox1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             textBox1.BackColor = SystemColors.Control;
             textBox1.BorderStyle = BorderStyle.None;
             textBox1.Location = new Point(60, 32);
             textBox1.Name = "textBox1";
             textBox1.PlaceholderText = "Search for conversations...";
-            textBox1.Size = new Size(225, 16);
+            textBox1.Size = new Size(159, 16);
             textBox1.TabIndex = 0;
             textBox1.TextChanged += textBox1_TextChanged;
             // 
@@ -75,13 +77,12 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            AutoSize = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
             BackColor = Color.Transparent;
             Controls.Add(roundControl1);
-            Margin = new Padding(2, 2, 2, 2);
+            Margin = new Padding(2);
             Name = "SearchControl";
-            Size = new Size(303, 83);
+            Size = new Size(243, 83);
             roundControl1.ResumeLayout(false);
             roundControl1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();

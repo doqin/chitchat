@@ -35,7 +35,6 @@ namespace Client
             _chatMessage = chatMessage;
             _client = client;
             InitializeComponent();
-
         }
 
         private void rndCtrlChatBubble_Load(object sender, EventArgs e)
