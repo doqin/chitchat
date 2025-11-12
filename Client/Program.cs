@@ -14,7 +14,12 @@ namespace Client
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
+#if DEBUG
+            Application.Run(new ServerDiscoveryForm());
+#else
             Application.Run(new SplashScreen());
+#endif
+
         }
 
         private static void OnApplicationExit(object? sender, EventArgs e)

@@ -7,6 +7,7 @@ using System.Drawing;
 using System.IO;
 using System.Net.Sockets;
 using System.Text.Json;
+using System.Net;
 
 namespace Protocol
 {
@@ -93,6 +94,8 @@ namespace Protocol
         public DateTime TimeSent { get; set; }
         public string Username { get; set; }
         public string Message { get; set; }
+        public string Address { get; set; }
+        public string Port { get; set; }
         public Attachment[] Attachments { get; set; }
     }
 

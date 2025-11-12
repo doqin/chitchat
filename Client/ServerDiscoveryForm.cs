@@ -153,7 +153,7 @@ namespace Client
                 catch { }
                 hostedChatForm = null;
             }
-            
+
             // Exit the application when this form closes
             Application.Exit();
         }
