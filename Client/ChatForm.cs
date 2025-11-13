@@ -24,8 +24,6 @@ namespace Client
         private readonly int serverPort;
         private TcpClient tcpClient;
 
-        private string[] selectedFiles = Array.Empty<string>();
-
         private Panel dummy;
 
         private TaskCompletionSource<Attachment[]>? fileConfirmationTcs;
@@ -293,9 +291,10 @@ namespace Client
             if (e.KeyCode == Keys.Enter)
             {
                 Attachment[] attachments = Array.Empty<Attachment>();
-                if (selectedFiles.Length > 0)
+                if (flwLytPnlAttachments.Controls.Count > 0)
                 {
-                    var paths = SendFiles(selectedFiles);
+                    string[] files = flwLytPnlAttachments.Controls.Cast<SelectedFileControl>().ToArray().Select(f => f.FilePath).ToArray();
+                    var paths = SendFiles(files);
                     if (paths.Length > 0)
                     {
                         attachments = paths;
@@ -305,10 +304,12 @@ namespace Client
                         MessageBox.Show("All selected files were rejected by the server.", "File Upload Rejected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
-                    lblSelectedFiles.Text = "(none)";
-                    selectedFiles = Array.Empty<string>();
+                    flwLytPnlAttachments.Invoke(() =>
+                    {
+                        flwLytPnlAttachments.Controls.Clear();
+                    });
                 }
-                if (!string.IsNullOrWhiteSpace(txtbxMessage.Text))
+                if (!string.IsNullOrWhiteSpace(txtbxMessage.Text) || attachments.Length != 0)
                 {
                     SendMessage(DateTime.Now, username, txtbxMessage.Text.Trim(), attachments);
                     txtbxMessage.Clear();
@@ -323,8 +324,14 @@ namespace Client
             var result = openFileDialog1.ShowDialog();
             if (result == DialogResult.OK)
             {
-                lblSelectedFiles.Text = string.Join(", ", openFileDialog1.FileNames);
-                selectedFiles = openFileDialog1.FileNames;
+                foreach (var file in openFileDialog1.FileNames)
+                {
+                    flwLytPnlAttachments.Invoke(() =>
+                    {
+                        var control = new SelectedFileControl(file);
+                        flwLytPnlAttachments.Controls.Add(control);
+                    });
+                }
             }
         }
 
@@ -351,10 +358,18 @@ namespace Client
                 Width = flwLytPnlMessages.Width - SystemInformation.VerticalScrollBarWidth,
                 Height = 1
             };
-            flwLytPnlMessages.Invoke( () =>
+            flwLytPnlMessages.Invoke(() =>
             {
                 flwLytPnlMessages.Controls.Add(dummy);
             });
+        }
+
+        private int previousAttachmentPanelHeight = 0;
+
+        private void flwLytPnlAttachments_Resize(object sender, EventArgs e)
+        {
+            flwLytPnlMessages.Height += previousAttachmentPanelHeight - flwLytPnlAttachments.Height;
+            previousAttachmentPanelHeight = flwLytPnlAttachments.Height;
         }
     }
 }
