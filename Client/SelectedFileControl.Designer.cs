@@ -1,6 +1,6 @@
 ﻿namespace Client
 {
-    partial class AttachmentControl
+    partial class SelectedFileControl
     {
         /// <summary> 
         /// Required designer variable.
@@ -29,11 +29,11 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AttachmentControl));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SelectedFileControl));
             roundControl1 = new RoundControl();
-            pictureBox1 = new PictureBox();
+            btnRemove = new Button();
             lblFileName = new Label();
-            saveFileDialog1 = new SaveFileDialog();
+            pictureBox1 = new PictureBox();
             toolTip1 = new ToolTip(components);
             roundControl1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
@@ -44,45 +44,53 @@
             roundControl1.backgroundColor = SystemColors.Control;
             roundControl1.BorderColor = SystemColors.Control;
             roundControl1.BorderWidth = 1F;
-            roundControl1.Controls.Add(pictureBox1);
+            roundControl1.Controls.Add(btnRemove);
             roundControl1.Controls.Add(lblFileName);
-            roundControl1.Location = new Point(3, 2);
+            roundControl1.Controls.Add(pictureBox1);
+            roundControl1.Location = new Point(0, 2);
             roundControl1.Margin = new Padding(3, 2, 3, 2);
             roundControl1.Name = "roundControl1";
             roundControl1.Radius = 10;
-            roundControl1.Size = new Size(162, 84);
+            roundControl1.Size = new Size(94, 123);
             roundControl1.TabIndex = 0;
             // 
-            // pictureBox1
+            // btnRemove
             // 
-            pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
-            pictureBox1.Location = new Point(25, 19);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(36, 45);
-            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
-            pictureBox1.TabIndex = 1;
-            pictureBox1.TabStop = false;
+            btnRemove.Location = new Point(66, 3);
+            btnRemove.Name = "btnRemove";
+            btnRemove.Size = new Size(25, 23);
+            btnRemove.TabIndex = 1;
+            btnRemove.Text = "X";
+            btnRemove.UseVisualStyleBackColor = true;
+            btnRemove.Click += btnRemove_Click;
             // 
             // lblFileName
             // 
             lblFileName.AutoEllipsis = true;
-            lblFileName.Location = new Point(67, 36);
+            lblFileName.Location = new Point(19, 81);
             lblFileName.Name = "lblFileName";
-            lblFileName.Size = new Size(77, 15);
-            lblFileName.TabIndex = 0;
+            lblFileName.Size = new Size(58, 15);
+            lblFileName.TabIndex = 1;
             lblFileName.Text = "file_name";
-            lblFileName.Click += lblFileName_Click;
             // 
-            // AttachmentControl
+            // pictureBox1
+            // 
+            pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
+            pictureBox1.Location = new Point(28, 25);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new Size(40, 42);
+            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBox1.TabIndex = 0;
+            pictureBox1.TabStop = false;
+            // 
+            // SelectedFileControl
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            AutoSize = true;
-            AutoSizeMode = AutoSizeMode.GrowAndShrink;
             BackColor = Color.Transparent;
             Controls.Add(roundControl1);
-            Name = "AttachmentControl";
-            Size = new Size(168, 88);
+            Name = "SelectedFileControl";
+            Size = new Size(96, 126);
             roundControl1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ResumeLayout(false);
@@ -91,9 +99,9 @@
         #endregion
 
         private RoundControl roundControl1;
-        private Label lblFileName;
-        private SaveFileDialog saveFileDialog1;
         private PictureBox pictureBox1;
+        private Label lblFileName;
+        private Button btnRemove;
         private ToolTip toolTip1;
     }
 }
