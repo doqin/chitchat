@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -37,6 +38,52 @@ namespace Client
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Corrects the orientation of an image based on its EXIF data
+        /// </summary>
+        /// <param name="image">The image to correct</param>
+        /// <returns>The corrected image</returns>
+        private Image CorrectImageOrientation(Image image)
+        {
+            const int ExifOrientationTagId = 0x0112; // EXIF orientation tag
+
+            if (!image.PropertyIdList.Contains(ExifOrientationTagId))
+                return image;
+
+            var property = image.GetPropertyItem(ExifOrientationTagId);
+            int orientation = BitConverter.ToUInt16(property.Value, 0);
+
+            switch (orientation)
+            {
+                case 2:
+                    image.RotateFlip(RotateFlipType.RotateNoneFlipX);
+                    break;
+                case 3:
+                    image.RotateFlip(RotateFlipType.Rotate180FlipNone);
+                    break;
+                case 4:
+                    image.RotateFlip(RotateFlipType.Rotate180FlipX);
+                    break;
+                case 5:
+                    image.RotateFlip(RotateFlipType.Rotate90FlipX);
+                    break;
+                case 6:
+                    image.RotateFlip(RotateFlipType.Rotate90FlipNone);
+                    break;
+                case 7:
+                    image.RotateFlip(RotateFlipType.Rotate270FlipX);
+                    break;
+                case 8:
+                    image.RotateFlip(RotateFlipType.Rotate270FlipNone);
+                    break;
+            }
+
+            // Remove the EXIF orientation tag to prevent double-rotation
+            image.RemovePropertyItem(ExifOrientationTagId);
+
+            return image;
+        }
+
         private void rndCtrlChatBubble_Load(object sender, EventArgs e)
         {
             lblUsername.Text = _chatMessage.Username;
@@ -64,14 +111,16 @@ namespace Client
                             {
                                 throw new FileNotFoundException("Image not found on server.");
                             }
-                            // For demonstration, we'll just create a placeholder image
+                            // Load image and correct orientation
                             Image image = Image.FromFile(filePath);
+                            image = CorrectImageOrientation(image);
+
                             PictureBox picBox = new PictureBox
                             {
                                 Image = image,
                                 SizeMode = PictureBoxSizeMode.Zoom,
                                 Padding = new Padding(5),
-                                Size = new Size(400, image.Height * 400 / image.Width)
+                                Size = new Size(400, image.Height * 400 / image.Width),
                             };
                             // Update the UI on the main thread
                             flowPanelAttachments.Invoke((MethodInvoker)(() =>
