@@ -12,11 +12,19 @@ namespace Client
 
         private ChatForm? hostedChatForm;
 
+        // keep these as fields so other methods can access them
+        private ProfileControl? profileControl;
+        private LoginControl? loginControl;
+
         public ServerDiscoveryForm()
         {
             InitializeComponent();
             this.KeyPreview = true;
             lsbxServers.DataSource = serverList;
+
+            // create shared controls once and reuse
+            profileControl = new ProfileControl();
+            loginControl = new LoginControl();
         }
 
         public void btnDiscoverServer_Click(object sender, EventArgs e)
@@ -89,6 +97,20 @@ namespace Client
 
             hostedChatForm = chatForm;
         }
+        private void ShowLoginControl()
+        {
+            if (loginControl == null) return;
+            pnlProfileArea.Controls.Clear();
+            pnlProfileArea.Controls.Add(loginControl);
+            loginControl.Dock = DockStyle.Fill;
+        }
+        private void ShowProfileControl()
+        {
+            if (profileControl == null) return;
+            pnlProfileArea.Controls.Clear();
+            pnlProfileArea.Controls.Add(profileControl);
+            profileControl.Dock = DockStyle.Fill;
+        }
 
         private void ServerDiscoveryForm_Load(object sender, EventArgs e)
         {
@@ -131,7 +153,7 @@ namespace Client
                 catch { }
                 hostedChatForm = null;
             }
-            
+
             // Exit the application when this form closes
             Application.Exit();
         }

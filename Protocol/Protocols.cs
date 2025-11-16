@@ -7,13 +7,28 @@ using System.Drawing;
 using System.IO;
 using System.Net.Sockets;
 using System.Text.Json;
+using System.Net;
 
 namespace Protocol
 {
     public enum Types
     {
+        /// <summary>
+        /// Means server broadcasting its presence via UDP
+        /// </summary>
         Broadcast,
+        /// <summary>
+        /// Means sending one message from the client to the server
+        /// </summary>
         ChatMessage,
+        /// <summary>
+        /// Means requesting message(s) from the client
+        /// </summary>
+        GetMessages,
+        /// <summary>
+        /// Means server sending saved messages to requesting client
+        /// </summary>
+        SendMessages, 
         SendFiles,
         GetFile,
         FileConfirmation,
@@ -88,11 +103,24 @@ namespace Protocol
         }
     }
 
+    public class GetMessages
+    {
+        public int Count { get; set; }
+        public DateTime Before { get; set; }
+    }
+
+    public class SendMessages
+    {
+        public ChatMessage[] Messages { get; set; }
+    }
+
     public class ChatMessage
     {
         public DateTime TimeSent { get; set; }
         public string Username { get; set; }
         public string Message { get; set; }
+        public string Address { get; set; }
+        public string Port { get; set; }
         public Attachment[] Attachments { get; set; }
     }
 

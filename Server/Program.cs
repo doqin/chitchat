@@ -35,6 +35,8 @@ namespace Server
             int tcpPort = int.Parse(config["ServerSettings:TCPPort"]);
             int udpPort = int.Parse(config["ServerSettings:UDPPort"]);
 
+            MessageDatabase.CreateIfNotExist();
+
             listener = new TcpListener(IPAddress.Any, tcpPort);
 
             listener.Start();
@@ -89,6 +91,9 @@ namespace Server
                                 case Types.GetFile:
                                     SendFiles(client, stream, wrapper);
                                     break;
+                                case Types.GetMessages:
+                                    HandleGetMessages(client, wrapper);
+                                    break;
                                 default:
                                     Console.WriteLine("Unknown message type received.");
                                     continue;
@@ -106,6 +111,35 @@ namespace Server
                     Console.WriteLine($"Client disconnected: {client.Client.RemoteEndPoint}");
                     client.Close();
                 }
+            }
+        }
+
+        private static void HandleGetMessages(TcpClient client, Wrapper wrapper)
+        {
+            GetMessages payload = JsonSerializer.Deserialize<GetMessages>(wrapper.Payload);
+            if (payload != null)
+            {
+                Console.WriteLine($"Client {client.Client.RemoteEndPoint} requested {payload.Count} messages since {payload.Before}");
+                ChatMessage[] messages = MessageDatabase.GetMessagesSince(payload.Count, payload.Before);
+                if (messages.Length == 0)
+                {
+                    Console.WriteLine("No messages found for the request.");
+                    return;
+                }
+                SendMessages sendPayload = new SendMessages
+                {
+                    Messages = messages
+                };
+                string responsePayload = JsonSerializer.Serialize(sendPayload);
+                Wrapper responseWrapper = new Wrapper
+                {
+                    Type = Types.SendMessages,
+                    Payload = responsePayload
+                };
+                string finalJson = JsonSerializer.Serialize(responseWrapper);
+                NetworkStream stream = client.GetStream();
+                Wrapper.SendJson(stream, finalJson);
+                Console.WriteLine($"Sent {messages.Length} messages to {client.Client.RemoteEndPoint}");
             }
         }
 
@@ -288,6 +322,8 @@ namespace Server
             if (message != null)
             {
                 Console.WriteLine($"Received: [{message.TimeSent:HH:mm}] {message.Message} from {message.Username} @ {client.Client.RemoteEndPoint} ({message.Attachments.Length} attachments)");
+                Console.WriteLine("Inserting to database...");
+                MessageDatabase.InsertMessage(message);
                 BroadcastMessage(message);
             }
         }

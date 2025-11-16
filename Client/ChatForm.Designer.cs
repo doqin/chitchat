@@ -31,11 +31,10 @@
             openFileDialog1 = new OpenFileDialog();
             txtbxMessage = new TextBox();
             btnPickFiles = new Button();
-            lblSelectedFilesPrompt = new Label();
-            lblSelectedFiles = new Label();
-            flowPanelMessages = new FlowLayoutPanel();
-            groupBox1 = new GroupBox();
-            groupBox1.SuspendLayout();
+            pnlChatPanel = new Panel();
+            flwLytPnlMessages = new FlowLayoutPanel();
+            flwLytPnlAttachments = new FlowLayoutPanel();
+            pnlChatPanel.SuspendLayout();
             SuspendLayout();
             // 
             // openFileDialog1
@@ -45,84 +44,81 @@
             // 
             // txtbxMessage
             // 
+            txtbxMessage.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             txtbxMessage.BackColor = SystemColors.Window;
-            txtbxMessage.Location = new Point(122, 50);
-            txtbxMessage.Margin = new Padding(3, 4, 3, 4);
+            txtbxMessage.Location = new Point(38, 3);
             txtbxMessage.Name = "txtbxMessage";
-            txtbxMessage.Size = new Size(780, 27);
+            txtbxMessage.Size = new Size(736, 23);
             txtbxMessage.TabIndex = 1;
             txtbxMessage.KeyDown += txtbxMessage_KeyDown;
             // 
             // btnPickFiles
             // 
-            btnPickFiles.Location = new Point(12, 48);
+            btnPickFiles.Location = new Point(3, 4);
+            btnPickFiles.Margin = new Padding(3, 2, 3, 2);
             btnPickFiles.Name = "btnPickFiles";
-            btnPickFiles.Size = new Size(94, 29);
+            btnPickFiles.Size = new Size(29, 22);
             btnPickFiles.TabIndex = 2;
-            btnPickFiles.Text = "Pick files";
+            btnPickFiles.Text = "+";
             btnPickFiles.UseVisualStyleBackColor = true;
             btnPickFiles.Click += btnPickFiles_Click;
             // 
-            // lblSelectedFilesPrompt
+            // pnlChatPanel
             // 
-            lblSelectedFilesPrompt.AutoSize = true;
-            lblSelectedFilesPrompt.ForeColor = SystemColors.Window;
-            lblSelectedFilesPrompt.Location = new Point(12, 23);
-            lblSelectedFilesPrompt.Name = "lblSelectedFilesPrompt";
-            lblSelectedFilesPrompt.Size = new Size(104, 20);
-            lblSelectedFilesPrompt.TabIndex = 3;
-            lblSelectedFilesPrompt.Text = "Selected files: ";
+            pnlChatPanel.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            pnlChatPanel.BorderStyle = BorderStyle.FixedSingle;
+            pnlChatPanel.Controls.Add(btnPickFiles);
+            pnlChatPanel.Controls.Add(txtbxMessage);
+            pnlChatPanel.Location = new Point(12, 434);
+            pnlChatPanel.Name = "pnlChatPanel";
+            pnlChatPanel.Size = new Size(779, 33);
+            pnlChatPanel.TabIndex = 7;
             // 
-            // lblSelectedFiles
+            // flwLytPnlMessages
             // 
-            lblSelectedFiles.AutoSize = true;
-            lblSelectedFiles.ForeColor = SystemColors.Window;
-            lblSelectedFiles.Location = new Point(122, 23);
-            lblSelectedFiles.Name = "lblSelectedFiles";
-            lblSelectedFiles.Size = new Size(52, 20);
-            lblSelectedFiles.TabIndex = 4;
-            lblSelectedFiles.Text = "(none)";
+            flwLytPnlMessages.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            flwLytPnlMessages.AutoScroll = true;
+            flwLytPnlMessages.BorderStyle = BorderStyle.FixedSingle;
+            flwLytPnlMessages.FlowDirection = FlowDirection.TopDown;
+            flwLytPnlMessages.Location = new Point(12, 12);
+            flwLytPnlMessages.Name = "flwLytPnlMessages";
+            flwLytPnlMessages.Size = new Size(779, 410);
+            flwLytPnlMessages.TabIndex = 8;
+            flwLytPnlMessages.WrapContents = false;
+            flwLytPnlMessages.Scroll += flwLytPnlMessages_Scroll;
+            flwLytPnlMessages.SizeChanged += flwLytPnlMessages_SizeChanged;
+            flwLytPnlMessages.ControlAdded += flwLytPnlMessages_ControlAdded;
+            flwLytPnlMessages.Paint += flwLytPnlMessages_Paint;
             // 
-            // flowPanelMessages
+            // flwLytPnlAttachments
             // 
-            flowPanelMessages.AutoScroll = true;
-            flowPanelMessages.Dock = DockStyle.Fill;
-            flowPanelMessages.FlowDirection = FlowDirection.TopDown;
-            flowPanelMessages.Location = new Point(0, 0);
-            flowPanelMessages.Name = "flowPanelMessages";
-            flowPanelMessages.Size = new Size(914, 498);
-            flowPanelMessages.TabIndex = 5;
-            flowPanelMessages.WrapContents = false;
-            // 
-            // groupBox1
-            // 
-            groupBox1.Controls.Add(lblSelectedFilesPrompt);
-            groupBox1.Controls.Add(lblSelectedFiles);
-            groupBox1.Controls.Add(txtbxMessage);
-            groupBox1.Controls.Add(btnPickFiles);
-            groupBox1.Dock = DockStyle.Bottom;
-            groupBox1.Location = new Point(0, 405);
-            groupBox1.Name = "groupBox1";
-            groupBox1.Size = new Size(914, 93);
-            groupBox1.TabIndex = 6;
-            groupBox1.TabStop = false;
+            flwLytPnlAttachments.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
+            flwLytPnlAttachments.AutoSize = true;
+            flwLytPnlAttachments.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            flwLytPnlAttachments.Location = new Point(16, 428);
+            flwLytPnlAttachments.Name = "flwLytPnlAttachments";
+            flwLytPnlAttachments.Size = new Size(0, 0);
+            flwLytPnlAttachments.TabIndex = 9;
+            flwLytPnlAttachments.WrapContents = false;
+            flwLytPnlAttachments.Resize += flwLytPnlAttachments_Resize;
             // 
             // ChatForm
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(23, 21, 32);
-            ClientSize = new Size(914, 498);
-            Controls.Add(groupBox1);
-            Controls.Add(flowPanelMessages);
-            Margin = new Padding(3, 4, 3, 4);
+            ClientSize = new Size(803, 479);
+            Controls.Add(flwLytPnlAttachments);
+            Controls.Add(flwLytPnlMessages);
+            Controls.Add(pnlChatPanel);
             Name = "ChatForm";
             Text = "ChatForm";
             FormClosing += ChatForm_FormClosing;
             Load += ChatForm_Load;
-            groupBox1.ResumeLayout(false);
-            groupBox1.PerformLayout();
+            pnlChatPanel.ResumeLayout(false);
+            pnlChatPanel.PerformLayout();
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -130,9 +126,8 @@
         private OpenFileDialog openFileDialog1;
         private TextBox txtbxMessage;
         private Button btnPickFiles;
-        private Label lblSelectedFilesPrompt;
-        private Label lblSelectedFiles;
-        private FlowLayoutPanel flowPanelMessages;
-        private GroupBox groupBox1;
+        private Panel pnlChatPanel;
+        private FlowLayoutPanel flwLytPnlMessages;
+        private FlowLayoutPanel flwLytPnlAttachments;
     }
 }
