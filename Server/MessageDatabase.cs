@@ -44,42 +44,50 @@ namespace Server
 
         public static void InsertMessage(Protocol.ChatMessage chatMessage)
         {
-            using (var connection = new SQLiteConnection(connectionString))
+            try
             {
-                connection.Open();
-                using (var transaction = connection.BeginTransaction())
+                using (var connection = new SQLiteConnection(connectionString))
                 {
-                    string insertMessageSql = @"
-                    INSERT INTO Messages (Username, Message, Address, Port, TimeSent)
-                    VALUES (@Username, @Message, @Address, @Port, @TimeSent);
-                    SELECT last_insert_rowid();
-                    ";
-                    long messageId;
-                    using (var command = new SQLiteCommand(insertMessageSql, connection))
+                    connection.Open();
+                    using (var transaction = connection.BeginTransaction())
                     {
-                        command.Parameters.AddWithValue("@Username", chatMessage.Username);
-                        command.Parameters.AddWithValue("@Message", chatMessage.Message);
-                        command.Parameters.AddWithValue("@Address", chatMessage.Address);
-                        command.Parameters.AddWithValue("@Port", chatMessage.Port);
-                        command.Parameters.AddWithValue("@TimeSent", chatMessage.TimeSent);
-                        messageId = (long)command.ExecuteScalar();
-                    }
-                    string insertAttachmentSql = @"
-                    INSERT INTO Attachments (MessageId, FileName, IsImage)
-                    VALUES (@MessageId, @FileName, @IsImage);
-                    ";
-                    foreach (var attachment in chatMessage.Attachments)
-                    {
-                        using (var command = new SQLiteCommand(insertAttachmentSql, connection))
+                        string insertMessageSql = @"
+                        INSERT INTO Messages (Username, Message, Address, Port, TimeSent)
+                        VALUES (@Username, @Message, @Address, @Port, @TimeSent);
+                        SELECT last_insert_rowid();
+                        ";
+                        long messageId;
+                        using (var command = new SQLiteCommand(insertMessageSql, connection))
                         {
-                            command.Parameters.AddWithValue("@MessageId", messageId);
-                            command.Parameters.AddWithValue("@FileName", attachment.FileName);
-                            command.Parameters.AddWithValue("@IsImage", attachment.IsImage);
-                            command.ExecuteNonQuery();
+                            command.Parameters.AddWithValue("@Username", chatMessage.Username);
+                            command.Parameters.AddWithValue("@Message", chatMessage.Message);
+                            command.Parameters.AddWithValue("@Address", chatMessage.Address);
+                            command.Parameters.AddWithValue("@Port", chatMessage.Port);
+                            command.Parameters.AddWithValue("@TimeSent", chatMessage.TimeSent);
+                            messageId = (long)command.ExecuteScalar();
                         }
+                        string insertAttachmentSql = @"
+                        INSERT INTO Attachments (MessageId, FileName, IsImage)
+                        VALUES (@MessageId, @FileName, @IsImage);
+                        ";
+                        foreach (var attachment in chatMessage.Attachments)
+                        {
+                            using (var command = new SQLiteCommand(insertAttachmentSql, connection))
+                            {
+                                command.Parameters.AddWithValue("@MessageId", messageId);
+                                command.Parameters.AddWithValue("@FileName", attachment.FileName);
+                                command.Parameters.AddWithValue("@IsImage", attachment.IsImage);
+                                command.ExecuteNonQuery();
+                            }
+                        }
+                        transaction.Commit();
                     }
-                    transaction.Commit();
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error inserting message to database: {ex.Message}");
+                // Consider logging or retrying
             }
         }
 
