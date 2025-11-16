@@ -13,8 +13,22 @@ namespace Protocol
 {
     public enum Types
     {
+        /// <summary>
+        /// Means server broadcasting its presence via UDP
+        /// </summary>
         Broadcast,
+        /// <summary>
+        /// Means sending one message from the client to the server
+        /// </summary>
         ChatMessage,
+        /// <summary>
+        /// Means requesting message(s) from the client
+        /// </summary>
+        GetMessages,
+        /// <summary>
+        /// Means server sending saved messages to requesting client
+        /// </summary>
+        SendMessages, 
         SendFiles,
         GetFile,
         FileConfirmation,
@@ -87,6 +101,17 @@ namespace Protocol
             string json = Encoding.UTF8.GetString(buffer, 0, messageLength);
             return json;
         }
+    }
+
+    public class GetMessages
+    {
+        public int Count { get; set; }
+        public DateTime Before { get; set; }
+    }
+
+    public class SendMessages
+    {
+        public ChatMessage[] Messages { get; set; }
     }
 
     public class ChatMessage
