@@ -153,8 +153,11 @@ namespace Client
                     flwLytPnlMessages.Controls.SetChildIndex(item, 0);
                 }
                 flwLytPnlMessages.ResumeLayout(true);
-                flwLytPnlMessages.ScrollControlIntoView(dummy);
-                flwLytPnlMessages.Controls.SetChildIndex(dummy, 0);
+                if (dummy != null)
+                {
+                    flwLytPnlMessages.ScrollControlIntoView(dummy);
+                    flwLytPnlMessages.Controls.SetChildIndex(dummy, 0);
+                }
             });
         }
 
