@@ -30,6 +30,16 @@ namespace Client
             }
         }
 
+        public DateTime TimeSent
+        {
+            get { return _chatMessage.TimeSent; }
+            set
+            {
+                _chatMessage.TimeSent = value;
+                Invalidate();
+            }
+        }
+
         public ChatMessageControl(Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingAttachmentFetches, TcpClient client, ChatMessage chatMessage)
         {
             pendingFetches = pendingAttachmentFetches;
@@ -88,7 +98,7 @@ namespace Client
         {
             lblUsername.Text = _chatMessage.Username;
             lblMessage.Text = _chatMessage.Message;
-            lblTimestamp.Text = _chatMessage.TimeSent.ToString("HH:mm");
+            lblTimestamp.Text = DateTime.Now.Subtract(_chatMessage.TimeSent).Days > 0 ? _chatMessage.TimeSent.ToString("g") : _chatMessage.TimeSent.ToString("t");
             Task.Run(() =>
             {
                 foreach (var attachment in _chatMessage.Attachments)

@@ -85,6 +85,7 @@
             flwLytPnlMessages.Size = new Size(779, 410);
             flwLytPnlMessages.TabIndex = 8;
             flwLytPnlMessages.WrapContents = false;
+            flwLytPnlMessages.Scroll += flwLytPnlMessages_Scroll;
             flwLytPnlMessages.SizeChanged += flwLytPnlMessages_SizeChanged;
             flwLytPnlMessages.ControlAdded += flwLytPnlMessages_ControlAdded;
             flwLytPnlMessages.Paint += flwLytPnlMessages_Paint;
