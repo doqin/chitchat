@@ -15,6 +15,7 @@ namespace Client
         // keep these as fields so other methods can access them
         private ProfileControl? profileControl;
         private LoginControl? loginControl;
+        private ServerListControl? serverListControl;
 
         public ServerDiscoveryForm()
         {
@@ -25,14 +26,16 @@ namespace Client
             // create shared controls once and reuse
             profileControl = new ProfileControl();
             loginControl = new LoginControl();
+            serverListControl = new ServerListControl();
         }
 
         public void btnDiscoverServer_Click(object sender, EventArgs e)
         {
             serverList.Clear();
             Cursor.Current = Cursors.WaitCursor;
-            int udpPort = int.Parse(tbxPort.Text);
-            Discoverer discoverer = new Discoverer(udpPort);
+
+            int udpPort = int.Parse(profileControl.txtPort);
+            Discoverer discoverer = new Discoverer(9999);
             discoverer.ListenForServer(serverList, timeoutMs);
             Cursor.Current = Cursors.Default;
         }
@@ -67,7 +70,7 @@ namespace Client
             // Create ChatForm and embed into the right panel of the SplitContainer.
             // NOTE: your designer's SplitContainer name may be `splitContainer1` (used below)
             // change to `splitContainerMain` if you named it that in the designer.
-            ChatForm chatForm = new ChatForm(txtbxUsername.Text, selectedServer.Name, selectedServer.IPAddress, selectedServer.Port);
+            ChatForm chatForm = new ChatForm(profileControl1.txtUsername, selectedServer.Name, selectedServer.IPAddress, selectedServer.Port);
 
             // If ChatForm constructor signaled Abort (couldn't connect), do not host it
             if (chatForm.DialogResult == DialogResult.Abort)
@@ -153,7 +156,7 @@ namespace Client
                 catch { }
                 hostedChatForm = null;
             }
-            
+
             // Exit the application when this form closes
             Application.Exit();
         }
