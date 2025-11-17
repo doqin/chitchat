@@ -106,5 +106,10 @@ namespace Client
             };
             fade.Start();
         }
+
+        private void SplashScreen_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

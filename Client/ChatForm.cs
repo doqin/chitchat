@@ -63,7 +63,7 @@ namespace Client
                 try
                 {
                     System.Diagnostics.Debug.WriteLine("ChatForm | Listening for messages");
-                    
+
                     // Read wrapper using length-prefixed protocol
                     string json = Wrapper.ReadJson(stream);
                     if (json == null)
@@ -285,7 +285,8 @@ namespace Client
                     if (paths.Length > 0)
                     {
                         attachments = paths;
-                    } else
+                    }
+                    else
                     {
                         MessageBox.Show("All selected files were rejected by the server.", "File Upload Rejected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
@@ -317,5 +318,12 @@ namespace Client
                 selectedFiles = openFileDialog1.FileNames;
             }
         }
+
+        private void flowPanelMessages_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+       
     }
 }

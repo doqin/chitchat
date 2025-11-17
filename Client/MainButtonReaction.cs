@@ -10,19 +10,14 @@ using System.Windows.Forms;
 
 namespace Client
 {
-    public partial class SearchControl : UserControl
+    public partial class MainButtonReaction : UserControl
     {
-        public SearchControl()
+        public MainButtonReaction()
         {
             InitializeComponent();
         }
 
-        private void textBox1_TextChanged(object sender, EventArgs e)
-        {
-
-        }
-
-        private void roundControl1_Load(object sender, EventArgs e)
+        private void button1_Click(object sender, EventArgs e)
         {
 
         }

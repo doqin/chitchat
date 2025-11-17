@@ -35,7 +35,8 @@ namespace Client
             _chatMessage = chatMessage;
             _client = client;
             InitializeComponent();
-
+            // click ra ngoài ẩn
+            this.Click += (s, e) => { if (reactionControl1.Visible) HideReactionControl(); };
         }
 
         private void rndCtrlChatBubble_Load(object sender, EventArgs e)
@@ -98,5 +99,32 @@ namespace Client
                 }
             });
         }
+
+   
+        private void btnMainEmoji_Click(object sender, EventArgs e)
+        {
+            // Hiển thị ReactionControl
+            reactionControl1.Visible = true;
+
+            // Ẩn button đại diện
+            btnMainEmoji.Visible = false;
+        }
+
+        private void HideReactionControl()
+        {
+            reactionControl1.Visible = false;
+            btnMainEmoji.Visible = true; // hiện lại button đại diện
+        }
+
+        private void ReactionControl1_EmojiClicked(string emoji)
+        {
+            // Ví dụ xử lý emoji: hiện dưới message hoặc debug
+            MessageBox.Show($"Bạn vừa chọn emoji: {emoji}");
+
+            // Ẩn ReactionControl, hiện lại button đại diện
+            HideReactionControl();
+        }
+
+
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Client
 {
-    partial class CircularPictureBox
+    partial class MainButtonReaction
     {
         /// <summary> 
         /// Required designer variable.
@@ -28,17 +28,31 @@
         /// </summary>
         private void InitializeComponent()
         {
+            button1 = new Button();
             SuspendLayout();
             // 
-            // CircularPictureBox
+            // button1
+            // 
+            button1.Dock = DockStyle.Fill;
+            button1.Location = new Point(0, 0);
+            button1.Name = "button1";
+            button1.Size = new Size(150, 150);
+            button1.TabIndex = 0;
+            button1.Text = "👽";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += button1_Click;
+            // 
+            // MainButtonReaction
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            Name = "CircularPictureBox";
-            Load += CircularPictureBox_Load;
+            Controls.Add(button1);
+            Name = "MainButtonReaction";
             ResumeLayout(false);
         }
 
         #endregion
+
+        private Button button1;
     }
 }

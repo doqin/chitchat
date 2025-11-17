@@ -93,6 +93,7 @@
             flowPanelMessages.Size = new Size(914, 498);
             flowPanelMessages.TabIndex = 5;
             flowPanelMessages.WrapContents = false;
+            flowPanelMessages.Paint += flowPanelMessages_Paint;
             // 
             // groupBox1
             // 
