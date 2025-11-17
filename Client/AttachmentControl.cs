@@ -24,6 +24,7 @@ namespace Client
             InitializeComponent();
             _fileName = fileName;
             _client = client;
+            toolTip1.ToolTipTitle = _fileName;
             pendingFetches = pendingAttachmentFetches;
             lblFileName.Text = Path.GetFileName(fileName);
         }

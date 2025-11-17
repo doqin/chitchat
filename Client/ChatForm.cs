@@ -6,6 +6,7 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
@@ -23,7 +24,7 @@ namespace Client
         private readonly int serverPort;
         private TcpClient tcpClient;
 
-        private string[] selectedFiles = Array.Empty<string>();
+        private Panel dummy;
 
         private TaskCompletionSource<Attachment[]>? fileConfirmationTcs;
         private Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingAttachmentFetches = new();
@@ -63,7 +64,7 @@ namespace Client
                 try
                 {
                     System.Diagnostics.Debug.WriteLine("ChatForm | Listening for messages");
-                    
+
                     // Read wrapper using length-prefixed protocol
                     string json = Wrapper.ReadJson(stream);
                     if (json == null)
@@ -83,7 +84,15 @@ namespace Client
                                 ChatMessage chatMessage = JsonSerializer.Deserialize<ChatMessage>(wrapper.Payload);
                                 System.Diagnostics.Debug.WriteLine($"ChatForm | Received: {chatMessage?.Message} from {chatMessage.Username} at {chatMessage.TimeSent}");
                                 var item = new ChatMessageControl(pendingAttachmentFetches, client, chatMessage);
-                                flowPanelMessages.Invoke(() => flowPanelMessages.Controls.Add(item));
+                                var localEndPoint = tcpClient.Client.LocalEndPoint as IPEndPoint;
+                                if (chatMessage.Address == localEndPoint.Address.ToString() && chatMessage.Port == localEndPoint.Port.ToString())
+                                {
+                                    item.Anchor = AnchorStyles.Right;
+                                }
+                                flwLytPnlMessages.Invoke(() =>
+                                {
+                                    flwLytPnlMessages.Controls.Add(item);
+                                });
                                 break;
                             // If the message is a file confirmation, set result to the pending TaskCompletionSource
                             case Types.FileConfirmation:
@@ -190,12 +199,15 @@ namespace Client
         /// </summary>
         private void SendMessage(DateTime timeSent, string username, string message, Attachment[] attachments)
         {
+            var endPoint = tcpClient.Client.LocalEndPoint as IPEndPoint;
             ChatMessage chatMessage = new()
             {
                 TimeSent = timeSent,
                 Username = username,
                 Message = message,
-                Attachments = attachments
+                Attachments = attachments,
+                Address = endPoint.Address.ToString(),
+                Port = endPoint.Port.ToString()
             };
             string payload = JsonSerializer.Serialize(chatMessage);
             Wrapper wrapper = new Wrapper
@@ -279,21 +291,25 @@ namespace Client
             if (e.KeyCode == Keys.Enter)
             {
                 Attachment[] attachments = Array.Empty<Attachment>();
-                if (selectedFiles.Length > 0)
+                if (flwLytPnlAttachments.Controls.Count > 0)
                 {
-                    var paths = SendFiles(selectedFiles);
+                    string[] files = flwLytPnlAttachments.Controls.Cast<SelectedFileControl>().ToArray().Select(f => f.FilePath).ToArray();
+                    var paths = SendFiles(files);
                     if (paths.Length > 0)
                     {
                         attachments = paths;
-                    } else
+                    }
+                    else
                     {
                         MessageBox.Show("All selected files were rejected by the server.", "File Upload Rejected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
-                    lblSelectedFiles.Text = "(none)";
-                    selectedFiles = Array.Empty<string>();
+                    flwLytPnlAttachments.Invoke(() =>
+                    {
+                        flwLytPnlAttachments.Controls.Clear();
+                    });
                 }
-                if (!string.IsNullOrWhiteSpace(txtbxMessage.Text))
+                if (!string.IsNullOrWhiteSpace(txtbxMessage.Text) || attachments.Length != 0)
                 {
                     SendMessage(DateTime.Now, username, txtbxMessage.Text.Trim(), attachments);
                     txtbxMessage.Clear();
@@ -303,19 +319,59 @@ namespace Client
             }
         }
 
-        private void ChatForm_Load(object sender, EventArgs e)
-        {
-
-        }
-
         private void btnPickFiles_Click(object sender, EventArgs e)
         {
             var result = openFileDialog1.ShowDialog();
             if (result == DialogResult.OK)
             {
-                lblSelectedFiles.Text = string.Join(", ", openFileDialog1.FileNames);
-                selectedFiles = openFileDialog1.FileNames;
+                foreach (var file in openFileDialog1.FileNames)
+                {
+                    flwLytPnlAttachments.Invoke(() =>
+                    {
+                        var control = new SelectedFileControl(file);
+                        flwLytPnlAttachments.Controls.Add(control);
+                    });
+                }
             }
+        }
+
+        // csharp
+        private void flwLytPnlMessages_SizeChanged(object sender, EventArgs e)
+        {
+            if (dummy == null) return;
+            dummy.Width = flwLytPnlMessages.ClientSize.Width - SystemInformation.VerticalScrollBarWidth;
+        }
+
+        private void flwLytPnlMessages_ControlAdded(object sender, ControlEventArgs e)
+        {
+            flwLytPnlMessages.ScrollControlIntoView(e.Control);
+        }
+
+        private void flwLytPnlMessages_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void ChatForm_Load(object sender, EventArgs e)
+        {
+            flwLytPnlMessages.VerticalScroll.Visible = true;
+            dummy = new Panel
+            {
+                Width = flwLytPnlMessages.Width - SystemInformation.VerticalScrollBarWidth,
+                Height = 1
+            };
+            flwLytPnlMessages.Invoke(() =>
+            {
+                flwLytPnlMessages.Controls.Add(dummy);
+            });
+        }
+
+        private int previousAttachmentPanelHeight = 0;
+
+        private void flwLytPnlAttachments_Resize(object sender, EventArgs e)
+        {
+            flwLytPnlMessages.Height += previousAttachmentPanelHeight - flwLytPnlAttachments.Height;
+            previousAttachmentPanelHeight = flwLytPnlAttachments.Height;
         }
     }
 }

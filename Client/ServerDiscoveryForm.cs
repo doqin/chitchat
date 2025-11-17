@@ -160,5 +160,10 @@ namespace Client
             // Exit the application when this form closes
             Application.Exit();
         }
+
+        private void label3_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

@@ -35,8 +35,6 @@ namespace Client
             _chatMessage = chatMessage;
             _client = client;
             InitializeComponent();
-            lblUsername.Text = _chatMessage.Username;
-
         }
 
         private void rndCtrlChatBubble_Load(object sender, EventArgs e)
