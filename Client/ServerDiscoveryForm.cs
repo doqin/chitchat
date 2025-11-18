@@ -70,7 +70,7 @@ namespace Client
             // Create ChatForm and embed into the right panel of the SplitContainer.
             // NOTE: your designer's SplitContainer name may be `splitContainer1` (used below)
             // change to `splitContainerMain` if you named it that in the designer.
-            ChatForm chatForm = new ChatForm(profileControl1.txtUsername, selectedServer.Name, selectedServer.IPAddress, selectedServer.Port);
+            ChatForm chatForm = new ChatForm(profileControl1.txtUsername, selectedServer.Name, selectedServer.IPAddress, selectedServer.Port, profileControl1.profileImagePath);
 
             // If ChatForm constructor signaled Abort (couldn't connect), do not host it
             if (chatForm.DialogResult == DialogResult.Abort)

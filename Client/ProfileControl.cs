@@ -14,6 +14,7 @@ namespace Client
     {
         public string txtPort = "9999";
         public string txtUsername = "";
+        public string profileImagePath = "";
         public ProfileControl()
         {
             InitializeComponent();
@@ -40,7 +41,11 @@ namespace Client
                 {
                     txtUsername = loginForm.Username;
                     txtPort = Convert.ToString(loginForm.ServerPort);
-                    pictureBox1.Image = loginForm.circularPictureBox1.Image;
+                    if (loginForm.file != null)
+                    {
+                        pictureBox1.Image = Image.FromFile(loginForm.file);
+                        profileImagePath = loginForm.file;
+                    }
 
                     lblUser.Text = txtUsername;
                     lblUser.Visible = true;
