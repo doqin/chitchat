@@ -32,9 +32,11 @@
             // 
             // RoundControl
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
-            AutoScaleMode = AutoScaleMode.Font;
+            AutoScaleDimensions = new SizeF(96F, 96F);
+            AutoScaleMode = AutoScaleMode.Dpi;
+            Margin = new Padding(3, 2, 3, 2);
             Name = "RoundControl";
+            Size = new Size(131, 112);
             ResumeLayout(false);
         }
 

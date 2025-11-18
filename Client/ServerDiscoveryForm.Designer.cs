@@ -31,13 +31,13 @@
             btnDiscoverServer = new Button();
             splitContainerMain = new SplitContainer();
             panel1 = new Panel();
+            searchControl3 = new SearchControl();
             label3 = new Label();
             pnlProfileArea = new Panel();
             profileControl1 = new ProfileControl();
             lsbxServers = new ListBox();
             label2 = new Label();
             searchControl2 = new SearchControl();
-            searchControl3 = new SearchControl();
             ((System.ComponentModel.ISupportInitialize)splitContainerMain).BeginInit();
             splitContainerMain.Panel1.SuspendLayout();
             splitContainerMain.SuspendLayout();
@@ -48,9 +48,10 @@
             // btnDiscoverServer
             // 
             btnDiscoverServer.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            btnDiscoverServer.Location = new Point(27, 670);
+            btnDiscoverServer.Location = new Point(19, 402);
+            btnDiscoverServer.Margin = new Padding(2, 2, 2, 2);
             btnDiscoverServer.Name = "btnDiscoverServer";
-            btnDiscoverServer.Size = new Size(305, 43);
+            btnDiscoverServer.Size = new Size(214, 26);
             btnDiscoverServer.TabIndex = 2;
             btnDiscoverServer.Text = "Tìm kiếm máy chủ";
             btnDiscoverServer.UseVisualStyleBackColor = true;
@@ -78,9 +79,9 @@
             splitContainerMain.Panel2.AutoScroll = true;
             splitContainerMain.Panel2.BackColor = Color.FromArgb(26, 32, 62);
             splitContainerMain.Panel2.Paint += splitContainerMain_Panel2_Paint;
-            splitContainerMain.Size = new Size(1444, 869);
-            splitContainerMain.SplitterDistance = 359;
-            splitContainerMain.SplitterWidth = 3;
+            splitContainerMain.Size = new Size(1011, 521);
+            splitContainerMain.SplitterDistance = 251;
+            splitContainerMain.SplitterWidth = 2;
             splitContainerMain.TabIndex = 5;
             // 
             // panel1
@@ -89,18 +90,31 @@
             panel1.Controls.Add(label3);
             panel1.Dock = DockStyle.Top;
             panel1.Location = new Point(0, 0);
+            panel1.Margin = new Padding(2, 2, 2, 2);
             panel1.Name = "panel1";
-            panel1.Size = new Size(359, 144);
+            panel1.Size = new Size(251, 86);
             panel1.TabIndex = 7;
+            // 
+            // searchControl3
+            // 
+            searchControl3.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            searchControl3.BackColor = Color.Transparent;
+            searchControl3.Dock = DockStyle.Bottom;
+            searchControl3.Location = new Point(0, 38);
+            searchControl3.Margin = new Padding(1, 1, 1, 1);
+            searchControl3.Name = "searchControl3";
+            searchControl3.Size = new Size(251, 48);
+            searchControl3.TabIndex = 1;
             // 
             // label3
             // 
             label3.AutoSize = true;
             label3.Font = new Font("Segoe UI Symbol", 14F, FontStyle.Regular, GraphicsUnit.Point, 0);
             label3.ForeColor = SystemColors.ControlLight;
-            label3.Location = new Point(12, 16);
+            label3.Location = new Point(8, 10);
+            label3.Margin = new Padding(2, 0, 2, 0);
             label3.Name = "label3";
-            label3.Size = new Size(190, 38);
+            label3.Size = new Size(131, 25);
             label3.TabIndex = 0;
             label3.Text = "Conversations";
             // 
@@ -109,10 +123,10 @@
             pnlProfileArea.BackColor = Color.Transparent;
             pnlProfileArea.Controls.Add(profileControl1);
             pnlProfileArea.Dock = DockStyle.Bottom;
-            pnlProfileArea.Location = new Point(0, 750);
-            pnlProfileArea.Margin = new Padding(2);
+            pnlProfileArea.Location = new Point(0, 450);
+            pnlProfileArea.Margin = new Padding(1, 1, 1, 1);
             pnlProfileArea.Name = "pnlProfileArea";
-            pnlProfileArea.Size = new Size(359, 119);
+            pnlProfileArea.Size = new Size(251, 71);
             pnlProfileArea.TabIndex = 6;
             // 
             // profileControl1
@@ -121,19 +135,21 @@
             profileControl1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             profileControl1.BackColor = Color.Transparent;
             profileControl1.Dock = DockStyle.Bottom;
-            profileControl1.Location = new Point(0, -2);
+            profileControl1.Location = new Point(0, -1);
+            profileControl1.Margin = new Padding(1, 1, 1, 1);
             profileControl1.Name = "profileControl1";
-            profileControl1.Size = new Size(359, 121);
+            profileControl1.Size = new Size(251, 72);
             profileControl1.TabIndex = 0;
             // 
             // lsbxServers
             // 
             lsbxServers.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             lsbxServers.FormattingEnabled = true;
-            lsbxServers.ItemHeight = 25;
-            lsbxServers.Location = new Point(27, 188);
+            lsbxServers.ItemHeight = 15;
+            lsbxServers.Location = new Point(19, 113);
+            lsbxServers.Margin = new Padding(2, 2, 2, 2);
             lsbxServers.Name = "lsbxServers";
-            lsbxServers.Size = new Size(305, 454);
+            lsbxServers.Size = new Size(215, 274);
             lsbxServers.TabIndex = 6;
             lsbxServers.DoubleClick += lsbxServers_DoubleClick;
             // 
@@ -160,25 +176,13 @@
             searchControl2.Size = new Size(320, 87);
             searchControl2.TabIndex = 2;
             // 
-            // searchControl3
-            // 
-            searchControl3.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            searchControl3.BackColor = Color.Transparent;
-            searchControl3.Dock = DockStyle.Bottom;
-            searchControl3.Location = new Point(0, 64);
-            searchControl3.Margin = new Padding(2);
-            searchControl3.Name = "searchControl3";
-            searchControl3.Size = new Size(359, 80);
-            searchControl3.TabIndex = 1;
-            // 
             // ServerDiscoveryForm
             // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1444, 869);
+            AutoScaleDimensions = new SizeF(96F, 96F);
+            AutoScaleMode = AutoScaleMode.Dpi;
+            ClientSize = new Size(1011, 521);
             Controls.Add(splitContainerMain);
             ForeColor = Color.Black;
-            Margin = new Padding(4, 5, 4, 5);
             MaximizeBox = false;
             Name = "ServerDiscoveryForm";
             Text = "Tìm máy chủ";
