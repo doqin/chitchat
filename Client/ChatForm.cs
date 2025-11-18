@@ -22,6 +22,7 @@ namespace Client
         private readonly string serverName;
         private readonly string serverIp;
         private readonly int serverPort;
+        private readonly string profilePictureAttachment;
         private TcpClient tcpClient;
 
         private Panel dummy;
@@ -29,7 +30,7 @@ namespace Client
         private TaskCompletionSource<Attachment[]>? fileConfirmationTcs;
         private Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingAttachmentFetches = new();
 
-        public ChatForm(string username, string serverName, string ip, int port)
+        public ChatForm(string username, string serverName, string ip, int port, string profilePicturePath)
         {
             this.username = username;
             this.serverName = serverName;
@@ -48,9 +49,18 @@ namespace Client
                 this.DialogResult = DialogResult.Abort;
                 this.Close();
             }
+            if (profilePicturePath != null)
+            {
+                Attachment[] attachment = SendFiles([profilePicturePath]);
+                if (attachment.Length > 0)
+                {
+                    profilePictureAttachment = attachment[0].FileName;
+                }
+            }
             InitializeComponent();
             flwLytPnlMessages.MouseWheel += FlwLytPnlMessages_MouseWheel;
             Text = $"Chat - {username} @ {serverName} | {serverIp}:{serverPort}";
+            
         }
 
         /// <summary>
@@ -83,17 +93,25 @@ namespace Client
                             // If the message is a chat message, display it
                             case Types.ChatMessage:
                                 ChatMessage chatMessage = JsonSerializer.Deserialize<ChatMessage>(wrapper.Payload);
-                                System.Diagnostics.Debug.WriteLine($"ChatForm | Received: {chatMessage?.Message} from {chatMessage.Username} at {chatMessage.TimeSent}");
-                                var item = new ChatMessageControl(pendingAttachmentFetches, client, chatMessage);
+                                System.Diagnostics.Debug.WriteLine($"ChatForm | Received: {chatMessage?.Message} from {chatMessage?.Username} at {chatMessage?.TimeSent}");
+                                
                                 var localEndPoint = tcpClient.Client.LocalEndPoint as IPEndPoint;
-                                if (chatMessage.Address == localEndPoint.Address.ToString() && chatMessage.Port == localEndPoint.Port.ToString())
+                                if (chatMessage.Address == localEndPoint.Address.ToString())
                                 {
-                                    item.Anchor = AnchorStyles.Right;
+                                    var item = new ChatMessageControl(pendingAttachmentFetches, client, chatMessage, true);
+                                    flwLytPnlMessages.Invoke(() =>
+                                    {
+                                        flwLytPnlMessages.Controls.Add(item);
+                                    });
+                                } else
+                                {
+                                    var item = new ChatMessageControl(pendingAttachmentFetches, client, chatMessage, false);
+                                    flwLytPnlMessages.Invoke(() =>
+                                    {
+                                        flwLytPnlMessages.Controls.Add(item);
+                                    });
                                 }
-                                flwLytPnlMessages.Invoke(() =>
-                                {
-                                    flwLytPnlMessages.Controls.Add(item);
-                                });
+                                
                                 break;
                             // If the message is a file confirmation, set result to the pending TaskCompletionSource
                             case Types.FileConfirmation:
@@ -141,15 +159,20 @@ namespace Client
                 flwLytPnlMessages.SuspendLayout();
                 foreach (var chatMessage in sendMessage?.Messages ?? [])
                 {
-                    System.Diagnostics.Debug.WriteLine($"ChatForm | Received: {chatMessage?.Message} from {chatMessage.Username} at {chatMessage.TimeSent}");
-                    var item = new ChatMessageControl(pendingAttachmentFetches, client, chatMessage);
+                    System.Diagnostics.Debug.WriteLine($"ChatForm | Received: {chatMessage?.Message} from {chatMessage?.Username} at {chatMessage?.TimeSent}");
                     var localEndPoint = tcpClient.Client.LocalEndPoint as IPEndPoint;
                     if (chatMessage.Address == localEndPoint.Address.ToString())
                     {
-                        item.Anchor = AnchorStyles.Right;
+                        var item = new ChatMessageControl(pendingAttachmentFetches, client, chatMessage, true);
+                        flwLytPnlMessages.Controls.Add(item);
+                        flwLytPnlMessages.Controls.SetChildIndex(item, 0);
                     }
-                    flwLytPnlMessages.Controls.Add(item);
-                    flwLytPnlMessages.Controls.SetChildIndex(item, 0);
+                    else
+                    {
+                        var item = new ChatMessageControl(pendingAttachmentFetches, client, chatMessage, false);
+                        flwLytPnlMessages.Controls.Add(item);
+                        flwLytPnlMessages.Controls.SetChildIndex(item, 0);
+                    }
                 }
                 flwLytPnlMessages.ResumeLayout(true);
                 if (dummy != null)
@@ -247,8 +270,9 @@ namespace Client
                 Username = username,
                 Message = message,
                 Attachments = attachments,
-                Address = endPoint.Address.ToString(),
-                Port = endPoint.Port.ToString()
+                Address = endPoint?.Address.ToString(),
+                ProfileImagePath = profilePictureAttachment,
+                Port = endPoint?.Port.ToString()
             };
             string payload = JsonSerializer.Serialize(chatMessage);
             Wrapper wrapper = new Wrapper

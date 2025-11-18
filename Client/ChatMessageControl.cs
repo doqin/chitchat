@@ -19,6 +19,7 @@ namespace Client
         private readonly ChatMessage _chatMessage;
         private TcpClient _client;
         private Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingFetches;
+        private bool _isRight;
 
         public string Username
         {
@@ -40,12 +41,22 @@ namespace Client
             }
         }
 
-        public ChatMessageControl(Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingAttachmentFetches, TcpClient client, ChatMessage chatMessage)
+        public ChatMessageControl(Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingAttachmentFetches, TcpClient client, ChatMessage chatMessage, bool isRight)
         {
             pendingFetches = pendingAttachmentFetches;
+            _isRight = isRight;
             _chatMessage = chatMessage;
             _client = client;
             InitializeComponent();
+            if (_isRight)
+            {
+                this.Anchor = AnchorStyles.Right;
+                this.flowPanelLayout.FlowDirection = FlowDirection.RightToLeft;
+                this.rndCtrlChatBubble.Anchor = AnchorStyles.Right;
+                this.lblTimestamp.Anchor = AnchorStyles.Right;
+            }
+            var tooltip = new ToolTip();
+            tooltip.SetToolTip(crclrPicBoxProfilePicture, _chatMessage.Username);
         }
 
         /// <summary>
@@ -96,16 +107,81 @@ namespace Client
 
         private void rndCtrlChatBubble_Load(object sender, EventArgs e)
         {
-            lblUsername.Text = _chatMessage.Username;
+            //lblUsername.Text = _chatMessage.Username;
             lblMessage.Text = _chatMessage.Message;
             lblTimestamp.Text = DateTime.Now.Subtract(_chatMessage.TimeSent).Days > 0 ? _chatMessage.TimeSent.ToString("g") : _chatMessage.TimeSent.ToString("t");
             Task.Run(() =>
             {
+                if (_chatMessage.ProfileImagePath != null)
+                {
+                    if (System.IO.File.Exists(Path.Combine("Cached", _chatMessage.ProfileImagePath)))
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Loading cached profile image: {_chatMessage.ProfileImagePath}");
+                        Image profileImage = Image.FromFile(Path.Combine("Cached", _chatMessage.ProfileImagePath));
+                        // Update the UI on the main thread
+                        crclrPicBoxProfilePicture.Invoke((MethodInvoker)(() =>
+                        {
+                            crclrPicBoxProfilePicture.Image = profileImage;
+                        }));
+                    } else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Fetching profile image: {_chatMessage.ProfileImagePath}");
+                        try
+                        {
+                            var request = new Wrapper
+                            {
+                                Type = Types.GetFile,
+                                Payload = _chatMessage.ProfileImagePath
+                            };
+                            string requestJson = JsonSerializer.Serialize(request);
+                            // Fetch the profile image data from the server
+                            var filePath = Protocol.File.FetchFile(_client, pendingFetches, _chatMessage.ProfileImagePath, Path.Combine("Cached", _chatMessage.ProfileImagePath), requestJson);
+                            if (string.IsNullOrEmpty(filePath) || (!string.IsNullOrEmpty(filePath) && filePath == "Not found"))
+                            {
+                                throw new FileNotFoundException("Profile image not found on server.");
+                            }
+                            // Load image
+                            Image profileImage = Image.FromFile(filePath);
+                            // Update the UI on the main thread
+                            crclrPicBoxProfilePicture.Invoke((MethodInvoker)(() =>
+                            {
+                                crclrPicBoxProfilePicture.Image = profileImage;
+                            }));
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Error fetching profile image: {ex.Message}");
+                        }
+                    }
+                }
                 foreach (var attachment in _chatMessage.Attachments)
                 {
                     System.Diagnostics.Debug.WriteLine($"Checking attachment: {attachment.FileName}");
                     if (attachment.IsImage)
                     {
+                        if (System.IO.File.Exists(Path.Combine("Cached", attachment.FileName)))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Loading cached image attachment: {attachment.FileName}");
+                            Image image = Image.FromFile(Path.Combine("Cached", attachment.FileName));
+                            image = CorrectImageOrientation(image);
+                            PictureBox picBox = new PictureBox
+                            {
+                                Image = image,
+                                SizeMode = PictureBoxSizeMode.Zoom,
+                                Padding = new Padding(5),
+                                Size = new Size(400, image.Height * 400 / image.Width),
+                            };
+                            if (_isRight)
+                            {
+                                picBox.Anchor = AnchorStyles.Right;
+                            }
+                            // Update the UI on the main thread
+                            flowPanelAttachments.Invoke((MethodInvoker)(() =>
+                            {
+                                flowPanelAttachments.Controls.Add(picBox);
+                            }));
+                            continue;
+                        }
                         System.Diagnostics.Debug.WriteLine($"Fetching image attachment: {attachment.FileName}");
                         try
                         {
@@ -132,6 +208,10 @@ namespace Client
                                 Padding = new Padding(5),
                                 Size = new Size(400, image.Height * 400 / image.Width),
                             };
+                            if (_isRight)
+                            {
+                                picBox.Anchor = AnchorStyles.Right;
+                            }
                             // Update the UI on the main thread
                             flowPanelAttachments.Invoke((MethodInvoker)(() =>
                             {
@@ -147,6 +227,10 @@ namespace Client
                     {
                         System.Diagnostics.Debug.WriteLine($"Adding attachment control for: {attachment.FileName}");
                         AttachmentControl attachmentControl = new AttachmentControl(pendingFetches, _client, attachment.FileName);
+                        if (_isRight)
+                        {
+                            attachmentControl.Anchor = AnchorStyles.Right;
+                        }
                         // Update the UI on the main thread
                         flowPanelAttachments.Invoke((MethodInvoker)(() =>
                         {

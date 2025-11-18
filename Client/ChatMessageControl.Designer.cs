@@ -30,13 +30,14 @@
         {
             rndCtrlChatBubble = new RoundControl();
             lblMessage = new Label();
-            lblUsername = new Label();
             lblTimestamp = new Label();
             flowPanelLayout = new FlowLayoutPanel();
+            crclrPicBoxProfilePicture = new CircularPictureBox();
             flowPanelMessage = new FlowLayoutPanel();
             flowPanelAttachments = new FlowLayoutPanel();
             rndCtrlChatBubble.SuspendLayout();
             flowPanelLayout.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)crclrPicBoxProfilePicture).BeginInit();
             flowPanelMessage.SuspendLayout();
             SuspendLayout();
             // 
@@ -68,22 +69,13 @@
             lblMessage.TabIndex = 2;
             lblMessage.Text = "message";
             // 
-            // lblUsername
-            // 
-            lblUsername.AutoSize = true;
-            lblUsername.ForeColor = Color.White;
-            lblUsername.Location = new Point(3, 0);
-            lblUsername.Name = "lblUsername";
-            lblUsername.Size = new Size(59, 15);
-            lblUsername.TabIndex = 1;
-            lblUsername.Text = "username";
-            // 
             // lblTimestamp
             // 
+            lblTimestamp.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             lblTimestamp.AutoSize = true;
             lblTimestamp.Font = new Font("Segoe UI", 7F);
             lblTimestamp.ForeColor = Color.White;
-            lblTimestamp.Location = new Point(68, 0);
+            lblTimestamp.Location = new Point(3, 65);
             lblTimestamp.Name = "lblTimestamp";
             lblTimestamp.Padding = new Padding(0, 2, 0, 0);
             lblTimestamp.Size = new Size(51, 14);
@@ -94,14 +86,24 @@
             // 
             flowPanelLayout.AutoSize = true;
             flowPanelLayout.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            flowPanelLayout.Controls.Add(lblUsername);
-            flowPanelLayout.Controls.Add(lblTimestamp);
+            flowPanelLayout.Controls.Add(crclrPicBoxProfilePicture);
+            flowPanelLayout.Controls.Add(flowPanelMessage);
             flowPanelLayout.Location = new Point(0, 2);
-            flowPanelLayout.Margin = new Padding(3, 2, 3, 2);
+            flowPanelLayout.Margin = new Padding(0);
             flowPanelLayout.Name = "flowPanelLayout";
-            flowPanelLayout.Size = new Size(122, 15);
+            flowPanelLayout.Size = new Size(174, 85);
             flowPanelLayout.TabIndex = 4;
             flowPanelLayout.WrapContents = false;
+            // 
+            // crclrPicBoxProfilePicture
+            // 
+            crclrPicBoxProfilePicture.Location = new Point(3, 3);
+            crclrPicBoxProfilePicture.Name = "crclrPicBoxProfilePicture";
+            crclrPicBoxProfilePicture.OutlineColor = Color.White;
+            crclrPicBoxProfilePicture.OutlineWidth = 2F;
+            crclrPicBoxProfilePicture.Size = new Size(60, 60);
+            crclrPicBoxProfilePicture.TabIndex = 6;
+            crclrPicBoxProfilePicture.TabStop = false;
             // 
             // flowPanelMessage
             // 
@@ -109,10 +111,11 @@
             flowPanelMessage.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             flowPanelMessage.Controls.Add(rndCtrlChatBubble);
             flowPanelMessage.Controls.Add(flowPanelAttachments);
+            flowPanelMessage.Controls.Add(lblTimestamp);
             flowPanelMessage.FlowDirection = FlowDirection.TopDown;
-            flowPanelMessage.Location = new Point(0, 20);
+            flowPanelMessage.Location = new Point(69, 3);
             flowPanelMessage.Name = "flowPanelMessage";
-            flowPanelMessage.Size = new Size(102, 65);
+            flowPanelMessage.Size = new Size(102, 79);
             flowPanelMessage.TabIndex = 5;
             flowPanelMessage.WrapContents = false;
             // 
@@ -134,15 +137,15 @@
             AutoSize = true;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
             BackColor = Color.Transparent;
-            Controls.Add(flowPanelMessage);
             Controls.Add(flowPanelLayout);
             Margin = new Padding(3, 2, 3, 2);
             Name = "ChatMessageControl";
-            Size = new Size(125, 88);
+            Size = new Size(174, 87);
             rndCtrlChatBubble.ResumeLayout(false);
             rndCtrlChatBubble.PerformLayout();
             flowPanelLayout.ResumeLayout(false);
             flowPanelLayout.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)crclrPicBoxProfilePicture).EndInit();
             flowPanelMessage.ResumeLayout(false);
             flowPanelMessage.PerformLayout();
             ResumeLayout(false);
@@ -152,11 +155,11 @@
         #endregion
 
         private RoundControl rndCtrlChatBubble;
-        private Label lblUsername;
         private Label lblMessage;
         private Label lblTimestamp;
-        private FlowLayoutPanel flowPanelLayout;
         private FlowLayoutPanel flowPanelMessage;
         private FlowLayoutPanel flowPanelAttachments;
+        private CircularPictureBox crclrPicBoxProfilePicture;
+        public FlowLayoutPanel flowPanelLayout;
     }
 }

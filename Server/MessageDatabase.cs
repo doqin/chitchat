@@ -24,6 +24,7 @@ namespace Server
                     Message TEXT,
                     Address TEXT NOT NULL,
                     Port TEXT NOT NULL,
+                    ProfileImagePath TEXT,
                     TimeSent DATETIME DEFAULT CURRENT_TIMESTAMP
                 );
                 
@@ -52,8 +53,8 @@ namespace Server
                     using (var transaction = connection.BeginTransaction())
                     {
                         string insertMessageSql = @"
-                        INSERT INTO Messages (Username, Message, Address, Port, TimeSent)
-                        VALUES (@Username, @Message, @Address, @Port, @TimeSent);
+                        INSERT INTO Messages (Username, Message, Address, Port, ProfileImagePath, TimeSent)
+                        VALUES (@Username, @Message, @Address, @Port, @ProfileImagePath, @TimeSent);
                         SELECT last_insert_rowid();
                         ";
                         long messageId;
@@ -63,6 +64,7 @@ namespace Server
                             command.Parameters.AddWithValue("@Message", chatMessage.Message);
                             command.Parameters.AddWithValue("@Address", chatMessage.Address);
                             command.Parameters.AddWithValue("@Port", chatMessage.Port);
+                            command.Parameters.AddWithValue("@ProfileImagePath", chatMessage.ProfileImagePath);
                             command.Parameters.AddWithValue("@TimeSent", chatMessage.TimeSent);
                             messageId = (long)command.ExecuteScalar();
                         }
@@ -98,7 +100,7 @@ namespace Server
             {
                 connection.Open();
                 string selectMessagesSql = @"
-                SELECT Id, Username, Message, Address, Port, TimeSent
+                SELECT Id, Username, Message, Address, Port, ProfileImagePath, TimeSent
                 FROM Messages
                 WHERE TimeSent < @Before
                 ORDER BY TimeSent DESC
@@ -114,11 +116,12 @@ namespace Server
                         {
                             var chatMessage = new Protocol.ChatMessage
                             {
-                                TimeSent = reader.GetDateTime(5),
                                 Username = reader.GetString(1),
                                 Message = reader.GetString(2),
                                 Address = reader.GetString(3),
                                 Port = reader.GetString(4),
+                                ProfileImagePath = reader.IsDBNull(5) ? null : reader.GetString(5),
+                                TimeSent = reader.GetDateTime(6),
                                 Attachments = new Protocol.Attachment[] { }
                             };
                             long messageId = reader.GetInt64(0);
