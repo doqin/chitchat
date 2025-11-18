@@ -1,13 +1,13 @@
 ﻿namespace Client
 {
-    partial class Form1
+    partial class ServerListControl
     {
-        /// <summary>
+        /// <summary> 
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
+        /// <summary> 
         /// Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
@@ -20,43 +20,39 @@
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
+        #region Component Designer generated code
 
-        /// <summary>
-        /// Required method for Designer support - do not modify
+        /// <summary> 
+        /// Required method for Designer support - do not modify 
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent()
         {
-            label1 = new Label();
+            pnlServer = new Panel();
             SuspendLayout();
             // 
-            // label1
+            // pnlServer
             // 
-            label1.AutoSize = true;
-            label1.Font = new Font("Cambria", 18F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label1.ForeColor = SystemColors.ControlLight;
-            label1.Location = new Point(251, 55);
-            label1.Name = "label1";
-            label1.Size = new Size(195, 42);
-            label1.TabIndex = 0;
-            label1.Text = "Đăng nhập";
+            pnlServer.AutoScroll = true;
+            pnlServer.BackColor = Color.FromArgb(50, 57, 61);
+            pnlServer.Dock = DockStyle.Fill;
+            pnlServer.Location = new Point(0, 0);
+            pnlServer.Name = "pnlServer";
+            pnlServer.Size = new Size(351, 530);
+            pnlServer.TabIndex = 0;
             // 
-            // Form1
+            // ServerControl
             // 
             AutoScaleDimensions = new SizeF(10F, 25F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.FromArgb(64, 64, 64);
-            ClientSize = new Size(701, 439);
-            Controls.Add(label1);
-            Name = "Form1";
-            Text = "Form1";
+            Controls.Add(pnlServer);
+            Name = "ServerControl";
+            Size = new Size(351, 530);
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
 
-        private Label label1;
+        private Panel pnlServer;
     }
 }

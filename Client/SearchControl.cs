@@ -21,5 +21,10 @@ namespace Client
         {
 
         }
+        
+        private void roundControl1_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

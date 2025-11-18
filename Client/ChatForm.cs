@@ -388,8 +388,10 @@ namespace Client
             }
         }
 
+        // csharp
         private void flwLytPnlMessages_SizeChanged(object sender, EventArgs e)
         {
+            if (dummy == null) return;
             dummy.Width = flwLytPnlMessages.ClientSize.Width - SystemInformation.VerticalScrollBarWidth;
         }
 

@@ -41,7 +41,7 @@
             // 
             // roundControl1
             // 
-            roundControl1.backgroundColor = SystemColors.Control;
+            roundControl1.BackgroundColor = SystemColors.Control;
             roundControl1.BorderColor = SystemColors.Control;
             roundControl1.BorderWidth = 1F;
             roundControl1.Controls.Add(pictureBox1);

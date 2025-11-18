@@ -23,24 +23,24 @@ namespace Client
             set
             {
                 _radius = value;
-                Invalidate(); // Redraw the control when radius changes
+                Invalidate();
             }
         }
 
         private SolidBrush _backgroundBrush = new SolidBrush(SystemColors.Control);
         private Color _backgroundColor = SystemColors.Control;
-        public Color backgroundColor
+        public Color BackgroundColor
         {
             get { return _backgroundColor; }
             set
             {
                 _backgroundBrush = new SolidBrush(_backgroundColor = value);
-                Invalidate(); // Redraw the control when background color changes
+                Invalidate();
             }
         }
 
         private Color _borderColor = SystemColors.Control;
-        private Pen _borderPen = new Pen(ControlPaint.Light(SystemColors.Control, 0.0f));
+        private Pen _borderPen = new Pen(ControlPaint.Light(SystemColors.Control, 0.0f), 0);
         public Color BorderColor
         {
             get { return _borderColor; }
@@ -51,6 +51,7 @@ namespace Client
                 Invalidate();
             }
         }
+
         private float _borderWidth = 1.0f;
         public float BorderWidth
         {

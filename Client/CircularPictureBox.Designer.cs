@@ -1,4 +1,5 @@
-﻿namespace Client
+﻿
+namespace Client
 {
     partial class CircularPictureBox
     {
@@ -6,6 +7,8 @@
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
+
+        public AutoScaleMode AutoScaleMode { get; private set; }
 
         /// <summary> 
         /// Clean up any resources being used.
