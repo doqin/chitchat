@@ -46,7 +46,7 @@
             // 
             txtbxMessage.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             txtbxMessage.BackColor = SystemColors.Window;
-            txtbxMessage.Location = new Point(38, 3);
+            txtbxMessage.Location = new Point(38, 4);
             txtbxMessage.Name = "txtbxMessage";
             txtbxMessage.Size = new Size(736, 23);
             txtbxMessage.TabIndex = 1;
@@ -69,9 +69,9 @@
             pnlChatPanel.BorderStyle = BorderStyle.FixedSingle;
             pnlChatPanel.Controls.Add(btnPickFiles);
             pnlChatPanel.Controls.Add(txtbxMessage);
-            pnlChatPanel.Location = new Point(12, 434);
+            pnlChatPanel.Location = new Point(12, 435);
             pnlChatPanel.Name = "pnlChatPanel";
-            pnlChatPanel.Size = new Size(779, 33);
+            pnlChatPanel.Size = new Size(779, 32);
             pnlChatPanel.TabIndex = 7;
             // 
             // flwLytPnlMessages
