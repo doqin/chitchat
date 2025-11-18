@@ -36,18 +36,28 @@
             profileControl1 = new ProfileControl();
             label2 = new Label();
             searchControl2 = new SearchControl();
+            panel1 = new Panel();
+            panel2 = new Panel();
+            panel3 = new Panel();
+            panel4 = new Panel();
+            panel5 = new Panel();
             ((System.ComponentModel.ISupportInitialize)splitContainerMain).BeginInit();
             splitContainerMain.Panel1.SuspendLayout();
             splitContainerMain.SuspendLayout();
+            panel1.SuspendLayout();
+            panel2.SuspendLayout();
+            panel3.SuspendLayout();
+            panel4.SuspendLayout();
+            panel5.SuspendLayout();
             SuspendLayout();
             // 
             // btnDiscoverServer
             // 
-            btnDiscoverServer.Dock = DockStyle.Bottom;
-            btnDiscoverServer.Location = new Point(0, 413);
+            btnDiscoverServer.Dock = DockStyle.Fill;
+            btnDiscoverServer.Location = new Point(7, 7);
             btnDiscoverServer.Margin = new Padding(2);
             btnDiscoverServer.Name = "btnDiscoverServer";
-            btnDiscoverServer.Size = new Size(245, 29);
+            btnDiscoverServer.Size = new Size(265, 35);
             btnDiscoverServer.TabIndex = 2;
             btnDiscoverServer.Text = "Tìm kiếm máy chủ";
             btnDiscoverServer.UseVisualStyleBackColor = true;
@@ -66,31 +76,31 @@
             // 
             splitContainerMain.Panel1.AutoScroll = true;
             splitContainerMain.Panel1.BackColor = Color.FromArgb(28, 39, 74);
-            splitContainerMain.Panel1.Controls.Add(lsbxServers);
-            splitContainerMain.Panel1.Controls.Add(searchControl3);
-            splitContainerMain.Panel1.Controls.Add(label3);
-            splitContainerMain.Panel1.Controls.Add(btnDiscoverServer);
-            splitContainerMain.Panel1.Controls.Add(profileControl1);
+            splitContainerMain.Panel1.Controls.Add(panel5);
+            splitContainerMain.Panel1.Controls.Add(panel4);
+            splitContainerMain.Panel1.Controls.Add(panel3);
+            splitContainerMain.Panel1.Controls.Add(panel2);
+            splitContainerMain.Panel1.Controls.Add(panel1);
             // 
             // splitContainerMain.Panel2
             // 
             splitContainerMain.Panel2.AutoScroll = true;
             splitContainerMain.Panel2.BackColor = Color.FromArgb(26, 32, 62);
             splitContainerMain.Panel2.Paint += splitContainerMain_Panel2_Paint;
-            splitContainerMain.Size = new Size(795, 544);
-            splitContainerMain.SplitterDistance = 245;
+            splitContainerMain.Size = new Size(783, 548);
+            splitContainerMain.SplitterDistance = 279;
             splitContainerMain.SplitterWidth = 2;
             splitContainerMain.TabIndex = 5;
             // 
             // lsbxServers
             // 
-            lsbxServers.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            lsbxServers.Dock = DockStyle.Fill;
             lsbxServers.FormattingEnabled = true;
             lsbxServers.ItemHeight = 15;
-            lsbxServers.Location = new Point(11, 129);
+            lsbxServers.Location = new Point(0, 0);
             lsbxServers.Margin = new Padding(2);
             lsbxServers.Name = "lsbxServers";
-            lsbxServers.Size = new Size(222, 274);
+            lsbxServers.Size = new Size(255, 248);
             lsbxServers.TabIndex = 6;
             lsbxServers.DoubleClick += lsbxServers_DoubleClick;
             // 
@@ -98,35 +108,35 @@
             // 
             searchControl3.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             searchControl3.BackColor = Color.Transparent;
-            searchControl3.Dock = DockStyle.Top;
-            searchControl3.Location = new Point(0, 42);
+            searchControl3.Dock = DockStyle.Fill;
+            searchControl3.Location = new Point(0, 0);
             searchControl3.Margin = new Padding(1);
             searchControl3.Name = "searchControl3";
-            searchControl3.Size = new Size(245, 82);
+            searchControl3.Size = new Size(279, 84);
             searchControl3.TabIndex = 1;
             // 
             // label3
             // 
-            label3.AutoSize = true;
-            label3.Dock = DockStyle.Top;
+            label3.Dock = DockStyle.Fill;
             label3.Font = new Font("Segoe UI Symbol", 18F, FontStyle.Regular, GraphicsUnit.Point, 0);
             label3.ForeColor = SystemColors.ControlLight;
             label3.Location = new Point(0, 0);
             label3.Margin = new Padding(2, 0, 2, 0);
             label3.Name = "label3";
             label3.Padding = new Padding(5);
-            label3.Size = new Size(174, 42);
+            label3.Size = new Size(279, 57);
             label3.TabIndex = 0;
             label3.Text = "Conversations";
+            label3.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // profileControl1
             // 
             profileControl1.BackColor = Color.Transparent;
-            profileControl1.Dock = DockStyle.Bottom;
-            profileControl1.Location = new Point(0, 442);
+            profileControl1.Dock = DockStyle.Fill;
+            profileControl1.Location = new Point(0, 0);
             profileControl1.Margin = new Padding(1);
             profileControl1.Name = "profileControl1";
-            profileControl1.Size = new Size(245, 102);
+            profileControl1.Size = new Size(279, 100);
             profileControl1.TabIndex = 0;
             // 
             // label2
@@ -152,11 +162,57 @@
             searchControl2.Size = new Size(320, 87);
             searchControl2.TabIndex = 2;
             // 
+            // panel1
+            // 
+            panel1.Controls.Add(profileControl1);
+            panel1.Dock = DockStyle.Bottom;
+            panel1.Location = new Point(0, 448);
+            panel1.Name = "panel1";
+            panel1.Size = new Size(279, 100);
+            panel1.TabIndex = 0;
+            // 
+            // panel2
+            // 
+            panel2.Controls.Add(btnDiscoverServer);
+            panel2.Dock = DockStyle.Bottom;
+            panel2.Location = new Point(0, 399);
+            panel2.Name = "panel2";
+            panel2.Padding = new Padding(7);
+            panel2.Size = new Size(279, 49);
+            panel2.TabIndex = 1;
+            // 
+            // panel3
+            // 
+            panel3.Controls.Add(label3);
+            panel3.Dock = DockStyle.Top;
+            panel3.Location = new Point(0, 0);
+            panel3.Name = "panel3";
+            panel3.Size = new Size(279, 57);
+            panel3.TabIndex = 2;
+            // 
+            // panel4
+            // 
+            panel4.Controls.Add(searchControl3);
+            panel4.Dock = DockStyle.Top;
+            panel4.Location = new Point(0, 57);
+            panel4.Name = "panel4";
+            panel4.Size = new Size(279, 84);
+            panel4.TabIndex = 3;
+            // 
+            // panel5
+            // 
+            panel5.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            panel5.Controls.Add(lsbxServers);
+            panel5.Location = new Point(12, 145);
+            panel5.Name = "panel5";
+            panel5.Size = new Size(255, 248);
+            panel5.TabIndex = 4;
+            // 
             // ServerDiscoveryForm
             // 
             AutoScaleDimensions = new SizeF(96F, 96F);
             AutoScaleMode = AutoScaleMode.Dpi;
-            ClientSize = new Size(795, 544);
+            ClientSize = new Size(783, 548);
             Controls.Add(splitContainerMain);
             ForeColor = Color.Black;
             MaximizeBox = false;
@@ -166,9 +222,13 @@
             Load += ServerDiscoveryForm_Load;
             KeyDown += ServerDiscoveryForm_KeyDown;
             splitContainerMain.Panel1.ResumeLayout(false);
-            splitContainerMain.Panel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainerMain).EndInit();
             splitContainerMain.ResumeLayout(false);
+            panel1.ResumeLayout(false);
+            panel2.ResumeLayout(false);
+            panel3.ResumeLayout(false);
+            panel4.ResumeLayout(false);
+            panel5.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -188,5 +248,10 @@
         private TextBox tbxPort;
         private SearchControl searchControl3;
         private Label label3;
+        private Panel panel5;
+        private Panel panel4;
+        private Panel panel3;
+        private Panel panel2;
+        private Panel panel1;
     }
 }

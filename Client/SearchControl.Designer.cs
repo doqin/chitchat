@@ -43,8 +43,8 @@
             roundControl1.BackgroundColor = SystemColors.Control;
             roundControl1.BorderColor = SystemColors.Control;
             roundControl1.BorderWidth = 1F;
-            roundControl1.Controls.Add(pictureBox1);
             roundControl1.Controls.Add(textBox1);
+            roundControl1.Controls.Add(pictureBox1);
             roundControl1.Location = new Point(0, 1);
             roundControl1.Margin = new Padding(2, 1, 2, 1);
             roundControl1.Name = "roundControl1";
@@ -55,7 +55,7 @@
             // 
             // pictureBox1
             // 
-            pictureBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            pictureBox1.Anchor = AnchorStyles.Left;
             pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
             pictureBox1.Location = new Point(21, 21);
             pictureBox1.Margin = new Padding(2);
@@ -67,7 +67,7 @@
             // 
             // textBox1
             // 
-            textBox1.Anchor = AnchorStyles.Right;
+            textBox1.Anchor = AnchorStyles.Left | AnchorStyles.Right;
             textBox1.BackColor = SystemColors.Control;
             textBox1.BorderStyle = BorderStyle.None;
             textBox1.Location = new Point(63, 27);

@@ -52,13 +52,13 @@
             roundControl1.Margin = new Padding(3, 2, 3, 2);
             roundControl1.Name = "roundControl1";
             roundControl1.Radius = 10;
-            roundControl1.Size = new Size(248, 106);
+            roundControl1.Size = new Size(250, 106);
             roundControl1.TabIndex = 0;
             // 
             // btnLogin
             // 
             btnLogin.Anchor = AnchorStyles.Right;
-            btnLogin.Location = new Point(125, 41);
+            btnLogin.Location = new Point(127, 41);
             btnLogin.Name = "btnLogin";
             btnLogin.Size = new Size(79, 34);
             btnLogin.TabIndex = 1;
@@ -68,31 +68,31 @@
             // 
             // lblStatus
             // 
-            lblStatus.Anchor = AnchorStyles.Right;
+            lblStatus.Anchor = AnchorStyles.Left | AnchorStyles.Right;
             lblStatus.AutoEllipsis = true;
             lblStatus.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblStatus.ForeColor = SystemColors.Control;
-            lblStatus.Location = new Point(101, 63);
+            lblStatus.Location = new Point(109, 63);
             lblStatus.Name = "lblStatus";
-            lblStatus.Size = new Size(125, 16);
+            lblStatus.Size = new Size(119, 16);
             lblStatus.TabIndex = 3;
             lblStatus.Text = "status";
             // 
             // lblUser
             // 
-            lblUser.Anchor = AnchorStyles.Right;
+            lblUser.Anchor = AnchorStyles.Left | AnchorStyles.Right;
             lblUser.AutoEllipsis = true;
             lblUser.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblUser.ForeColor = SystemColors.Control;
-            lblUser.Location = new Point(101, 33);
+            lblUser.Location = new Point(109, 33);
             lblUser.Name = "lblUser";
-            lblUser.Size = new Size(125, 15);
+            lblUser.Size = new Size(119, 15);
             lblUser.TabIndex = 2;
             lblUser.Text = "username";
             // 
             // pictureBox1
             // 
-            pictureBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            pictureBox1.Anchor = AnchorStyles.Left;
             pictureBox1.Location = new Point(22, 19);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.OutlineColor = Color.White;

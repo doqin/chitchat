@@ -21,6 +21,12 @@ namespace Client
             InitializeComponent();
         }
 
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            this.Width = this.Height; // Keep it a circle
+        }
+
         protected override void OnPaint(PaintEventArgs pe)
         {
             base.OnPaint(pe);
