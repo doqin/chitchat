@@ -127,7 +127,6 @@ namespace Client
                 catch (Exception e)
                 {
                     System.Diagnostics.Debug.WriteLine($"ChatForm | Error with listening for messages: {e.Message}");
-                    break;
                 }
             }
             System.Diagnostics.Debug.WriteLine("ChatForm | Disconnected from server");
@@ -209,8 +208,15 @@ namespace Client
                             long totalRead = 0;
                             int bytesRead;
 
-                            while (totalRead < file.FileSize && (bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
+                            // Read exactly the declared file size to avoid consuming the next protocol frame
+                            while (totalRead < file.FileSize)
                             {
+                                int toRead = (int)Math.Min(buffer.Length, file.FileSize - totalRead);
+                                bytesRead = stream.Read(buffer, 0, toRead);
+                                if (bytesRead <= 0)
+                                {
+                                    break; // connection closed
+                                }
                                 fs.Write(buffer, 0, bytesRead);
                                 totalRead += bytesRead;
                             }

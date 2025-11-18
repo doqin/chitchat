@@ -44,6 +44,7 @@
             // 
             rndCtrlChatBubble.AutoSize = true;
             rndCtrlChatBubble.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            rndCtrlChatBubble.BackColor = Color.Transparent;
             rndCtrlChatBubble.BackgroundColor = SystemColors.MenuHighlight;
             rndCtrlChatBubble.BorderColor = SystemColors.Control;
             rndCtrlChatBubble.BorderWidth = 1F;
@@ -119,6 +120,7 @@
             // 
             flowPanelAttachments.AutoSize = true;
             flowPanelAttachments.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            flowPanelAttachments.FlowDirection = FlowDirection.TopDown;
             flowPanelAttachments.Location = new Point(3, 62);
             flowPanelAttachments.Name = "flowPanelAttachments";
             flowPanelAttachments.Size = new Size(0, 0);
