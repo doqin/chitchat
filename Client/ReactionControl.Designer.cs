@@ -77,8 +77,9 @@
             button3.Size = new Size(43, 29);
             button3.TabIndex = 2;
             button3.Text = "😍";
-            button3.UseVisualStyleBackColor = true;
+            button3.UseVisualStyleBackColor = false;
             button3.Visible = false;
+            button3.Click += btnEmoji_Click;
             // 
             // ReactionControl
             // 

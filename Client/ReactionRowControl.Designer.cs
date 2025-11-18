@@ -1,6 +1,6 @@
 ﻿namespace Client
 {
-    partial class MainButtonReaction
+    partial class ReactionRowControl
     {
         /// <summary> 
         /// Required designer variable.
@@ -28,30 +28,31 @@
         /// </summary>
         private void InitializeComponent()
         {
-            button1 = new Button();
+            flowLayoutPanelReactions = new FlowLayoutPanel();
             SuspendLayout();
             // 
-            // button1
+            // flowLayoutPanel1
             // 
-            button1.Dock = DockStyle.Fill;
-            button1.Location = new Point(0, 0);
-            button1.Name = "button1";
-            button1.Size = new Size(150, 150);
-            button1.TabIndex = 0;
-            button1.Text = "👽";
-            button1.UseVisualStyleBackColor = true;
+            flowLayoutPanelReactions.AutoSize = true;
+            flowLayoutPanelReactions.Dock = DockStyle.Fill;
+            flowLayoutPanelReactions.Location = new Point(0, 0);
+            flowLayoutPanelReactions.Name = "flowLayoutPanel1";
+            flowLayoutPanelReactions.Size = new Size(150, 150);
+            flowLayoutPanelReactions.TabIndex = 0;
+            flowLayoutPanelReactions.WrapContents = false;
             // 
-            // MainButtonReaction
+            // ReactionRowControl
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            Controls.Add(button1);
-            Name = "MainButtonReaction";
+            Controls.Add(flowLayoutPanelReactions);
+            Name = "ReactionRowControl";
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
 
-        private Button button1;
+        private FlowLayoutPanel flowLayoutPanelReactions;
     }
 }

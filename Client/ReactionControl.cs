@@ -6,19 +6,36 @@ namespace Client
 {
     public partial class ReactionControl : UserControl
     {
-        public event Action<string>? EmojiClicked; // nullable event
+        public event Action<string>? EmojiClicked;
 
         public ReactionControl()
         {
             InitializeComponent();
 
-            // Gán Click event cho tất cả button emoji trong FlowLayoutPanel
+            // Khi ReactionControl được hiển thị, bật flowLayoutPanel và tất cả button
+            this.VisibleChanged += ReactionControl_VisibleChanged;
+
+            // Gán Click event cho tất cả button emoji
             foreach (Control c in flowLayoutPanel1.Controls)
             {
                 if (c is Button btn)
-                {
                     btn.Click += btnEmoji_Click;
-                }
+            }
+        }
+
+        private void ReactionControl_VisibleChanged(object? sender, EventArgs e)
+        {
+            if (this.Visible)
+            {
+                flowLayoutPanel1.Visible = true;
+
+                foreach (Control c in flowLayoutPanel1.Controls)
+                    if (c is Button btn)
+                        btn.Visible = true;
+            }
+            else
+            {
+                flowLayoutPanel1.Visible = false;
             }
         }
 
@@ -28,10 +45,14 @@ namespace Client
             {
                 string emoji = btn.Text;
                 EmojiClicked?.Invoke(emoji);
-
-                // Highlight button đã chọn
                 btn.BackColor = Color.LightBlue;
             }
+        }
+
+        // Method gọi từ ChatMessageControl
+        public void ShowEmojis()
+        {
+            this.Visible = true;
         }
     }
 }

@@ -12,14 +12,18 @@ namespace Client
 {
     public partial class MainButtonReaction : UserControl
     {
+        public event EventHandler MainEmojiClick;
+
         public MainButtonReaction()
         {
             InitializeComponent();
+            button1.Click += InnerButton_Click; // innerButton là Button thật bên trong
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void InnerButton_Click(object sender, EventArgs e)
         {
-
+            // Forward sự kiện ra ngoài
+            MainEmojiClick?.Invoke(this, e);
         }
     }
 }

@@ -4,7 +4,7 @@
     {
         private MainButtonReaction btnMainEmoji;               // button đại diện
         private ReactionControl reactionControl1;  // control chứa các emoji
-
+        private ReactionRowControl _reactionRowControl; // control hiển thị reactions
         /// <summary> 
         /// Required designer variable.
         /// </summary>
@@ -32,13 +32,14 @@
         private void InitializeComponent()
         {
             rndCtrlChatBubble = new RoundControl();
+            btnMainEmoji = new MainButtonReaction();
             lblMessage = new Label();
             lblUsername = new Label();
+            reactionControl1 = new ReactionControl();
             lblTimestamp = new Label();
             flowPanelLayout = new FlowLayoutPanel();
             flowPanelAttachments = new FlowLayoutPanel();
-            btnMainEmoji = new MainButtonReaction();
-            reactionControl1 = new ReactionControl();
+            _reactionRowControl = new ReactionRowControl();
             rndCtrlChatBubble.SuspendLayout();
             flowPanelLayout.SuspendLayout();
             SuspendLayout();
@@ -53,12 +54,21 @@
             rndCtrlChatBubble.Controls.Add(btnMainEmoji);
             rndCtrlChatBubble.Controls.Add(lblMessage);
             rndCtrlChatBubble.Controls.Add(lblUsername);
+            rndCtrlChatBubble.Controls.Add(reactionControl1);
             rndCtrlChatBubble.Location = new Point(3, 3);
             rndCtrlChatBubble.Name = "rndCtrlChatBubble";
             rndCtrlChatBubble.Radius = 10;
-            rndCtrlChatBubble.Size = new Size(107, 87);
+            rndCtrlChatBubble.Size = new Size(225, 105);
             rndCtrlChatBubble.TabIndex = 0;
             rndCtrlChatBubble.Load += rndCtrlChatBubble_Load;
+            // 
+            // btnMainEmoji
+            // 
+            btnMainEmoji.Location = new Point(73, 63);
+            btnMainEmoji.Name = "btnMainEmoji";
+            btnMainEmoji.Size = new Size(40, 30);
+            btnMainEmoji.TabIndex = 5;
+            btnMainEmoji.MainEmojiClick += btnMainEmoji_Click;
             // 
             // lblMessage
             // 
@@ -82,11 +92,21 @@
             lblUsername.TabIndex = 1;
             lblUsername.Text = "username";
             // 
+            // reactionControl1
+            // 
+            reactionControl1.AutoSize = true;
+            reactionControl1.Location = new Point(73, 67);
+            reactionControl1.Name = "reactionControl1";
+            reactionControl1.Size = new Size(149, 35);
+            reactionControl1.TabIndex = 6;
+            reactionControl1.Visible = false;
+            reactionControl1.EmojiClicked += ReactionControl1_EmojiClicked;
+            // 
             // lblTimestamp
             // 
             lblTimestamp.AutoSize = true;
             lblTimestamp.ForeColor = Color.White;
-            lblTimestamp.Location = new Point(3, 99);
+            lblTimestamp.Location = new Point(3, 117);
             lblTimestamp.Name = "lblTimestamp";
             lblTimestamp.Padding = new Padding(5, 0, 0, 0);
             lblTimestamp.Size = new Size(85, 20);
@@ -100,11 +120,10 @@
             flowPanelLayout.Controls.Add(rndCtrlChatBubble);
             flowPanelLayout.Controls.Add(flowPanelAttachments);
             flowPanelLayout.Controls.Add(lblTimestamp);
-            flowPanelLayout.Controls.Add(reactionControl1);
             flowPanelLayout.FlowDirection = FlowDirection.TopDown;
             flowPanelLayout.Location = new Point(3, 3);
             flowPanelLayout.Name = "flowPanelLayout";
-            flowPanelLayout.Size = new Size(113, 125);
+            flowPanelLayout.Size = new Size(231, 137);
             flowPanelLayout.TabIndex = 4;
             flowPanelLayout.WrapContents = false;
             // 
@@ -112,28 +131,19 @@
             // 
             flowPanelAttachments.AutoSize = true;
             flowPanelAttachments.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            flowPanelAttachments.Location = new Point(3, 96);
+            flowPanelAttachments.Location = new Point(3, 114);
             flowPanelAttachments.Name = "flowPanelAttachments";
             flowPanelAttachments.Size = new Size(0, 0);
             flowPanelAttachments.TabIndex = 4;
             // 
-            // btnMainEmoji
+            // _reactionRowControl
             // 
-            btnMainEmoji.Location = new Point(64, 54);
-            btnMainEmoji.Name = "btnMainEmoji";
-            btnMainEmoji.Size = new Size(40, 30);
-            btnMainEmoji.TabIndex = 5;
-            btnMainEmoji.Click += btnMainEmoji_Click;
-            // 
-            // reactionControl1
-            // 
-            reactionControl1.AutoSize = true;
-            reactionControl1.Location = new Point(3, 122);
-            reactionControl1.Name = "reactionControl1";
-            reactionControl1.Size = new Size(0, 0);
-            reactionControl1.TabIndex = 6;
-            reactionControl1.Visible = false;
-            reactionControl1.EmojiClicked += ReactionControl1_EmojiClicked;
+            _reactionRowControl.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            _reactionRowControl.Location = new Point(0, 100);
+            _reactionRowControl.Name = "_reactionRowControl";
+            _reactionRowControl.Size = new Size(400, 30);
+            _reactionRowControl.TabIndex = 5;
+            _reactionRowControl.Visible = false;
             // 
             // ChatMessageControl
             // 
@@ -143,14 +153,16 @@
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
             BackColor = Color.Transparent;
             Controls.Add(flowPanelLayout);
+            Controls.Add(_reactionRowControl);
             Name = "ChatMessageControl";
-            Size = new Size(119, 131);
+            Size = new Size(237, 143);
             rndCtrlChatBubble.ResumeLayout(false);
             rndCtrlChatBubble.PerformLayout();
             flowPanelLayout.ResumeLayout(false);
             flowPanelLayout.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
+
         }
 
         #endregion

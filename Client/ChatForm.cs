@@ -22,6 +22,7 @@ namespace Client
         private readonly string serverIp;
         private readonly int serverPort;
         private TcpClient tcpClient;
+        private ReactionManager reactionManager;
 
         private string[] selectedFiles = Array.Empty<string>();
 
@@ -34,6 +35,7 @@ namespace Client
             this.serverName = serverName;
             serverIp = ip;
             serverPort = port;
+            reactionManager = new ReactionManager();
             tcpClient = new TcpClient();
             try
             {
@@ -48,6 +50,7 @@ namespace Client
                 this.Close();
             }
             InitializeComponent();
+
             Text = $"Chat - {username} @ {serverName} | {serverIp}:{serverPort}";
         }
 
@@ -81,10 +84,23 @@ namespace Client
                             // If the message is a chat message, display it
                             case Types.ChatMessage:
                                 ChatMessage chatMessage = JsonSerializer.Deserialize<ChatMessage>(wrapper.Payload);
-                                System.Diagnostics.Debug.WriteLine($"ChatForm | Received: {chatMessage?.Message} from {chatMessage.Username} at {chatMessage.TimeSent}");
-                                var item = new ChatMessageControl(pendingAttachmentFetches, client, chatMessage);
-                                flowPanelMessages.Invoke(() => flowPanelMessages.Controls.Add(item));
+                                if (chatMessage != null)
+                                {
+                                    string msgId = Guid.NewGuid().ToString(); // tạo ID tạm thời
+
+                                    var item = new ChatMessageControl(
+                                        msgId: msgId,                 // ID duy nhất cho message
+                                        manager: reactionManager,     // instance ReactionManager dùng chung
+                                        userId: username,             // user hiện tại
+                                        pendingAttachmentFetches: pendingAttachmentFetches,
+                                        client: tcpClient,
+                                        chatMessage: chatMessage
+                                    );
+
+                                    flowPanelMessages.Invoke(() => flowPanelMessages.Controls.Add(item));
+                                }
                                 break;
+
                             // If the message is a file confirmation, set result to the pending TaskCompletionSource
                             case Types.FileConfirmation:
                                 FileConfirmation confirmation = JsonSerializer.Deserialize<FileConfirmation>(wrapper.Payload);
