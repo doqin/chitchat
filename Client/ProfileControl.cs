@@ -12,16 +12,11 @@ namespace Client
 {
     public partial class ProfileControl : UserControl
     {
-        public string txtPort = "8080";
+        public string txtPort = "9999";
         public string txtUsername = "";
         public ProfileControl()
         {
             InitializeComponent();
-            // Bo tròn avatar của người dùng
-            System.Drawing.Drawing2D.GraphicsPath gp = new System.Drawing.Drawing2D.GraphicsPath();
-            gp.AddEllipse(0, 0, pictureBox1.Width - 3, pictureBox1.Height - 3);
-            Region rg = new Region(gp);
-            pictureBox1.Region = rg;
 
             lblUser.Visible = false;
             lblStatus.Visible = false;
@@ -45,11 +40,12 @@ namespace Client
                 {
                     txtUsername = loginForm.Username;
                     txtPort = Convert.ToString(loginForm.ServerPort);
+                    pictureBox1.Image = loginForm.circularPictureBox1.Image;
 
-                    lblUser.Text = $"Username: {txtUsername}";
+                    lblUser.Text = txtUsername;
                     lblUser.Visible = true;
 
-                    lblStatus.Text = $"Port: {txtPort}";
+                    lblStatus.Text = "Online";
                     lblStatus.Visible = true;
 
                     btnLogin.Visible = false;

@@ -100,20 +100,6 @@ namespace Client
 
             hostedChatForm = chatForm;
         }
-        private void ShowLoginControl()
-        {
-            if (loginControl == null) return;
-            pnlProfileArea.Controls.Clear();
-            pnlProfileArea.Controls.Add(loginControl);
-            loginControl.Dock = DockStyle.Fill;
-        }
-        private void ShowProfileControl()
-        {
-            if (profileControl == null) return;
-            pnlProfileArea.Controls.Clear();
-            pnlProfileArea.Controls.Add(profileControl);
-            profileControl.Dock = DockStyle.Fill;
-        }
 
         private void ServerDiscoveryForm_Load(object sender, EventArgs e)
         {

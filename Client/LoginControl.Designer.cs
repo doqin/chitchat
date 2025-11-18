@@ -35,7 +35,7 @@
             // 
             // roundControl1
             // 
-            roundControl1.backgroundColor = SystemColors.WindowFrame;
+            roundControl1.BackgroundColor = SystemColors.WindowFrame;
             roundControl1.BorderColor = SystemColors.Control;
             roundControl1.BorderWidth = 1F;
             roundControl1.Controls.Add(btnLogin);

@@ -35,5 +35,15 @@ namespace Client
                 btnSubmit.PerformClick();
             }
         }
+
+        private void circularPictureBox1_Click(object sender, EventArgs e)
+        {
+            var result = openFileDialog1.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                var file = openFileDialog1.FileName;
+                circularPictureBox1.Image = Image.FromFile(file);
+            }
+        }
     }
 }

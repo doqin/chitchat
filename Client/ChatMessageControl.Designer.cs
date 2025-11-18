@@ -44,7 +44,7 @@
             // 
             rndCtrlChatBubble.AutoSize = true;
             rndCtrlChatBubble.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            rndCtrlChatBubble.backgroundColor = SystemColors.MenuHighlight;
+            rndCtrlChatBubble.BackgroundColor = SystemColors.MenuHighlight;
             rndCtrlChatBubble.BorderColor = SystemColors.Control;
             rndCtrlChatBubble.BorderWidth = 1F;
             rndCtrlChatBubble.Controls.Add(lblMessage);

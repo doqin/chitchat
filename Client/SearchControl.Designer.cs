@@ -38,52 +38,56 @@
             // 
             // roundControl1
             // 
-            roundControl1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            roundControl1.backgroundColor = SystemColors.Control;
+            roundControl1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            roundControl1.BackColor = Color.Transparent;
+            roundControl1.BackgroundColor = SystemColors.Control;
             roundControl1.BorderColor = SystemColors.Control;
             roundControl1.BorderWidth = 1F;
             roundControl1.Controls.Add(pictureBox1);
             roundControl1.Controls.Add(textBox1);
-            roundControl1.Location = new Point(0, 2);
-            roundControl1.Margin = new Padding(3, 2, 3, 2);
+            roundControl1.Location = new Point(0, 1);
+            roundControl1.Margin = new Padding(2, 1, 2, 1);
             roundControl1.Name = "roundControl1";
             roundControl1.Radius = 10;
-            roundControl1.Size = new Size(242, 79);
+            roundControl1.Size = new Size(242, 67);
             roundControl1.TabIndex = 0;
             roundControl1.Load += roundControl1_Load;
             // 
             // pictureBox1
             // 
+            pictureBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
-            pictureBox1.Location = new Point(19, 29);
+            pictureBox1.Location = new Point(21, 21);
+            pictureBox1.Margin = new Padding(2);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(35, 24);
+            pictureBox1.Size = new Size(33, 26);
             pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBox1.TabIndex = 1;
             pictureBox1.TabStop = false;
             // 
             // textBox1
             // 
-            textBox1.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            textBox1.Anchor = AnchorStyles.Right;
             textBox1.BackColor = SystemColors.Control;
             textBox1.BorderStyle = BorderStyle.None;
-            textBox1.Location = new Point(62, 28);
+            textBox1.Location = new Point(63, 27);
+            textBox1.Margin = new Padding(2);
             textBox1.Name = "textBox1";
             textBox1.PlaceholderText = "Search for conversations...";
-            textBox1.Size = new Size(159, 16);
+            textBox1.Size = new Size(154, 16);
             textBox1.TabIndex = 0;
             textBox1.TextChanged += textBox1_TextChanged;
             // 
             // SearchControl
             // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
             BackColor = Color.Transparent;
             Controls.Add(roundControl1);
-            Margin = new Padding(2);
+            Margin = new Padding(1);
             Name = "SearchControl";
-            Size = new Size(243, 83);
+            Size = new Size(244, 70);
             roundControl1.ResumeLayout(false);
             roundControl1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
