@@ -29,12 +29,15 @@
         private void InitializeComponent()
         {
             roundControl1 = new RoundControl();
-            btnLogin = new Button();
+            pnlInfo = new Panel();
             lblStatus = new Label();
             lblUser = new Label();
-            pictureBox1 = new CircularPictureBox();
+            pnlProfilePicture = new Panel();
+            crclrPctrBxProfile = new CircularPictureBox();
             roundControl1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            pnlInfo.SuspendLayout();
+            pnlProfilePicture.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)crclrPctrBxProfile).BeginInit();
             SuspendLayout();
             // 
             // roundControl1
@@ -44,63 +47,73 @@
             roundControl1.BackgroundColor = Color.FromArgb(34, 44, 84);
             roundControl1.BorderColor = SystemColors.Control;
             roundControl1.BorderWidth = 1F;
-            roundControl1.Controls.Add(btnLogin);
-            roundControl1.Controls.Add(lblStatus);
-            roundControl1.Controls.Add(lblUser);
-            roundControl1.Controls.Add(pictureBox1);
+            roundControl1.Controls.Add(pnlInfo);
+            roundControl1.Controls.Add(pnlProfilePicture);
             roundControl1.Location = new Point(3, 2);
             roundControl1.Margin = new Padding(3, 2, 3, 2);
             roundControl1.Name = "roundControl1";
             roundControl1.Radius = 10;
-            roundControl1.Size = new Size(250, 106);
+            roundControl1.Size = new Size(250, 61);
             roundControl1.TabIndex = 0;
             // 
-            // btnLogin
+            // pnlInfo
             // 
-            btnLogin.Anchor = AnchorStyles.Right;
-            btnLogin.Location = new Point(127, 41);
-            btnLogin.Name = "btnLogin";
-            btnLogin.Size = new Size(79, 34);
-            btnLogin.TabIndex = 1;
-            btnLogin.Text = "Đăng nhập";
-            btnLogin.UseVisualStyleBackColor = true;
-            btnLogin.Click += btnLogin_Click;
+            pnlInfo.Controls.Add(lblStatus);
+            pnlInfo.Controls.Add(lblUser);
+            pnlInfo.Dock = DockStyle.Fill;
+            pnlInfo.Location = new Point(59, 0);
+            pnlInfo.Name = "pnlInfo";
+            pnlInfo.Size = new Size(191, 61);
+            pnlInfo.TabIndex = 5;
             // 
             // lblStatus
             // 
             lblStatus.Anchor = AnchorStyles.Left | AnchorStyles.Right;
             lblStatus.AutoEllipsis = true;
             lblStatus.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            lblStatus.ForeColor = SystemColors.Control;
-            lblStatus.Location = new Point(109, 63);
+            lblStatus.ForeColor = SystemColors.ControlDark;
+            lblStatus.Location = new Point(1, 31);
             lblStatus.Name = "lblStatus";
-            lblStatus.Size = new Size(119, 16);
+            lblStatus.Size = new Size(100, 17);
             lblStatus.TabIndex = 3;
             lblStatus.Text = "status";
+            lblStatus.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // lblUser
             // 
             lblUser.Anchor = AnchorStyles.Left | AnchorStyles.Right;
             lblUser.AutoEllipsis = true;
-            lblUser.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblUser.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblUser.ForeColor = SystemColors.Control;
-            lblUser.Location = new Point(109, 33);
+            lblUser.Location = new Point(0, 8);
             lblUser.Name = "lblUser";
-            lblUser.Size = new Size(119, 15);
+            lblUser.Size = new Size(172, 31);
             lblUser.TabIndex = 2;
             lblUser.Text = "username";
+            lblUser.TextAlign = ContentAlignment.MiddleLeft;
             // 
-            // pictureBox1
+            // pnlProfilePicture
             // 
-            pictureBox1.Anchor = AnchorStyles.Left;
-            pictureBox1.Location = new Point(22, 19);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.OutlineColor = Color.White;
-            pictureBox1.OutlineWidth = 2F;
-            pictureBox1.Size = new Size(71, 71);
-            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
-            pictureBox1.TabIndex = 0;
-            pictureBox1.TabStop = false;
+            pnlProfilePicture.Controls.Add(crclrPctrBxProfile);
+            pnlProfilePicture.Dock = DockStyle.Left;
+            pnlProfilePicture.Location = new Point(0, 0);
+            pnlProfilePicture.Name = "pnlProfilePicture";
+            pnlProfilePicture.Padding = new Padding(10);
+            pnlProfilePicture.Size = new Size(59, 61);
+            pnlProfilePicture.TabIndex = 4;
+            // 
+            // crclrPctrBxProfile
+            // 
+            crclrPctrBxProfile.Dock = DockStyle.Fill;
+            crclrPctrBxProfile.DrawOutline = true;
+            crclrPctrBxProfile.Location = new Point(10, 10);
+            crclrPctrBxProfile.Name = "crclrPctrBxProfile";
+            crclrPctrBxProfile.OutlineColor = Color.White;
+            crclrPctrBxProfile.OutlineWidth = 2F;
+            crclrPctrBxProfile.Size = new Size(41, 41);
+            crclrPctrBxProfile.SizeMode = PictureBoxSizeMode.Zoom;
+            crclrPctrBxProfile.TabIndex = 0;
+            crclrPctrBxProfile.TabStop = false;
             // 
             // ProfileControl
             // 
@@ -110,18 +123,23 @@
             Controls.Add(roundControl1);
             Margin = new Padding(2);
             Name = "ProfileControl";
-            Size = new Size(256, 110);
+            Size = new Size(256, 65);
+            Load += ProfileControl_Load;
+            Resize += ProfileControl_Resize;
             roundControl1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            pnlInfo.ResumeLayout(false);
+            pnlProfilePicture.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)crclrPctrBxProfile).EndInit();
             ResumeLayout(false);
         }
 
         #endregion
 
         private RoundControl roundControl1;
-        private CircularPictureBox pictureBox1;
-        private Button btnLogin;
+        private CircularPictureBox crclrPctrBxProfile;
         private Label lblStatus;
         public Label lblUser;
+        private Panel pnlInfo;
+        private Panel pnlProfilePicture;
     }
 }

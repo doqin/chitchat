@@ -52,17 +52,18 @@
             rndCtrlChatBubble.Controls.Add(lblMessage);
             rndCtrlChatBubble.Location = new Point(3, 2);
             rndCtrlChatBubble.Margin = new Padding(3, 2, 3, 2);
+            rndCtrlChatBubble.MaximumSize = new Size(500, 0);
             rndCtrlChatBubble.Name = "rndCtrlChatBubble";
             rndCtrlChatBubble.Radius = 10;
             rndCtrlChatBubble.Size = new Size(96, 55);
             rndCtrlChatBubble.TabIndex = 0;
-            rndCtrlChatBubble.Load += rndCtrlChatBubble_Load;
             // 
             // lblMessage
             // 
             lblMessage.AutoSize = true;
             lblMessage.ForeColor = Color.White;
             lblMessage.Location = new Point(0, 0);
+            lblMessage.MaximumSize = new Size(500, 0);
             lblMessage.Name = "lblMessage";
             lblMessage.Padding = new Padding(20);
             lblMessage.Size = new Size(93, 55);
@@ -141,6 +142,7 @@
             Margin = new Padding(3, 2, 3, 2);
             Name = "ChatMessageControl";
             Size = new Size(174, 87);
+            Load += ChatMessageControl_Load;
             rndCtrlChatBubble.ResumeLayout(false);
             rndCtrlChatBubble.PerformLayout();
             flowPanelLayout.ResumeLayout(false);

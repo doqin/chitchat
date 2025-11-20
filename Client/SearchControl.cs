@@ -12,6 +12,21 @@ namespace Client
 {
     public partial class SearchControl : UserControl
     {
+
+        public Color BackgroundColor { get => roundControl1.BackgroundColor; set { roundControl1.BackgroundColor = value; textBox1.BackColor = value; } }
+        public Color BorderColor { get => roundControl1.BorderColor; set => roundControl1.BorderColor = value; }
+        public Padding IconPadding
+        {
+            get { return pnlIcon.Padding; }
+            set { pnlIcon.Padding = value; }
+        }
+
+        public int IconWidth
+        {
+            get { return pnlIcon.Width; }
+            set { pnlIcon.Width = value; }
+        }
+
         public SearchControl()
         {
             InitializeComponent();

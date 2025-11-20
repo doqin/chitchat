@@ -15,52 +15,94 @@ namespace Client
         public string txtPort = "9999";
         public string txtUsername = "";
         public string profileImagePath = "";
+
+        public Color BackgroundColor { get => roundControl1.BackgroundColor; set => roundControl1.BackgroundColor = value; }
+        public Color BorderColor { get => roundControl1.BorderColor; set => roundControl1.BorderColor = value; }
+
+        public Padding ProfilePicturePadding { get { return pnlProfilePicture.Padding; } set { pnlProfilePicture.Padding = value; } }
         public ProfileControl()
         {
             InitializeComponent();
-
-            lblUser.Visible = false;
-            lblStatus.Visible = false;
         }
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
-            try
+
+        }
+
+        private void ProfileControl_Load(object sender, EventArgs e)
+        {
+            lblUser.Visible = false;
+            lblStatus.Visible = false;
+            crclrPctrBxProfile.Visible = false;
+            if (DesignMode) return;
+            if (string.IsNullOrEmpty(ConfigManager.Current?.Username))
             {
-                using var loginForm = new LoginForm();
-
-                // debug helpers: ensure visible and centered
-                loginForm.StartPosition = FormStartPosition.CenterParent;
-                // temporarily make it top-most while debugging to ensure it's not hidden
-                // loginForm.TopMost = true;
-
-                // Try without owner first — sometimes passing a UserControl as owner causes issues
-                var result = loginForm.ShowDialog(); // ← try ShowDialog(this) after verifying it appears
-
-                if (result == DialogResult.OK)
+                try
                 {
-                    txtUsername = loginForm.Username;
-                    txtPort = Convert.ToString(loginForm.ServerPort);
-                    if (loginForm.file != null)
+                    using var loginForm = new LoginForm();
+
+                    // debug helpers: ensure visible and centered
+                    loginForm.StartPosition = FormStartPosition.CenterParent;
+                    // temporarily make it top-most while debugging to ensure it's not hidden
+                    // loginForm.TopMost = true;
+
+                    // Try without owner first — sometimes passing a UserControl as owner causes issues
+                    var result = loginForm.ShowDialog(); // ← try ShowDialog(this) after verifying it appears
+
+                    if (result == DialogResult.OK)
                     {
-                        pictureBox1.Image = Image.FromFile(loginForm.file);
-                        profileImagePath = loginForm.file;
+                        txtUsername = loginForm.Username;
+                        txtPort = Convert.ToString(loginForm.ServerPort);
+                        ConfigManager.Current!.Username = txtUsername;
+                        ConfigManager.Current!.UdpPort = txtPort;
+                        if (loginForm.file != null)
+                        {
+                            crclrPctrBxProfile.Image = Image.FromFile(loginForm.file);
+                            profileImagePath = loginForm.file;
+                            crclrPctrBxProfile.DrawOutline = false;
+                            crclrPctrBxProfile.Visible = true;
+                            ConfigManager.Current!.ProfileImagePath = profileImagePath;
+                        }
+                        ConfigManager.Save();
+
+                        lblUser.Text = txtUsername;
+                        lblUser.Visible = true;
+
+                        lblStatus.Text = "Online";
+                        lblStatus.Visible = true;
                     }
-
-                    lblUser.Text = txtUsername;
-                    lblUser.Visible = true;
-
-                    lblStatus.Text = "Online";
-                    lblStatus.Visible = true;
-
-                    btnLogin.Visible = false;
+                }
+                catch (Exception ex)
+                {
+                    // show any exception so you see design/runtime errors
+                    MessageBox.Show(this, $"Failed to open LoginForm: {ex.Message}\n{ex.StackTrace}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
-            catch (Exception ex)
+            else
             {
-                // show any exception so you see design/runtime errors
-                MessageBox.Show(this, $"Failed to open LoginForm: {ex.Message}\n{ex.StackTrace}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                txtUsername = ConfigManager.Current!.Username;
+                txtPort = ConfigManager.Current!.UdpPort;
+                profileImagePath = ConfigManager.Current!.ProfileImagePath;
+                lblUser.Text = txtUsername;
+                lblUser.Visible = true;
+                lblStatus.Text = "Online";
+                lblStatus.Visible = true;
+                if (!string.IsNullOrEmpty(profileImagePath))
+                {
+                    if (System.IO.File.Exists(Path.Combine("Cached", profileImagePath)))
+                    {
+                        crclrPctrBxProfile.Image = Image.FromFile(Path.Combine("Cached", profileImagePath));
+                        crclrPctrBxProfile.DrawOutline = false;
+                        crclrPctrBxProfile.Visible = true;
+                    }
+                }
             }
+        }
+
+        private void ProfileControl_Resize(object sender, EventArgs e)
+        {
+            pnlProfilePicture.Width = crclrPctrBxProfile.Width + pnlProfilePicture.Padding.Left + pnlProfilePicture.Padding.Right;
         }
     }
 
