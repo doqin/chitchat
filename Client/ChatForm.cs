@@ -10,6 +10,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Net.Mime.MediaTypeNames;
@@ -29,6 +30,7 @@ namespace Client
 
         private TaskCompletionSource<Attachment[]>? fileConfirmationTcs;
         private Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingAttachmentFetches = new();
+        private readonly SemaphoreSlim streamReadLock = new(1, 1);
 
         public ChatForm(string username, string serverName, string ip, int port, string profilePicturePath)
         {
@@ -41,7 +43,7 @@ namespace Client
             {
                 tcpClient.Connect(serverIp, serverPort);
                 System.Diagnostics.Debug.WriteLine($"Connected to {serverName}");
-                Task.Run(() => HandleResponse(tcpClient));
+                Task.Run(async () => await HandleResponse(tcpClient));
             }
             catch (Exception)
             {
@@ -49,31 +51,40 @@ namespace Client
                 this.DialogResult = DialogResult.Abort;
                 this.Close();
             }
-            if (profilePicturePath != null)
+            if (!string.IsNullOrEmpty(profilePicturePath) && Path.IsPathRooted(profilePicturePath)) // If is absolute path, it's a local file that needs to be uploaded
             {
+                System.Diagnostics.Debug.WriteLine("Uploading profile picture to server...");
                 Attachment[] attachment = SendFiles([profilePicturePath]);
                 if (attachment.Length > 0)
                 {
                     profilePictureAttachment = attachment[0].FileName;
+                    System.Diagnostics.Debug.WriteLine("Profile picture uploaded: " + profilePictureAttachment);
+                    ConfigManager.Current!.ProfileImagePath = profilePictureAttachment;
+                    ConfigManager.Save();
                 }
+            } else
+            {
+                System.Diagnostics.Debug.WriteLine("Using existing profile picture: " + profilePicturePath);
+                profilePictureAttachment = profilePicturePath;
             }
-            InitializeComponent();
+                InitializeComponent();
             flwLytPnlMessages.MouseWheel += FlwLytPnlMessages_MouseWheel;
             Text = $"Chat - {username} @ {serverName} | {serverIp}:{serverPort}";
-            
+
         }
 
         /// <summary>
         /// Hàm chính để xử lý phản hồi từ máy chủ
         /// </summary>
         /// <param name="client">Client TCP</param>
-        private void HandleResponse(TcpClient client)
+        private async Task HandleResponse(TcpClient client)
         {
             NetworkStream stream = client.GetStream();
             while (true)
             {
                 try
                 {
+                    await streamReadLock.WaitAsync();
                     System.Diagnostics.Debug.WriteLine("ChatForm | Listening for messages");
 
                     // Read wrapper using length-prefixed protocol
@@ -81,6 +92,7 @@ namespace Client
                     if (json == null)
                     {
                         System.Diagnostics.Debug.WriteLine("ChatForm | Server disconnected");
+                        streamReadLock.Release();
                         break; // Server disconnected
                     }
 
@@ -94,7 +106,7 @@ namespace Client
                             case Types.ChatMessage:
                                 ChatMessage chatMessage = JsonSerializer.Deserialize<ChatMessage>(wrapper.Payload);
                                 System.Diagnostics.Debug.WriteLine($"ChatForm | Received: {chatMessage?.Message} from {chatMessage?.Username} at {chatMessage?.TimeSent}");
-                                
+
                                 var localEndPoint = tcpClient.Client.LocalEndPoint as IPEndPoint;
                                 if (chatMessage.Address == localEndPoint.Address.ToString())
                                 {
@@ -103,7 +115,8 @@ namespace Client
                                     {
                                         flwLytPnlMessages.Controls.Add(item);
                                     });
-                                } else
+                                }
+                                else
                                 {
                                     var item = new ChatMessageControl(pendingAttachmentFetches, client, chatMessage, false);
                                     flwLytPnlMessages.Invoke(() =>
@@ -111,7 +124,7 @@ namespace Client
                                         flwLytPnlMessages.Controls.Add(item);
                                     });
                                 }
-                                
+
                                 break;
                             // If the message is a file confirmation, set result to the pending TaskCompletionSource
                             case Types.FileConfirmation:
@@ -130,8 +143,9 @@ namespace Client
                                 break;
                             // If the message is a file sending prompt, prepare to receive it
                             case Types.SendFiles:
-                                HandleFiles(client, stream, wrapper);
-                                break;
+                                streamReadLock.Release(); // Release before calling HandleFiles
+                                HandleFiles(stream, wrapper);
+                                continue; // Continue to next loop to acquire lock
                             case Types.SendMessages:
                                 HandleSendMessages(client, wrapper);
                                 break;
@@ -140,10 +154,14 @@ namespace Client
                                 break;
                         }
                     }
-
+                    streamReadLock.Release();
                 }
                 catch (Exception e)
                 {
+                    if (streamReadLock.CurrentCount == 0)
+                    {
+                        streamReadLock.Release();
+                    }
                     System.Diagnostics.Debug.WriteLine($"ChatForm | Error with listening for messages: {e.Message}");
                 }
             }
@@ -186,75 +204,83 @@ namespace Client
         /// <summary>
         /// Sử lý việc nhận file từ máy chủ
         /// </summary>
-        /// <param name="client">Client TCP</param>
         /// <param name="stream">Network Stream</param>
         /// <param name="wrapper">Đối tượng cần giải nén</param>
-        private void HandleFiles(TcpClient client, NetworkStream stream, Wrapper wrapper)
+        private void HandleFiles(NetworkStream stream, Wrapper wrapper)
         {
-            Files files = JsonSerializer.Deserialize<Files>(wrapper.Payload);
-            if (files?.FileCount == 0)
-            {
-                var fileName = files.FileList[0].FileName;
-                if (pendingAttachmentFetches.TryGetValue(fileName, out var tuple))
-                {
-                    var tcs = tuple.Item1;
-                    tcs.SetResult("Not found");
-                    pendingAttachmentFetches.Remove(fileName);
-                }
-                return;
-            }
-            System.Diagnostics.Debug.WriteLine($"ChatForm | Client is ready to receive {files?.FileCount} file(s).");
+            streamReadLock.Wait();
             try
             {
-                foreach (var file in files.FileList)
+                Files files = JsonSerializer.Deserialize<Files>(wrapper.Payload);
+                if (files?.FileCount == 0)
                 {
-                    // Notify any pending fetches for this attachment
-                    if (pendingAttachmentFetches.TryGetValue(file.FileName, out var tuple))
+                    var fileName = files.FileList[0].FileName;
+                    if (pendingAttachmentFetches.TryGetValue(fileName, out var tuple))
                     {
-                        System.Diagnostics.Debug.WriteLine($"ChatForm | Preparing to receive file: {file.FileName} ({file.FileSize} bytes)");
-                        var path = tuple.Item2;
-                        // Ensure the directory exists
-                        string directoryPath = Path.GetDirectoryName(path);
-                        if (!string.IsNullOrEmpty(directoryPath))
-                        {
-                            Directory.CreateDirectory(directoryPath);
-                        }
-                        else
-                        {
-                            System.Diagnostics.Debug.WriteLine("ChatForm | Invalid file path: no directory specified.");
-                            return;
-                        }
-                        // Saving files
-                        using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write))
-                        {
-                            byte[] buffer = new byte[8192];
-                            long totalRead = 0;
-                            int bytesRead;
-
-                            // Read exactly the declared file size to avoid consuming the next protocol frame
-                            while (totalRead < file.FileSize)
-                            {
-                                int toRead = (int)Math.Min(buffer.Length, file.FileSize - totalRead);
-                                bytesRead = stream.Read(buffer, 0, toRead);
-                                if (bytesRead <= 0)
-                                {
-                                    break; // connection closed
-                                }
-                                fs.Write(buffer, 0, bytesRead);
-                                totalRead += bytesRead;
-                            }
-                        }
-                        System.Diagnostics.Debug.WriteLine($"ChatForm | File received: {file.FileName}");
                         var tcs = tuple.Item1;
-                        tcs.SetResult(path);
-                        pendingAttachmentFetches.Remove(file.FileName);
+                        tcs.SetResult("Not found");
+                        pendingAttachmentFetches.Remove(fileName);
+                    }
+                    return;
+                }
+                System.Diagnostics.Debug.WriteLine($"ChatForm | Client is ready to receive {files?.FileCount} file(s).");
+                try
+                {
+                    foreach (var file in files.FileList)
+                    {
+                        // Notify any pending fetches for this attachment
+                        if (pendingAttachmentFetches.TryGetValue(file.FileName, out var tuple))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"ChatForm | Preparing to receive file: {file.FileName} ({file.FileSize} bytes)");
+                            var path = tuple.Item2;
+                            // Ensure the directory exists
+                            string directoryPath = Path.GetDirectoryName(path);
+                            if (!string.IsNullOrEmpty(directoryPath))
+                            {
+                                Directory.CreateDirectory(directoryPath);
+                            }
+                            else
+                            {
+                                System.Diagnostics.Debug.WriteLine("ChatForm | Invalid file path: no directory specified.");
+                                return;
+                            }
+                            // Saving files
+                            using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write))
+                            {
+                                byte[] buffer = new byte[8192];
+                                long totalRead = 0;
+                                int bytesRead;
+
+                                // Read exactly the declared file size to avoid consuming the next protocol frame
+                                while (totalRead < file.FileSize)
+                                {
+                                    int toRead = (int)Math.Min(buffer.Length, file.FileSize - totalRead);
+                                    bytesRead = stream.Read(buffer, 0, toRead);
+                                    System.Diagnostics.Debug.WriteLine($"ChatForm | Read {bytesRead} bytes");
+                                    if (bytesRead <= 0)
+                                    {
+                                        break; // connection closed
+                                    }
+                                    fs.Write(buffer, 0, bytesRead);
+                                    totalRead += bytesRead;
+                                }
+                            }
+                            System.Diagnostics.Debug.WriteLine($"ChatForm | File received: {file.FileName}");
+                            var tcs = tuple.Item1;
+                            tcs.SetResult(path);
+                            pendingAttachmentFetches.Remove(file.FileName);
+                        }
                     }
                 }
+                catch (Exception e)
+                {
+                    System.Diagnostics.Debug.WriteLine($"ChatForm | Error receiving files: {e.Message}");
+                    return;
+                }
             }
-            catch (Exception e)
+            finally
             {
-                System.Diagnostics.Debug.WriteLine($"ChatForm | Error receiving files: {e.Message}");
-                return;
+                streamReadLock.Release();
             }
         }
 

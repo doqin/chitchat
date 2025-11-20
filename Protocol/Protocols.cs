@@ -175,6 +175,24 @@ namespace Protocol
 
         public long FileSize { get; set; }
 
+        public static async Task<string> FetchFileAsync(TcpClient client, Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingFetches, string filePath, string savePath, string json)
+        {
+            try
+            {
+                NetworkStream ns = client.GetStream();
+                Wrapper.SendJson(ns, json);
+                var tcs = new TaskCompletionSource<string>();
+                var tuple = new Tuple<TaskCompletionSource<string>, string>(tcs, savePath);
+                pendingFetches[filePath] = tuple;
+                return await tcs.Task;
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error fetching file: {e.Message}");
+                return "Not found";
+            }
+        }
+
         public static string FetchFile(TcpClient client, Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingFetches, string filePath, string savePath, string json)
         {
             try

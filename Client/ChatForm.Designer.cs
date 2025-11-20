@@ -44,20 +44,24 @@
             // 
             // txtbxMessage
             // 
-            txtbxMessage.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             txtbxMessage.BackColor = SystemColors.Window;
-            txtbxMessage.Location = new Point(38, 4);
+            txtbxMessage.BorderStyle = BorderStyle.None;
+            txtbxMessage.Dock = DockStyle.Fill;
+            txtbxMessage.Location = new Point(53, 0);
+            txtbxMessage.Multiline = true;
             txtbxMessage.Name = "txtbxMessage";
-            txtbxMessage.Size = new Size(736, 23);
+            txtbxMessage.ScrollBars = ScrollBars.Vertical;
+            txtbxMessage.Size = new Size(748, 49);
             txtbxMessage.TabIndex = 1;
             txtbxMessage.KeyDown += txtbxMessage_KeyDown;
             // 
             // btnPickFiles
             // 
-            btnPickFiles.Location = new Point(3, 4);
+            btnPickFiles.Dock = DockStyle.Left;
+            btnPickFiles.Location = new Point(0, 0);
             btnPickFiles.Margin = new Padding(3, 2, 3, 2);
             btnPickFiles.Name = "btnPickFiles";
-            btnPickFiles.Size = new Size(29, 22);
+            btnPickFiles.Size = new Size(53, 49);
             btnPickFiles.TabIndex = 2;
             btnPickFiles.Text = "+";
             btnPickFiles.UseVisualStyleBackColor = true;
@@ -65,24 +69,24 @@
             // 
             // pnlChatPanel
             // 
-            pnlChatPanel.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             pnlChatPanel.BorderStyle = BorderStyle.FixedSingle;
-            pnlChatPanel.Controls.Add(btnPickFiles);
             pnlChatPanel.Controls.Add(txtbxMessage);
-            pnlChatPanel.Location = new Point(12, 435);
+            pnlChatPanel.Controls.Add(btnPickFiles);
+            pnlChatPanel.Dock = DockStyle.Bottom;
+            pnlChatPanel.Location = new Point(0, 428);
             pnlChatPanel.Name = "pnlChatPanel";
-            pnlChatPanel.Size = new Size(779, 32);
+            pnlChatPanel.Size = new Size(803, 51);
             pnlChatPanel.TabIndex = 7;
             // 
             // flwLytPnlMessages
             // 
-            flwLytPnlMessages.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             flwLytPnlMessages.AutoScroll = true;
             flwLytPnlMessages.BorderStyle = BorderStyle.FixedSingle;
+            flwLytPnlMessages.Dock = DockStyle.Fill;
             flwLytPnlMessages.FlowDirection = FlowDirection.TopDown;
-            flwLytPnlMessages.Location = new Point(12, 12);
+            flwLytPnlMessages.Location = new Point(0, 0);
             flwLytPnlMessages.Name = "flwLytPnlMessages";
-            flwLytPnlMessages.Size = new Size(779, 410);
+            flwLytPnlMessages.Size = new Size(803, 428);
             flwLytPnlMessages.TabIndex = 8;
             flwLytPnlMessages.WrapContents = false;
             flwLytPnlMessages.Scroll += flwLytPnlMessages_Scroll;

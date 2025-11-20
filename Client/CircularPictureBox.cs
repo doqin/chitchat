@@ -16,6 +16,8 @@ namespace Client
         public Color OutlineColor { get; set; } = Color.White;
         public float OutlineWidth { get; set; } = 2.0f;
 
+        public bool DrawOutline { get; set; } = false;
+
         public CircularPictureBox()
         {
             InitializeComponent();
@@ -61,10 +63,13 @@ namespace Client
                 }
                 // Draws outline
 
-                using (var pen = new Pen(OutlineColor, OutlineWidth))
+                if (DrawOutline)
                 {
-                    pe.Graphics.SmoothingMode = SmoothingMode.HighQuality;
-                    pe.Graphics.DrawEllipse(pen, 1, 1, this.Width - 3, this.Height - 3);
+                    using (var pen = new Pen(OutlineColor, OutlineWidth))
+                    {
+                        pe.Graphics.SmoothingMode = SmoothingMode.HighQuality;
+                        pe.Graphics.DrawEllipse(pen, 1, 1, this.Width - 3, this.Height - 3);
+                    }
                 }
             }
         }

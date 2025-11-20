@@ -184,6 +184,7 @@ namespace Server
                     int bytesRead;
                     while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) > 0)
                     {
+                        Console.WriteLine($"Sending {bytesRead} bytes of file data...");
                         stream.Write(buffer, 0, bytesRead);
                     }
                 }
