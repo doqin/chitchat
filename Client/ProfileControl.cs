@@ -25,6 +25,10 @@ namespace Client
             InitializeComponent();
         }
 
+        public Color ActiveBorderColor { get; set; } = Color.FromKnownColor(KnownColor.ActiveBorder);
+
+        private Color borderColor;
+
         private void btnLogin_Click(object sender, EventArgs e)
         {
 
@@ -35,6 +39,7 @@ namespace Client
             lblUser.Visible = false;
             lblStatus.Visible = false;
             crclrPctrBxProfile.Visible = false;
+            borderColor = roundControl1.BorderColor;
             if (DesignMode) return;
             if (string.IsNullOrEmpty(ConfigManager.Current?.Username))
             {
@@ -103,6 +108,16 @@ namespace Client
         private void ProfileControl_Resize(object sender, EventArgs e)
         {
             pnlProfilePicture.Width = crclrPctrBxProfile.Width + pnlProfilePicture.Padding.Left + pnlProfilePicture.Padding.Right;
+        }
+
+        private void ProfileControl_MouseEnter(object sender, EventArgs e)
+        {
+            roundControl1.BorderColor = ActiveBorderColor;
+        }
+
+        private void ProfileControl_MouseLeave(object sender, EventArgs e)
+        {
+            roundControl1.BorderColor = borderColor;
         }
     }
 

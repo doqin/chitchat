@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading;
@@ -21,8 +22,8 @@ namespace Client
     {
         private readonly string username;
         private readonly string serverName;
-        private readonly string serverIp;
-        private readonly int serverPort;
+        public string serverIp { get; }
+        public int serverPort { get; }
         private readonly string profilePictureAttachment;
         private TcpClient tcpClient;
 
@@ -62,14 +63,16 @@ namespace Client
                     ConfigManager.Current!.ProfileImagePath = profilePictureAttachment;
                     ConfigManager.Save();
                 }
-            } else
+            }
+            else
             {
                 System.Diagnostics.Debug.WriteLine("Using existing profile picture: " + profilePicturePath);
                 profilePictureAttachment = profilePicturePath;
             }
-                InitializeComponent();
-            flwLytPnlMessages.MouseWheel += FlwLytPnlMessages_MouseWheel;
+            InitializeComponent();
+            smthFlwLytPnlMessages.MouseWheel += FlwLytPnlMessages_MouseWheel;
             Text = $"Chat - {username} @ {serverName} | {serverIp}:{serverPort}";
+            this.DoubleBuffered = true;
 
         }
 
@@ -111,17 +114,17 @@ namespace Client
                                 if (chatMessage.Address == localEndPoint.Address.ToString())
                                 {
                                     var item = new ChatMessageControl(pendingAttachmentFetches, client, chatMessage, true);
-                                    flwLytPnlMessages.Invoke(() =>
+                                    smthFlwLytPnlMessages.Invoke(() =>
                                     {
-                                        flwLytPnlMessages.Controls.Add(item);
+                                        smthFlwLytPnlMessages.Controls.Add(item);
                                     });
                                 }
                                 else
                                 {
                                     var item = new ChatMessageControl(pendingAttachmentFetches, client, chatMessage, false);
-                                    flwLytPnlMessages.Invoke(() =>
+                                    smthFlwLytPnlMessages.Invoke(() =>
                                     {
-                                        flwLytPnlMessages.Controls.Add(item);
+                                        smthFlwLytPnlMessages.Controls.Add(item);
                                     });
                                 }
 
@@ -172,9 +175,9 @@ namespace Client
         {
             SendMessages sendMessage = JsonSerializer.Deserialize<SendMessages>(wrapper.Payload);
             System.Diagnostics.Debug.WriteLine($"ChatForm | Received {sendMessage?.Messages.Length} messages from server.");
-            flwLytPnlMessages.Invoke(() =>
+            smthFlwLytPnlMessages.Invoke(() =>
             {
-                flwLytPnlMessages.SuspendLayout();
+                smthFlwLytPnlMessages.SuspendLayout();
                 foreach (var chatMessage in sendMessage?.Messages ?? [])
                 {
                     System.Diagnostics.Debug.WriteLine($"ChatForm | Received: {chatMessage?.Message} from {chatMessage?.Username} at {chatMessage?.TimeSent}");
@@ -182,21 +185,21 @@ namespace Client
                     if (chatMessage.Address == localEndPoint.Address.ToString())
                     {
                         var item = new ChatMessageControl(pendingAttachmentFetches, client, chatMessage, true);
-                        flwLytPnlMessages.Controls.Add(item);
-                        flwLytPnlMessages.Controls.SetChildIndex(item, 0);
+                        smthFlwLytPnlMessages.Controls.Add(item);
+                        smthFlwLytPnlMessages.Controls.SetChildIndex(item, 0);
                     }
                     else
                     {
                         var item = new ChatMessageControl(pendingAttachmentFetches, client, chatMessage, false);
-                        flwLytPnlMessages.Controls.Add(item);
-                        flwLytPnlMessages.Controls.SetChildIndex(item, 0);
+                        smthFlwLytPnlMessages.Controls.Add(item);
+                        smthFlwLytPnlMessages.Controls.SetChildIndex(item, 0);
                     }
                 }
-                flwLytPnlMessages.ResumeLayout(true);
+                smthFlwLytPnlMessages.ResumeLayout(true);
                 if (dummy != null)
                 {
-                    flwLytPnlMessages.ScrollControlIntoView(dummy);
-                    flwLytPnlMessages.Controls.SetChildIndex(dummy, 0);
+                    smthFlwLytPnlMessages.ScrollControlIntoView(dummy);
+                    smthFlwLytPnlMessages.Controls.SetChildIndex(dummy, 0);
                 }
             });
         }
@@ -428,7 +431,59 @@ namespace Client
             }
         }
 
-        private void btnPickFiles_Click(object sender, EventArgs e)
+        // csharp
+        private void smthFlwLytPnlMessages_SizeChanged(object sender, EventArgs e)
+        {
+            if (dummy == null) return;
+            dummy.Width = smthFlwLytPnlMessages.ClientSize.Width - SystemInformation.VerticalScrollBarWidth;
+        }
+
+        private void smthFlwLytPnlMessages_ControlAdded(object sender, ControlEventArgs e)
+        {
+            smthFlwLytPnlMessages.ScrollControlIntoView(e.Control);
+        }
+
+
+        private void ChatForm_Load(object sender, EventArgs e)
+        {
+            smthFlwLytPnlMessages.VerticalScroll.Visible = true;
+            dummy = new Panel
+            {
+                Width = smthFlwLytPnlMessages.Width - SystemInformation.VerticalScrollBarWidth,
+                Height = 1
+            };
+            smthFlwLytPnlMessages.Invoke(() =>
+            {
+                smthFlwLytPnlMessages.Controls.Add(dummy);
+            });
+            GetMessages(50, DateTime.Now);
+        }
+
+        private void FlwLytPnlMessages_MouseWheel(object? sender, MouseEventArgs e)
+        {
+            if (smthFlwLytPnlMessages.VerticalScroll.Value == smthFlwLytPnlMessages.VerticalScroll.Minimum)
+            {
+                // Load more messages when scrolled to top
+                if (smthFlwLytPnlMessages.Controls.Count > 1)
+                {
+                    var firstMessageControl = smthFlwLytPnlMessages.Controls
+                        .OfType<ChatMessageControl>()
+                        .OrderBy(c => c.TimeSent)
+                        .FirstOrDefault();
+                    if (firstMessageControl != null)
+                    {
+                        GetMessages(50, firstMessageControl.TimeSent);
+                    }
+                }
+            }
+        }
+
+        private void txtbxMessage_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void roundButtonControl1_Click(object sender, EventArgs e)
         {
             var result = openFileDialog1.ShowDialog();
             if (result == DialogResult.OK)
@@ -444,82 +499,8 @@ namespace Client
             }
         }
 
-        // csharp
-        private void flwLytPnlMessages_SizeChanged(object sender, EventArgs e)
+        private void ChatForm_Paint(object sender, PaintEventArgs e)
         {
-            if (dummy == null) return;
-            dummy.Width = flwLytPnlMessages.ClientSize.Width - SystemInformation.VerticalScrollBarWidth;
-        }
-
-        private void flwLytPnlMessages_ControlAdded(object sender, ControlEventArgs e)
-        {
-            flwLytPnlMessages.ScrollControlIntoView(e.Control);
-        }
-
-        private void flwLytPnlMessages_Paint(object sender, PaintEventArgs e)
-        {
-
-        }
-
-        private void ChatForm_Load(object sender, EventArgs e)
-        {
-            flwLytPnlMessages.VerticalScroll.Visible = true;
-            dummy = new Panel
-            {
-                Width = flwLytPnlMessages.Width - SystemInformation.VerticalScrollBarWidth,
-                Height = 1
-            };
-            flwLytPnlMessages.Invoke(() =>
-            {
-                flwLytPnlMessages.Controls.Add(dummy);
-            });
-            GetMessages(50, DateTime.Now);
-        }
-
-        private int previousAttachmentPanelHeight = 0;
-
-        private void flwLytPnlAttachments_Resize(object sender, EventArgs e)
-        {
-            flwLytPnlMessages.Height += previousAttachmentPanelHeight - flwLytPnlAttachments.Height;
-            previousAttachmentPanelHeight = flwLytPnlAttachments.Height;
-        }
-
-        private void flwLytPnlMessages_Scroll(object sender, ScrollEventArgs e)
-        {
-            if (flwLytPnlMessages.VerticalScroll.Value == flwLytPnlMessages.VerticalScroll.Minimum)
-            {
-                // Load more messages when scrolled to top
-                if (flwLytPnlMessages.Controls.Count > 1)
-                {
-                    var firstMessageControl = flwLytPnlMessages.Controls
-                        .OfType<ChatMessageControl>()
-                        .OrderBy(c => c.TimeSent)
-                        .FirstOrDefault();
-                    if (firstMessageControl != null)
-                    {
-                        GetMessages(50, firstMessageControl.TimeSent);
-                    }
-                }
-            }
-        }
-
-        private void FlwLytPnlMessages_MouseWheel(object? sender, MouseEventArgs e)
-        {
-            if (flwLytPnlMessages.VerticalScroll.Value == flwLytPnlMessages.VerticalScroll.Minimum)
-            {
-                // Load more messages when scrolled to top
-                if (flwLytPnlMessages.Controls.Count > 1)
-                {
-                    var firstMessageControl = flwLytPnlMessages.Controls
-                        .OfType<ChatMessageControl>()
-                        .OrderBy(c => c.TimeSent)
-                        .FirstOrDefault();
-                    if (firstMessageControl != null)
-                    {
-                        GetMessages(50, firstMessageControl.TimeSent);
-                    }
-                }
-            }
         }
     }
 }

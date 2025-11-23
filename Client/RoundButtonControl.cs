@@ -44,9 +44,13 @@ namespace Client
             set { pnlButton.Padding = value; }
         }
 
-        public bool UseMouseOverBackColor { get; set; } = false;
+        public bool UseMouseOverBackColor { get; set; } = true;
 
-        public Color MouseOverBackColor { get; set; }
+        public Color MouseOverBackColor { get; set; } = Color.FromKnownColor(KnownColor.ControlDark);
+
+        public Color ActiveBorderColor { get; set; } = Color.FromKnownColor(KnownColor.ActiveBorder);
+
+        private Color borderColor;
 
         private Color backgroundColor;
 
@@ -61,6 +65,7 @@ namespace Client
             btnRoundButton.FlatAppearance.MouseDownBackColor = Color.Transparent;
             //btnRoundButton.BackColor = BackgroundColor;
             backgroundColor = BackgroundColor;
+            borderColor = BorderColor;
         }
         protected override void OnPaint(PaintEventArgs e)
         {
@@ -77,7 +82,7 @@ namespace Client
             if (UseMouseOverBackColor)
             {
                 BackgroundColor = MouseOverBackColor;
-                
+                BorderColor = ActiveBorderColor;
             }
         }
 
@@ -86,6 +91,7 @@ namespace Client
             if (UseMouseOverBackColor)
             {
                 BackgroundColor = backgroundColor;
+                BorderColor = borderColor;
             }
         }
 

@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SearchControl));
             roundControl1 = new RoundControl();
             pnlSearch = new Panel();
             textBox1 = new TextBox();
@@ -44,8 +43,8 @@
             // 
             roundControl1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             roundControl1.BackColor = Color.Transparent;
-            roundControl1.BackgroundColor = SystemColors.ActiveCaptionText;
-            roundControl1.BorderColor = SystemColors.Control;
+            roundControl1.BackgroundColor = SystemColors.Control;
+            roundControl1.BorderColor = SystemColors.InactiveBorder;
             roundControl1.BorderWidth = 1F;
             roundControl1.Controls.Add(pnlSearch);
             roundControl1.Controls.Add(pnlIcon);
@@ -70,7 +69,7 @@
             // textBox1
             // 
             textBox1.Anchor = AnchorStyles.Left;
-            textBox1.BackColor = SystemColors.ActiveCaptionText;
+            textBox1.BackColor = SystemColors.Control;
             textBox1.BorderStyle = BorderStyle.None;
             textBox1.ForeColor = SystemColors.Window;
             textBox1.Location = new Point(2, 14);
@@ -79,7 +78,8 @@
             textBox1.PlaceholderText = "Tìm kiếm";
             textBox1.Size = new Size(150, 16);
             textBox1.TabIndex = 0;
-            textBox1.TextChanged += textBox1_TextChanged;
+            textBox1.Enter += textBox1_Enter;
+            textBox1.Leave += textBox1_Leave;
             // 
             // pnlIcon
             // 
@@ -94,7 +94,7 @@
             // pictureBox1
             // 
             pictureBox1.Dock = DockStyle.Fill;
-            pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
+            pictureBox1.Image = Properties.Resources.search;
             pictureBox1.Location = new Point(5, 5);
             pictureBox1.Margin = new Padding(2);
             pictureBox1.Name = "pictureBox1";

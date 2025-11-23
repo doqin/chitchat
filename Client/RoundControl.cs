@@ -67,6 +67,7 @@ namespace Client
         public RoundControl()
         {
             InitializeComponent();
+            this.DoubleBuffered = true;
         }
 
         protected override void OnPaint(PaintEventArgs e)

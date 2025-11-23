@@ -87,8 +87,11 @@
             // 
             // circularPictureBox1
             // 
+            circularPictureBox1.DrawOutline = true;
             circularPictureBox1.Location = new Point(184, 113);
             circularPictureBox1.Name = "circularPictureBox1";
+            circularPictureBox1.OutlineColor = Color.White;
+            circularPictureBox1.OutlineWidth = 2F;
             circularPictureBox1.Size = new Size(80, 80);
             circularPictureBox1.TabIndex = 7;
             circularPictureBox1.TabStop = false;
