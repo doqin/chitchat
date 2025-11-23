@@ -28,54 +28,118 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ProfileControl));
             roundControl1 = new RoundControl();
-            pictureBox1 = new PictureBox();
+            pnlInfo = new Panel();
+            lblStatus = new Label();
+            lblUser = new Label();
+            pnlProfilePicture = new Panel();
+            crclrPctrBxProfile = new CircularPictureBox();
             roundControl1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            pnlInfo.SuspendLayout();
+            pnlProfilePicture.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)crclrPctrBxProfile).BeginInit();
             SuspendLayout();
             // 
             // roundControl1
             // 
-            roundControl1.backgroundColor = SystemColors.WindowFrame;
-            roundControl1.BorderColor = SystemColors.Control;
+            roundControl1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            roundControl1.BackColor = Color.Transparent;
+            roundControl1.BackgroundColor = SystemColors.Control;
+            roundControl1.BorderColor = SystemColors.InactiveBorder;
             roundControl1.BorderWidth = 1F;
-            roundControl1.Controls.Add(pictureBox1);
-            roundControl1.Location = new Point(4, 4);
-            roundControl1.Margin = new Padding(4, 4, 4, 4);
+            roundControl1.Controls.Add(pnlInfo);
+            roundControl1.Controls.Add(pnlProfilePicture);
+            roundControl1.Location = new Point(3, 2);
+            roundControl1.Margin = new Padding(3, 2, 3, 2);
             roundControl1.Name = "roundControl1";
             roundControl1.Radius = 10;
-            roundControl1.Size = new Size(345, 113);
+            roundControl1.Size = new Size(250, 61);
             roundControl1.TabIndex = 0;
             // 
-            // pictureBox1
+            // pnlInfo
             // 
-            pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
-            pictureBox1.Location = new Point(24, 25);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(69, 64);
-            pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
-            pictureBox1.TabIndex = 0;
-            pictureBox1.TabStop = false;
+            pnlInfo.Controls.Add(lblStatus);
+            pnlInfo.Controls.Add(lblUser);
+            pnlInfo.Dock = DockStyle.Fill;
+            pnlInfo.Location = new Point(59, 0);
+            pnlInfo.Name = "pnlInfo";
+            pnlInfo.Size = new Size(191, 61);
+            pnlInfo.TabIndex = 5;
+            // 
+            // lblStatus
+            // 
+            lblStatus.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+            lblStatus.AutoEllipsis = true;
+            lblStatus.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            lblStatus.ForeColor = SystemColors.ControlDark;
+            lblStatus.Location = new Point(2, 31);
+            lblStatus.Name = "lblStatus";
+            lblStatus.Size = new Size(100, 17);
+            lblStatus.TabIndex = 3;
+            lblStatus.Text = "status";
+            lblStatus.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // lblUser
+            // 
+            lblUser.Anchor = AnchorStyles.Left | AnchorStyles.Right;
+            lblUser.AutoEllipsis = true;
+            lblUser.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblUser.ForeColor = SystemColors.WindowText;
+            lblUser.Location = new Point(0, 8);
+            lblUser.Name = "lblUser";
+            lblUser.Size = new Size(172, 31);
+            lblUser.TabIndex = 2;
+            lblUser.Text = "username";
+            lblUser.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // pnlProfilePicture
+            // 
+            pnlProfilePicture.Controls.Add(crclrPctrBxProfile);
+            pnlProfilePicture.Dock = DockStyle.Left;
+            pnlProfilePicture.Location = new Point(0, 0);
+            pnlProfilePicture.Name = "pnlProfilePicture";
+            pnlProfilePicture.Padding = new Padding(10);
+            pnlProfilePicture.Size = new Size(59, 61);
+            pnlProfilePicture.TabIndex = 4;
+            // 
+            // crclrPctrBxProfile
+            // 
+            crclrPctrBxProfile.Dock = DockStyle.Fill;
+            crclrPctrBxProfile.DrawOutline = true;
+            crclrPctrBxProfile.Location = new Point(10, 10);
+            crclrPctrBxProfile.Name = "crclrPctrBxProfile";
+            crclrPctrBxProfile.OutlineColor = SystemColors.ActiveBorder;
+            crclrPctrBxProfile.OutlineWidth = 1F;
+            crclrPctrBxProfile.Size = new Size(41, 41);
+            crclrPctrBxProfile.SizeMode = PictureBoxSizeMode.Zoom;
+            crclrPctrBxProfile.TabIndex = 0;
+            crclrPctrBxProfile.TabStop = false;
             // 
             // ProfileControl
             // 
-            AutoScaleDimensions = new SizeF(10F, 25F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            AutoSize = true;
-            AutoSizeMode = AutoSizeMode.GrowAndShrink;
             BackColor = Color.Transparent;
             Controls.Add(roundControl1);
+            Margin = new Padding(2);
             Name = "ProfileControl";
-            Size = new Size(353, 121);
+            Size = new Size(256, 65);
+            Load += ProfileControl_Load;
+            Resize += ProfileControl_Resize;
             roundControl1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            pnlInfo.ResumeLayout(false);
+            pnlProfilePicture.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)crclrPctrBxProfile).EndInit();
             ResumeLayout(false);
         }
 
         #endregion
 
         private RoundControl roundControl1;
-        private PictureBox pictureBox1;
+        private CircularPictureBox crclrPctrBxProfile;
+        private Label lblStatus;
+        public Label lblUser;
+        private Panel pnlInfo;
+        private Panel pnlProfilePicture;
     }
 }

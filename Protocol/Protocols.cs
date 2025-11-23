@@ -7,13 +7,28 @@ using System.Drawing;
 using System.IO;
 using System.Net.Sockets;
 using System.Text.Json;
+using System.Net;
 
 namespace Protocol
 {
     public enum Types
     {
+        /// <summary>
+        /// Means server broadcasting its presence via UDP
+        /// </summary>
         Broadcast,
+        /// <summary>
+        /// Means sending one message from the client to the server
+        /// </summary>
         ChatMessage,
+        /// <summary>
+        /// Means requesting message(s) from the client
+        /// </summary>
+        GetMessages,
+        /// <summary>
+        /// Means server sending saved messages to requesting client
+        /// </summary>
+        SendMessages, 
         SendFiles,
         GetFile,
         FileConfirmation,
@@ -88,11 +103,26 @@ namespace Protocol
         }
     }
 
+    public class GetMessages
+    {
+        public int Count { get; set; }
+        public DateTime Before { get; set; }
+    }
+
+    public class SendMessages
+    {
+        public ChatMessage[] Messages { get; set; }
+    }
+
     public class ChatMessage
     {
+        public string Id { get; set; }
         public DateTime TimeSent { get; set; }
         public string Username { get; set; }
         public string Message { get; set; }
+        public string Address { get; set; }
+        public string Port { get; set; }
+        public string ProfileImagePath { get; set; }
         public Attachment[] Attachments { get; set; }
     }
 
@@ -145,6 +175,24 @@ namespace Protocol
         public string FileName { get; set; }
 
         public long FileSize { get; set; }
+
+        public static async Task<string> FetchFileAsync(TcpClient client, Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingFetches, string filePath, string savePath, string json)
+        {
+            try
+            {
+                NetworkStream ns = client.GetStream();
+                Wrapper.SendJson(ns, json);
+                var tcs = new TaskCompletionSource<string>();
+                var tuple = new Tuple<TaskCompletionSource<string>, string>(tcs, savePath);
+                pendingFetches[filePath] = tuple;
+                return await tcs.Task;
+            }
+            catch (Exception e)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error fetching file: {e.Message}");
+                return "Not found";
+            }
+        }
 
         public static string FetchFile(TcpClient client, Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingFetches, string filePath, string savePath, string json)
         {

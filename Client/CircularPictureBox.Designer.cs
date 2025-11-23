@@ -1,11 +1,15 @@
-﻿namespace Client
+﻿
+namespace Client
 {
-    partial class CircularPictureBox
+    partial class CircularPictureBox : PictureBox
     {
         /// <summary> 
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
+
+        public SizeF AutoScaleDimensions { get; private set; }
+        public AutoScaleMode AutoScaleMode { get; private set; }
 
         /// <summary> 
         /// Clean up any resources being used.
@@ -35,7 +39,7 @@
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             Name = "CircularPictureBox";
-            Load += CircularPictureBox_Load;
+            //Load += CircularPictureBox_Load;
             ResumeLayout(false);
         }
 

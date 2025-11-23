@@ -17,7 +17,6 @@ namespace Client
         }
 
         // Lấy số lượng react cho mỗi emoji
-
         public Dictionary<string, int> GetEmojiCounts()
         {
             return Emoji_To_Users.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Count);

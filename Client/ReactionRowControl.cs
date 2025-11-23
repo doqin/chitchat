@@ -24,7 +24,7 @@ namespace Client
         }
 
         // Event để báo ChatMessageControl khi reaction được click
-        public event Action<string> ReactionClicked;
+        public event Action<string> ReactionClicked = _ => { };
 
         // Build UI dựa trên ReactionState
         public void SetState(ReactionState state)

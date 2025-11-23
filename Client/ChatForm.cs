@@ -6,9 +6,12 @@ using System.Data;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Net.Mime.MediaTypeNames;
@@ -19,17 +22,19 @@ namespace Client
     {
         private readonly string username;
         private readonly string serverName;
-        private readonly string serverIp;
-        private readonly int serverPort;
+        public string serverIp { get; }
+        public int serverPort { get; }
+        private readonly string profilePictureAttachment;
         private TcpClient tcpClient;
         private ReactionManager reactionManager;
 
-        private string[] selectedFiles = Array.Empty<string>();
+        private Panel dummy;
 
         private TaskCompletionSource<Attachment[]>? fileConfirmationTcs;
         private Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingAttachmentFetches = new();
+        private readonly SemaphoreSlim streamReadLock = new(1, 1);
 
-        public ChatForm(string username, string serverName, string ip, int port)
+        public ChatForm(string username, string serverName, string ip, int port, string profilePicturePath)
         {
             this.username = username;
             this.serverName = serverName;
@@ -41,7 +46,7 @@ namespace Client
             {
                 tcpClient.Connect(serverIp, serverPort);
                 System.Diagnostics.Debug.WriteLine($"Connected to {serverName}");
-                Task.Run(() => HandleResponse(tcpClient));
+                Task.Run(async () => await HandleResponse(tcpClient));
             }
             catch (Exception)
             {
@@ -49,22 +54,42 @@ namespace Client
                 this.DialogResult = DialogResult.Abort;
                 this.Close();
             }
+            if (!string.IsNullOrEmpty(profilePicturePath) && Path.IsPathRooted(profilePicturePath)) // If is absolute path, it's a local file that needs to be uploaded
+            {
+                System.Diagnostics.Debug.WriteLine("Uploading profile picture to server...");
+                Attachment[] attachment = SendFiles([profilePicturePath]);
+                if (attachment.Length > 0)
+                {
+                    profilePictureAttachment = attachment[0].FileName;
+                    System.Diagnostics.Debug.WriteLine("Profile picture uploaded: " + profilePictureAttachment);
+                    ConfigManager.Current!.ProfileImagePath = profilePictureAttachment;
+                    ConfigManager.Save();
+                }
+            }
+            else
+            {
+                System.Diagnostics.Debug.WriteLine("Using existing profile picture: " + profilePicturePath);
+                profilePictureAttachment = profilePicturePath;
+            }
             InitializeComponent();
-
+            smthFlwLytPnlMessages.MouseWheel += FlwLytPnlMessages_MouseWheel;
             Text = $"Chat - {username} @ {serverName} | {serverIp}:{serverPort}";
+            this.DoubleBuffered = true;
+
         }
 
         /// <summary>
         /// Hàm chính để xử lý phản hồi từ máy chủ
         /// </summary>
         /// <param name="client">Client TCP</param>
-        private void HandleResponse(TcpClient client)
+        private async Task HandleResponse(TcpClient client)
         {
             NetworkStream stream = client.GetStream();
             while (true)
             {
                 try
                 {
+                    await streamReadLock.WaitAsync();
                     System.Diagnostics.Debug.WriteLine("ChatForm | Listening for messages");
 
                     // Read wrapper using length-prefixed protocol
@@ -72,6 +97,7 @@ namespace Client
                     if (json == null)
                     {
                         System.Diagnostics.Debug.WriteLine("ChatForm | Server disconnected");
+                        streamReadLock.Release();
                         break; // Server disconnected
                     }
 
@@ -84,21 +110,27 @@ namespace Client
                             // If the message is a chat message, display it
                             case Types.ChatMessage:
                                 ChatMessage chatMessage = JsonSerializer.Deserialize<ChatMessage>(wrapper.Payload);
-                                if (chatMessage != null)
+                                System.Diagnostics.Debug.WriteLine($"ChatForm | Received: {chatMessage?.Message} from {chatMessage?.Username} at {chatMessage?.TimeSent}");
+
+                                string msgId = Guid.NewGuid().ToString();
+                                var localEndPoint = tcpClient.Client.LocalEndPoint as IPEndPoint;
+                                if (chatMessage.Address == localEndPoint.Address.ToString())
                                 {
-                                    string msgId = Guid.NewGuid().ToString(); // tạo ID tạm thời
-
-                                    var item = new ChatMessageControl(
-                                        msgId: msgId,                 // ID duy nhất cho message
-                                        manager: reactionManager,     // instance ReactionManager dùng chung
-                                        userId: username,             // user hiện tại
-                                        pendingAttachmentFetches: pendingAttachmentFetches,
-                                        client: tcpClient,
-                                        chatMessage: chatMessage
-                                    );
-
-                                    flowPanelMessages.Invoke(() => flowPanelMessages.Controls.Add(item));
+                                    var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, true);
+                                    smthFlwLytPnlMessages.Invoke(() =>
+                                    {
+                                        smthFlwLytPnlMessages.Controls.Add(item);
+                                    });
                                 }
+                                else
+                                {
+                                    var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, false);
+                                    smthFlwLytPnlMessages.Invoke(() =>
+                                    {
+                                        smthFlwLytPnlMessages.Controls.Add(item);
+                                    });
+                                }
+
                                 break;
 
                             // If the message is a file confirmation, set result to the pending TaskCompletionSource
@@ -118,86 +150,144 @@ namespace Client
                                 break;
                             // If the message is a file sending prompt, prepare to receive it
                             case Types.SendFiles:
-                                HandleFiles(client, stream, wrapper);
+                                streamReadLock.Release(); // Release before calling HandleFiles
+                                HandleFiles(stream, wrapper);
+                                continue; // Continue to next loop to acquire lock
+                            case Types.SendMessages:
+                                HandleSendMessages(client, wrapper);
+                                break;
+                            default:
+                                System.Diagnostics.Debug.WriteLine($"ChatForm | Unknown message type: {wrapper.Type}");
                                 break;
                         }
                     }
-
+                    streamReadLock.Release();
                 }
                 catch (Exception e)
                 {
+                    if (streamReadLock.CurrentCount == 0)
+                    {
+                        streamReadLock.Release();
+                    }
                     System.Diagnostics.Debug.WriteLine($"ChatForm | Error with listening for messages: {e.Message}");
-                    break;
                 }
             }
             System.Diagnostics.Debug.WriteLine("ChatForm | Disconnected from server");
         }
 
+        private void HandleSendMessages(TcpClient client, Wrapper wrapper)
+        {
+            SendMessages sendMessage = JsonSerializer.Deserialize<SendMessages>(wrapper.Payload);
+            System.Diagnostics.Debug.WriteLine($"ChatForm | Received {sendMessage?.Messages.Length} messages from server.");
+            smthFlwLytPnlMessages.Invoke(() =>
+            {
+                smthFlwLytPnlMessages.SuspendLayout();
+                foreach (var chatMessage in sendMessage?.Messages ?? [])
+                {
+                    System.Diagnostics.Debug.WriteLine($"ChatForm | Received: {chatMessage?.Message} from {chatMessage?.Username} at {chatMessage?.TimeSent}");
+                    var localEndPoint = tcpClient.Client.LocalEndPoint as IPEndPoint;
+                    if (chatMessage.Address == localEndPoint.Address.ToString())
+                    {
+                        var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, true);
+                        smthFlwLytPnlMessages.Controls.Add(item);
+                        smthFlwLytPnlMessages.Controls.SetChildIndex(item, 0);
+                    }
+                    else
+                    {
+                        var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, false);
+                        smthFlwLytPnlMessages.Controls.Add(item);
+                        smthFlwLytPnlMessages.Controls.SetChildIndex(item, 0);
+                    }
+                }
+                smthFlwLytPnlMessages.ResumeLayout(true);
+                if (dummy != null)
+                {
+                    smthFlwLytPnlMessages.ScrollControlIntoView(dummy);
+                    smthFlwLytPnlMessages.Controls.SetChildIndex(dummy, 0);
+                }
+            });
+        }
+
         /// <summary>
         /// Sử lý việc nhận file từ máy chủ
         /// </summary>
-        /// <param name="client">Client TCP</param>
         /// <param name="stream">Network Stream</param>
         /// <param name="wrapper">Đối tượng cần giải nén</param>
-        private void HandleFiles(TcpClient client, NetworkStream stream, Wrapper wrapper)
+        private void HandleFiles(NetworkStream stream, Wrapper wrapper)
         {
-            Files files = JsonSerializer.Deserialize<Files>(wrapper.Payload);
-            if (files?.FileCount == 0)
-            {
-                var fileName = files.FileList[0].FileName;
-                if (pendingAttachmentFetches.TryGetValue(fileName, out var tuple))
-                {
-                    var tcs = tuple.Item1;
-                    tcs.SetResult("Not found");
-                    pendingAttachmentFetches.Remove(fileName);
-                }
-                return;
-            }
-            System.Diagnostics.Debug.WriteLine($"ChatForm | Client is ready to receive {files?.FileCount} file(s).");
+            streamReadLock.Wait();
             try
             {
-                foreach (var file in files.FileList)
+                Files files = JsonSerializer.Deserialize<Files>(wrapper.Payload);
+                if (files?.FileCount == 0)
                 {
-                    // Notify any pending fetches for this attachment
-                    if (pendingAttachmentFetches.TryGetValue(file.FileName, out var tuple))
+                    var fileName = files.FileList[0].FileName;
+                    if (pendingAttachmentFetches.TryGetValue(fileName, out var tuple))
                     {
-                        System.Diagnostics.Debug.WriteLine($"ChatForm | Preparing to receive file: {file.FileName} ({file.FileSize} bytes)");
-                        var path = tuple.Item2;
-                        // Ensure the directory exists
-                        string directoryPath = Path.GetDirectoryName(path);
-                        if (!string.IsNullOrEmpty(directoryPath))
-                        {
-                            Directory.CreateDirectory(directoryPath);
-                        }
-                        else
-                        {
-                            System.Diagnostics.Debug.WriteLine("ChatForm | Invalid file path: no directory specified.");
-                            return;
-                        }
-                        // Saving files
-                        using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write))
-                        {
-                            byte[] buffer = new byte[8192];
-                            long totalRead = 0;
-                            int bytesRead;
-
-                            while (totalRead < file.FileSize && (bytesRead = stream.Read(buffer, 0, buffer.Length)) > 0)
-                            {
-                                fs.Write(buffer, 0, bytesRead);
-                                totalRead += bytesRead;
-                            }
-                        }
-                        System.Diagnostics.Debug.WriteLine($"ChatForm | File received: {file.FileName}");
                         var tcs = tuple.Item1;
-                        tcs.SetResult(path);
-                        pendingAttachmentFetches.Remove(file.FileName);
+                        tcs.SetResult("Not found");
+                        pendingAttachmentFetches.Remove(fileName);
+                    }
+                    return;
+                }
+                System.Diagnostics.Debug.WriteLine($"ChatForm | Client is ready to receive {files?.FileCount} file(s).");
+                try
+                {
+                    foreach (var file in files.FileList)
+                    {
+                        // Notify any pending fetches for this attachment
+                        if (pendingAttachmentFetches.TryGetValue(file.FileName, out var tuple))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"ChatForm | Preparing to receive file: {file.FileName} ({file.FileSize} bytes)");
+                            var path = tuple.Item2;
+                            // Ensure the directory exists
+                            string directoryPath = Path.GetDirectoryName(path);
+                            if (!string.IsNullOrEmpty(directoryPath))
+                            {
+                                Directory.CreateDirectory(directoryPath);
+                            }
+                            else
+                            {
+                                System.Diagnostics.Debug.WriteLine("ChatForm | Invalid file path: no directory specified.");
+                                return;
+                            }
+                            // Saving files
+                            using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write))
+                            {
+                                byte[] buffer = new byte[8192];
+                                long totalRead = 0;
+                                int bytesRead;
+
+                                // Read exactly the declared file size to avoid consuming the next protocol frame
+                                while (totalRead < file.FileSize)
+                                {
+                                    int toRead = (int)Math.Min(buffer.Length, file.FileSize - totalRead);
+                                    bytesRead = stream.Read(buffer, 0, toRead);
+                                    System.Diagnostics.Debug.WriteLine($"ChatForm | Read {bytesRead} bytes");
+                                    if (bytesRead <= 0)
+                                    {
+                                        break; // connection closed
+                                    }
+                                    fs.Write(buffer, 0, bytesRead);
+                                    totalRead += bytesRead;
+                                }
+                            }
+                            System.Diagnostics.Debug.WriteLine($"ChatForm | File received: {file.FileName}");
+                            var tcs = tuple.Item1;
+                            tcs.SetResult(path);
+                            pendingAttachmentFetches.Remove(file.FileName);
+                        }
                     }
                 }
+                catch (Exception e)
+                {
+                    System.Diagnostics.Debug.WriteLine($"ChatForm | Error receiving files: {e.Message}");
+                    return;
+                }
             }
-            catch (Exception e)
+            finally
             {
-                System.Diagnostics.Debug.WriteLine($"ChatForm | Error receiving files: {e.Message}");
-                return;
+                streamReadLock.Release();
             }
         }
 
@@ -206,12 +296,17 @@ namespace Client
         /// </summary>
         private void SendMessage(DateTime timeSent, string username, string message, Attachment[] attachments)
         {
+            var endPoint = tcpClient.Client.LocalEndPoint as IPEndPoint;
             ChatMessage chatMessage = new()
             {
+                Id = Guid.NewGuid().ToString(),
                 TimeSent = timeSent,
                 Username = username,
                 Message = message,
-                Attachments = attachments
+                Attachments = attachments,
+                Address = endPoint?.Address.ToString(),
+                ProfileImagePath = profilePictureAttachment,
+                Port = endPoint?.Port.ToString()
             };
             string payload = JsonSerializer.Serialize(chatMessage);
             Wrapper wrapper = new Wrapper
@@ -285,6 +380,24 @@ namespace Client
             return Array.Empty<Attachment>();
         }
 
+        private void GetMessages(int n, DateTime before)
+        {
+            GetMessages getMessages = new GetMessages
+            {
+                Count = n,
+                Before = before
+            };
+            string payload = JsonSerializer.Serialize(getMessages);
+            Wrapper wrapper = new Wrapper
+            {
+                Type = Types.GetMessages,
+                Payload = payload
+            };
+            string finalJson = JsonSerializer.Serialize(wrapper);
+            NetworkStream stream = tcpClient.GetStream();
+            Wrapper.SendJson(stream, finalJson);
+        }
+
         private void ChatForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             tcpClient.Close();
@@ -295,9 +408,10 @@ namespace Client
             if (e.KeyCode == Keys.Enter)
             {
                 Attachment[] attachments = Array.Empty<Attachment>();
-                if (selectedFiles.Length > 0)
+                if (flwLytPnlAttachments.Controls.Count > 0)
                 {
-                    var paths = SendFiles(selectedFiles);
+                    string[] files = flwLytPnlAttachments.Controls.Cast<SelectedFileControl>().ToArray().Select(f => f.FilePath).ToArray();
+                    var paths = SendFiles(files);
                     if (paths.Length > 0)
                     {
                         attachments = paths;
@@ -307,10 +421,12 @@ namespace Client
                         MessageBox.Show("All selected files were rejected by the server.", "File Upload Rejected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
-                    lblSelectedFiles.Text = "(none)";
-                    selectedFiles = Array.Empty<string>();
+                    flwLytPnlAttachments.Invoke(() =>
+                    {
+                        flwLytPnlAttachments.Controls.Clear();
+                    });
                 }
-                if (!string.IsNullOrWhiteSpace(txtbxMessage.Text))
+                if (!string.IsNullOrWhiteSpace(txtbxMessage.Text) || attachments.Length != 0)
                 {
                     SendMessage(DateTime.Now, username, txtbxMessage.Text.Trim(), attachments);
                     txtbxMessage.Clear();
@@ -320,24 +436,76 @@ namespace Client
             }
         }
 
+        // csharp
+        private void smthFlwLytPnlMessages_SizeChanged(object sender, EventArgs e)
+        {
+            if (dummy == null) return;
+            dummy.Width = smthFlwLytPnlMessages.ClientSize.Width - SystemInformation.VerticalScrollBarWidth;
+        }
+
+        private void smthFlwLytPnlMessages_ControlAdded(object sender, ControlEventArgs e)
+        {
+            smthFlwLytPnlMessages.ScrollControlIntoView(e.Control);
+        }
+
+
         private void ChatForm_Load(object sender, EventArgs e)
+        {
+            smthFlwLytPnlMessages.VerticalScroll.Visible = true;
+            dummy = new Panel
+            {
+                Width = smthFlwLytPnlMessages.Width - SystemInformation.VerticalScrollBarWidth,
+                Height = 1
+            };
+            smthFlwLytPnlMessages.Invoke(() =>
+            {
+                smthFlwLytPnlMessages.Controls.Add(dummy);
+            });
+            GetMessages(50, DateTime.Now);
+        }
+
+        private void FlwLytPnlMessages_MouseWheel(object? sender, MouseEventArgs e)
+        {
+            if (smthFlwLytPnlMessages.VerticalScroll.Value == smthFlwLytPnlMessages.VerticalScroll.Minimum)
+            {
+                // Load more messages when scrolled to top
+                if (smthFlwLytPnlMessages.Controls.Count > 1)
+                {
+                    var firstMessageControl = smthFlwLytPnlMessages.Controls
+                        .OfType<ChatMessageControl>()
+                        .OrderBy(c => c.TimeSent)
+                        .FirstOrDefault();
+                    if (firstMessageControl != null)
+                    {
+                        GetMessages(50, firstMessageControl.TimeSent);
+                    }
+                }
+            }
+        }
+
+        private void txtbxMessage_Click(object sender, EventArgs e)
         {
 
         }
 
-        private void btnPickFiles_Click(object sender, EventArgs e)
+        private void roundButtonControl1_Click(object sender, EventArgs e)
         {
             var result = openFileDialog1.ShowDialog();
             if (result == DialogResult.OK)
             {
-                lblSelectedFiles.Text = string.Join(", ", openFileDialog1.FileNames);
-                selectedFiles = openFileDialog1.FileNames;
+                foreach (var file in openFileDialog1.FileNames)
+                {
+                    flwLytPnlAttachments.Invoke(() =>
+                    {
+                        var control = new SelectedFileControl(file);
+                        flwLytPnlAttachments.Controls.Add(control);
+                    });
+                }
             }
         }
 
-        private void flowPanelMessages_Paint(object sender, PaintEventArgs e)
+        private void ChatForm_Paint(object sender, PaintEventArgs e)
         {
-
         }
 
        

@@ -28,133 +28,226 @@
         /// </summary>
         private void InitializeComponent()
         {
-            tbxPort = new TextBox();
-            lblPort = new Label();
-            btnDiscoverServer = new Button();
-            flowLayoutPanel2 = new FlowLayoutPanel();
-            label1 = new Label();
-            txtbxUsername = new TextBox();
-            lsbxServers = new ListBox();
             splitContainerMain = new SplitContainer();
-            panelSearch = new FlowLayoutPanel();
-            label2 = new Label();
+            pnlServers = new Panel();
+            flwLytPnlServers = new FlowLayoutPanel();
+            pnlTop = new Panel();
             searchControl1 = new SearchControl();
-            pnlProfileArea = new Panel();
-            flowLayoutPanel2.SuspendLayout();
+            roundButtonControl1 = new RoundButtonControl();
+            label1 = new Label();
+            pnlLeft = new Panel();
+            roundButtonControl2 = new RoundButtonControl();
+            panel1 = new Panel();
+            circularPictureBox1 = new CircularPictureBox();
+            lblProceed = new Label();
+            lblWelcome = new Label();
+            label2 = new Label();
             ((System.ComponentModel.ISupportInitialize)splitContainerMain).BeginInit();
             splitContainerMain.Panel1.SuspendLayout();
             splitContainerMain.Panel2.SuspendLayout();
             splitContainerMain.SuspendLayout();
-            panelSearch.SuspendLayout();
+            pnlServers.SuspendLayout();
+            pnlTop.SuspendLayout();
+            pnlLeft.SuspendLayout();
+            panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)circularPictureBox1).BeginInit();
             SuspendLayout();
-            // 
-            // tbxPort
-            // 
-            tbxPort.Location = new Point(3, 62);
-            tbxPort.Name = "tbxPort";
-            tbxPort.Size = new Size(152, 23);
-            tbxPort.TabIndex = 0;
-            tbxPort.Text = "9999";
-            // 
-            // lblPort
-            // 
-            lblPort.AutoSize = true;
-            lblPort.BackColor = Color.White;
-            lblPort.Location = new Point(3, 44);
-            lblPort.Name = "lblPort";
-            lblPort.Size = new Size(29, 15);
-            lblPort.TabIndex = 1;
-            lblPort.Text = "Port";
-            // 
-            // btnDiscoverServer
-            // 
-            btnDiscoverServer.Location = new Point(45, 485);
-            btnDiscoverServer.Name = "btnDiscoverServer";
-            btnDiscoverServer.Size = new Size(153, 29);
-            btnDiscoverServer.TabIndex = 2;
-            btnDiscoverServer.Text = "Tìm kiếm máy chủ";
-            btnDiscoverServer.UseVisualStyleBackColor = true;
-            btnDiscoverServer.Click += btnDiscoverServer_Click;
-            // 
-            // flowLayoutPanel2
-            // 
-            flowLayoutPanel2.Controls.Add(label1);
-            flowLayoutPanel2.Controls.Add(txtbxUsername);
-            flowLayoutPanel2.Controls.Add(lblPort);
-            flowLayoutPanel2.Controls.Add(tbxPort);
-            flowLayoutPanel2.FlowDirection = FlowDirection.TopDown;
-            flowLayoutPanel2.Location = new Point(202, 110);
-            flowLayoutPanel2.Name = "flowLayoutPanel2";
-            flowLayoutPanel2.Size = new Size(160, 143);
-            flowLayoutPanel2.TabIndex = 3;
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.BackColor = Color.White;
-            label1.Location = new Point(3, 0);
-            label1.Name = "label1";
-            label1.Size = new Size(60, 15);
-            label1.TabIndex = 4;
-            label1.Text = "Username";
-            // 
-            // txtbxUsername
-            // 
-            txtbxUsername.Location = new Point(3, 18);
-            txtbxUsername.Name = "txtbxUsername";
-            txtbxUsername.Size = new Size(152, 23);
-            txtbxUsername.TabIndex = 3;
-            txtbxUsername.Text = "anonymous";
-            // 
-            // lsbxServers
-            // 
-            lsbxServers.FormattingEnabled = true;
-            lsbxServers.ItemHeight = 15;
-            lsbxServers.Location = new Point(22, 128);
-            lsbxServers.Name = "lsbxServers";
-            lsbxServers.Size = new Size(206, 334);
-            lsbxServers.TabIndex = 4;
-            lsbxServers.DoubleClick += lsbxServers_DoubleClick;
             // 
             // splitContainerMain
             // 
+            splitContainerMain.BackColor = Color.FromArgb(247, 245, 243);
             splitContainerMain.Dock = DockStyle.Fill;
+            splitContainerMain.FixedPanel = FixedPanel.Panel1;
+            splitContainerMain.IsSplitterFixed = true;
             splitContainerMain.Location = new Point(0, 0);
-            splitContainerMain.Margin = new Padding(1, 1, 1, 1);
+            splitContainerMain.Margin = new Padding(1);
             splitContainerMain.Name = "splitContainerMain";
             // 
             // splitContainerMain.Panel1
             // 
             splitContainerMain.Panel1.AutoScroll = true;
-            splitContainerMain.Panel1.BackColor = Color.SlateGray;
-            splitContainerMain.Panel1.Controls.Add(lsbxServers);
-            splitContainerMain.Panel1.Controls.Add(panelSearch);
-            splitContainerMain.Panel1.Controls.Add(pnlProfileArea);
-            splitContainerMain.Panel1.Controls.Add(btnDiscoverServer);
+            splitContainerMain.Panel1.BackColor = Color.White;
+            splitContainerMain.Panel1.Controls.Add(pnlServers);
+            splitContainerMain.Panel1.Controls.Add(pnlTop);
+            splitContainerMain.Panel1.Controls.Add(label1);
+            splitContainerMain.Panel1.Controls.Add(pnlLeft);
             // 
             // splitContainerMain.Panel2
             // 
             splitContainerMain.Panel2.AutoScroll = true;
-            splitContainerMain.Panel2.BackColor = Color.DimGray;
-            splitContainerMain.Panel2.Controls.Add(flowLayoutPanel2);
-            splitContainerMain.Panel2.Paint += splitContainerMain_Panel2_Paint;
-            splitContainerMain.Size = new Size(1196, 600);
-            splitContainerMain.SplitterDistance = 249;
-            splitContainerMain.SplitterWidth = 3;
+            splitContainerMain.Panel2.BackColor = Color.FromArgb(247, 245, 243);
+            splitContainerMain.Panel2.Controls.Add(lblProceed);
+            splitContainerMain.Panel2.Controls.Add(lblWelcome);
+            splitContainerMain.Size = new Size(1207, 639);
+            splitContainerMain.SplitterDistance = 389;
+            splitContainerMain.SplitterWidth = 2;
             splitContainerMain.TabIndex = 5;
+            splitContainerMain.Paint += splitContainerMain_Paint;
             // 
-            // panelSearch
+            // pnlServers
             // 
-            panelSearch.Controls.Add(label2);
-            panelSearch.Controls.Add(searchControl1);
-            panelSearch.Dock = DockStyle.Top;
-            panelSearch.FlowDirection = FlowDirection.TopDown;
-            panelSearch.Location = new Point(0, 0);
-            panelSearch.Margin = new Padding(2, 2, 2, 2);
-            panelSearch.Name = "panelSearch";
-            panelSearch.Size = new Size(249, 115);
-            panelSearch.TabIndex = 0;
-            panelSearch.WrapContents = false;
+            pnlServers.Controls.Add(flwLytPnlServers);
+            pnlServers.Dock = DockStyle.Fill;
+            pnlServers.Location = new Point(62, 92);
+            pnlServers.Name = "pnlServers";
+            pnlServers.Padding = new Padding(5);
+            pnlServers.Size = new Size(327, 547);
+            pnlServers.TabIndex = 4;
+            // 
+            // flwLytPnlServers
+            // 
+            flwLytPnlServers.AutoScroll = true;
+            flwLytPnlServers.BackColor = Color.Transparent;
+            flwLytPnlServers.Dock = DockStyle.Fill;
+            flwLytPnlServers.FlowDirection = FlowDirection.TopDown;
+            flwLytPnlServers.Location = new Point(5, 5);
+            flwLytPnlServers.Name = "flwLytPnlServers";
+            flwLytPnlServers.Size = new Size(317, 537);
+            flwLytPnlServers.TabIndex = 0;
+            flwLytPnlServers.WrapContents = false;
+            // 
+            // pnlTop
+            // 
+            pnlTop.Controls.Add(searchControl1);
+            pnlTop.Controls.Add(roundButtonControl1);
+            pnlTop.Dock = DockStyle.Top;
+            pnlTop.Location = new Point(62, 46);
+            pnlTop.Name = "pnlTop";
+            pnlTop.Padding = new Padding(5);
+            pnlTop.Size = new Size(327, 46);
+            pnlTop.TabIndex = 3;
+            // 
+            // searchControl1
+            // 
+            searchControl1.ActiveBackgroundColor = SystemColors.ButtonHighlight;
+            searchControl1.ActiveBorderColor = Color.FromArgb(113, 96, 232);
+            searchControl1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            searchControl1.BackColor = Color.Transparent;
+            searchControl1.BackgroundColor = SystemColors.Control;
+            searchControl1.BorderColor = SystemColors.InactiveBorder;
+            searchControl1.Dock = DockStyle.Fill;
+            searchControl1.IconPadding = new Padding(7);
+            searchControl1.IconWidth = 40;
+            searchControl1.Location = new Point(5, 5);
+            searchControl1.Margin = new Padding(1);
+            searchControl1.Name = "searchControl1";
+            searchControl1.Size = new Size(277, 36);
+            searchControl1.TabIndex = 0;
+            // 
+            // roundButtonControl1
+            // 
+            roundButtonControl1.ActiveBorderColor = SystemColors.ActiveBorder;
+            roundButtonControl1.BackColor = Color.Transparent;
+            roundButtonControl1.BackgroundColor = SystemColors.Control;
+            roundButtonControl1.BorderColor = SystemColors.InactiveBorder;
+            roundButtonControl1.BorderWidth = 1F;
+            roundButtonControl1.ButtonBackgroundImage = Properties.Resources.refresh;
+            roundButtonControl1.ButtonBackgroundImageLayout = ImageLayout.Zoom;
+            roundButtonControl1.ButtonPadding = new Padding(8);
+            roundButtonControl1.ButtonText = "";
+            roundButtonControl1.ButtonTextColor = Color.Black;
+            roundButtonControl1.Dock = DockStyle.Right;
+            roundButtonControl1.Location = new Point(282, 5);
+            roundButtonControl1.Margin = new Padding(1);
+            roundButtonControl1.MouseOverBackColor = SystemColors.ButtonHighlight;
+            roundButtonControl1.Name = "roundButtonControl1";
+            roundButtonControl1.Radius = 10;
+            roundButtonControl1.Size = new Size(40, 36);
+            roundButtonControl1.TabIndex = 1;
+            roundButtonControl1.UseMouseOverBackColor = true;
+            roundButtonControl1.Click += roundButtonControl1_Click;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Dock = DockStyle.Top;
+            label1.Font = new Font("Microsoft YaHei UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label1.ForeColor = Color.FromArgb(113, 96, 232);
+            label1.Location = new Point(62, 0);
+            label1.Name = "label1";
+            label1.Padding = new Padding(10);
+            label1.Size = new Size(115, 46);
+            label1.TabIndex = 1;
+            label1.Text = "ChitChat";
+            // 
+            // pnlLeft
+            // 
+            pnlLeft.BackColor = Color.FromArgb(247, 245, 243);
+            pnlLeft.Controls.Add(roundButtonControl2);
+            pnlLeft.Controls.Add(panel1);
+            pnlLeft.Dock = DockStyle.Left;
+            pnlLeft.ForeColor = SystemColors.ActiveBorder;
+            pnlLeft.Location = new Point(0, 0);
+            pnlLeft.Name = "pnlLeft";
+            pnlLeft.Size = new Size(62, 639);
+            pnlLeft.TabIndex = 1;
+            pnlLeft.Paint += pnlLeft_Paint;
+            // 
+            // roundButtonControl2
+            // 
+            roundButtonControl2.ActiveBorderColor = SystemColors.ActiveBorder;
+            roundButtonControl2.BackColor = Color.Transparent;
+            roundButtonControl2.BackgroundColor = Color.FromArgb(247, 245, 243);
+            roundButtonControl2.BorderColor = Color.FromArgb(247, 245, 243);
+            roundButtonControl2.BorderWidth = 1F;
+            roundButtonControl2.ButtonBackgroundImage = Properties.Resources.settings;
+            roundButtonControl2.ButtonBackgroundImageLayout = ImageLayout.Zoom;
+            roundButtonControl2.ButtonPadding = new Padding(10);
+            roundButtonControl2.ButtonText = "";
+            roundButtonControl2.ButtonTextColor = SystemColors.ActiveBorder;
+            roundButtonControl2.Dock = DockStyle.Bottom;
+            roundButtonControl2.Location = new Point(0, 531);
+            roundButtonControl2.Margin = new Padding(1);
+            roundButtonControl2.MouseOverBackColor = SystemColors.ButtonHighlight;
+            roundButtonControl2.Name = "roundButtonControl2";
+            roundButtonControl2.Radius = 10;
+            roundButtonControl2.Size = new Size(62, 47);
+            roundButtonControl2.TabIndex = 1;
+            roundButtonControl2.UseMouseOverBackColor = true;
+            // 
+            // panel1
+            // 
+            panel1.Controls.Add(circularPictureBox1);
+            panel1.Dock = DockStyle.Bottom;
+            panel1.Location = new Point(0, 578);
+            panel1.Name = "panel1";
+            panel1.Padding = new Padding(10);
+            panel1.Size = new Size(62, 61);
+            panel1.TabIndex = 2;
+            // 
+            // circularPictureBox1
+            // 
+            circularPictureBox1.Dock = DockStyle.Fill;
+            circularPictureBox1.DrawOutline = false;
+            circularPictureBox1.Location = new Point(10, 10);
+            circularPictureBox1.Name = "circularPictureBox1";
+            circularPictureBox1.OutlineColor = Color.White;
+            circularPictureBox1.OutlineWidth = 2F;
+            circularPictureBox1.Size = new Size(41, 41);
+            circularPictureBox1.TabIndex = 0;
+            circularPictureBox1.TabStop = false;
+            // 
+            // lblProceed
+            // 
+            lblProceed.Anchor = AnchorStyles.None;
+            lblProceed.AutoSize = true;
+            lblProceed.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            lblProceed.Location = new Point(254, 316);
+            lblProceed.Name = "lblProceed";
+            lblProceed.Size = new Size(318, 17);
+            lblProceed.TabIndex = 1;
+            lblProceed.Text = "Kết nối đến một máy chủ LAN để bắt đầu trò chuyện.";
+            // 
+            // lblWelcome
+            // 
+            lblWelcome.Anchor = AnchorStyles.None;
+            lblWelcome.AutoSize = true;
+            lblWelcome.Font = new Font("Segoe UI", 18F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            lblWelcome.Location = new Point(225, 284);
+            lblWelcome.Name = "lblWelcome";
+            lblWelcome.Size = new Size(379, 32);
+            lblWelcome.TabIndex = 0;
+            lblWelcome.Text = "Chào mừng bạn đến với ChitChat!";
             // 
             // label2
             // 
@@ -163,68 +256,62 @@
             label2.Location = new Point(2, 0);
             label2.Margin = new Padding(2, 0, 2, 0);
             label2.Name = "label2";
-            label2.Size = new Size(164, 42);
+            label2.Size = new Size(234, 70);
             label2.TabIndex = 1;
             label2.Text = "Conversations";
             // 
-            // searchControl1
-            // 
-            searchControl1.AutoSize = true;
-            searchControl1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            searchControl1.BackColor = Color.Transparent;
-            searchControl1.Location = new Point(1, 43);
-            searchControl1.Margin = new Padding(1, 1, 1, 1);
-            searchControl1.Name = "searchControl1";
-            searchControl1.Size = new Size(303, 83);
-            searchControl1.TabIndex = 0;
-            // 
-            // pnlProfileArea
-            // 
-            pnlProfileArea.BackColor = Color.Transparent;
-            pnlProfileArea.Dock = DockStyle.Bottom;
-            pnlProfileArea.Location = new Point(0, 532);
-            pnlProfileArea.Margin = new Padding(2, 2, 2, 2);
-            pnlProfileArea.Name = "pnlProfileArea";
-            pnlProfileArea.Size = new Size(249, 68);
-            pnlProfileArea.TabIndex = 6;
-            // 
             // ServerDiscoveryForm
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1196, 600);
+            AutoScaleDimensions = new SizeF(96F, 96F);
+            AutoScaleMode = AutoScaleMode.Dpi;
+            ClientSize = new Size(1207, 639);
             Controls.Add(splitContainerMain);
             ForeColor = Color.Black;
-            MaximizeBox = false;
             Name = "ServerDiscoveryForm";
-            Text = "Tìm máy chủ";
+            Text = "ChitChat";
             FormClosed += ServerDiscoveryForm_FormClosed;
             Load += ServerDiscoveryForm_Load;
             KeyDown += ServerDiscoveryForm_KeyDown;
-            flowLayoutPanel2.ResumeLayout(false);
-            flowLayoutPanel2.PerformLayout();
             splitContainerMain.Panel1.ResumeLayout(false);
+            splitContainerMain.Panel1.PerformLayout();
             splitContainerMain.Panel2.ResumeLayout(false);
+            splitContainerMain.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainerMain).EndInit();
             splitContainerMain.ResumeLayout(false);
-            panelSearch.ResumeLayout(false);
-            panelSearch.PerformLayout();
+            pnlServers.ResumeLayout(false);
+            pnlTop.ResumeLayout(false);
+            pnlLeft.ResumeLayout(false);
+            panel1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)circularPictureBox1).EndInit();
             ResumeLayout(false);
         }
 
         #endregion
-
-        private TextBox tbxPort;
-        private Label lblPort;
-        private Button btnDiscoverServer;
-        private FlowLayoutPanel flowLayoutPanel2;
-        private ListBox lsbxServers;
-        private Label label1;
-        private TextBox txtbxUsername;
         private SplitContainer splitContainerMain;
-        private Panel pnlProfileArea;
-        private FlowLayoutPanel panelSearch;
-        private SearchControl searchControl1;
         private Label label2;
+        private SearchControl searchControl1;
+        private ProfileControl prflCtrlProfile;
+        private ServerListControl serverControl1;
+        private SearchControl searchControl2;
+        private FlowLayoutPanel flowLayoutPanel2;
+        private TextBox txtbxUsername;
+        private Label lblPort;
+        private TextBox tbxPort;
+        private SearchControl srchCtrlSearch;
+        private Label lblConversations;
+        private Panel pnlTop;
+        private Panel pnlLabelConversations;
+        private RoundButtonControl roundButtonControl1;
+        private FlowLayoutPanel flwLytPnlServers;
+        private SearchControl searchControl3;
+        private RoundButtonControl roundButtonControl2;
+        private ProfileControl profileControl1;
+        private Panel pnlServers;
+        private Panel pnlLeft;
+        private Label label1;
+        private Label lblWelcome;
+        private Label lblProceed;
+        private CircularPictureBox circularPictureBox1;
+        private Panel panel1;
     }
 }

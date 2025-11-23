@@ -8,16 +8,21 @@ namespace Client
 {
     public class ReactionManager
     {
+        // Dictionary to hold reaction states per message
         private Dictionary<string, ReactionState> _reactionStates = new();
 
         public ReactionManager()
         {
-            // Initialize the event with an empty delegate to satisfy the non-nullable requirement
-            On_Reaction_Updated = _ => { };
         }
 
-        // Event để UI subcribe
-        public event Action<string> On_Reaction_Updated;
+        /// <summary>
+        /// Occurs when a reaction is updated, providing the identifier of the updated reaction.
+        /// </summary>
+        /// <remarks> Subscribers are notified with the reaction identifier whenever a reaction is
+        /// modified. This event is invoked even if the update does not change the reaction's value. Handlers should be
+        /// thread-safe if updates may occur concurrently.
+        /// </remarks>
+        public event Action<string> On_Reaction_Updated = _ => { };
 
         // Toggle reaction local
         public void ToggleReaction(string messageId, string emoji, string userId)
