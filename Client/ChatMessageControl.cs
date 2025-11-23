@@ -47,10 +47,10 @@ namespace Client
 
         // Add msgId here later
         public ChatMessageControl(
-            Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingAttachmentFetches, 
+            Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingAttachmentFetches,
             ReactionManager manager,
-            TcpClient client, 
-            ChatMessage chatMessage, 
+            TcpClient client,
+            ChatMessage chatMessage,
             bool isRight
         )
         {
@@ -150,6 +150,11 @@ namespace Client
             //lblUsername.Text = _chatMessage.Username;
             lblMessage.Text = _chatMessage.Message;
             lblTimestamp.Text = DateTime.Now.Subtract(_chatMessage.TimeSent).Days > 0 ? _chatMessage.TimeSent.ToString("g") : _chatMessage.TimeSent.ToString("t");
+            foreach (Control c in pnlReaction.Controls)
+            {
+                c.MouseEnter += pnlReaction_MouseEnter;
+                c.MouseLeave += pnlReaction_MouseLeave;
+            }
             Task.Run(() =>
             {
                 if (!string.IsNullOrEmpty(_chatMessage.ProfileImagePath))
@@ -301,16 +306,18 @@ namespace Client
 
         private void btnMainEmoji_Click(object sender, EventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine("Main emoji button clicked.");
             reactionControl1.ShowEmojis();
-            btnMainEmoji.Visible = false;
+            pnlReaction.Visible = false;
         }
 
         private void HideReactionControl()
         {
             reactionControl1.Visible = false;
-            btnMainEmoji.Visible = true;
+            pnlReaction.Visible = true;
         }
 
+        // Xử lý khi người dùng chọn một emoji trong ReactionControl
         private void ReactionControl1_EmojiClicked(string emoji)
         {
             MessageBox.Show($"Bạn vừa chọn emoji: {emoji}");
@@ -327,6 +334,20 @@ namespace Client
             reactionRowControl.Visible = state.Emoji_To_Users.Any();
         }
 
-       
+        private void pnlReaction_MouseEnter(object sender, EventArgs e)
+        {
+            btnMainEmoji.Visible = true;
+        }
+
+        private void pnlReaction_MouseLeave(object sender, EventArgs e)
+        {
+            var cursorPos = pnlReaction.PointToClient(Cursor.Position);
+            if (!pnlReaction.ClientRectangle.Contains(cursorPos))
+            {
+                btnMainEmoji.Visible = false;
+            }
+        }
+
+        private void btnMainEmoji_Click_1(object sender, EventArgs e) => btnMainEmoji_Click(sender, e);
     }
 }
