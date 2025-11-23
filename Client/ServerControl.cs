@@ -58,7 +58,7 @@ namespace Client
             }
         }
 
-        private Color backgroundColor;
+        public Color backgroundColor;
 
         public Color BorderColor
         {

@@ -61,6 +61,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
+            BorderColor = SystemColors.InactiveBorder;
             Controls.Add(pnlButton);
             Name = "RoundButtonControl";
             Size = new Size(146, 65);

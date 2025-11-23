@@ -35,6 +35,7 @@
             // 
             // roundButtonControl1
             // 
+            roundButtonControl1.ActiveBorderColor = SystemColors.ActiveBorder;
             roundButtonControl1.BackColor = Color.Transparent;
             roundButtonControl1.BackgroundColor = SystemColors.Control;
             roundButtonControl1.BorderColor = SystemColors.Control;
@@ -52,7 +53,7 @@
             roundButtonControl1.Radius = 10;
             roundButtonControl1.Size = new Size(241, 59);
             roundButtonControl1.TabIndex = 0;
-            roundButtonControl1.UseMouseOverBackColor = false;
+            roundButtonControl1.UseMouseOverBackColor = true;
             roundButtonControl1.Click += roundButtonControl1_Click;
             // 
             // clkTrghLblServerName

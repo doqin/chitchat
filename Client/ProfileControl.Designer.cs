@@ -44,8 +44,8 @@
             // 
             roundControl1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             roundControl1.BackColor = Color.Transparent;
-            roundControl1.BackgroundColor = Color.FromArgb(34, 44, 84);
-            roundControl1.BorderColor = SystemColors.Control;
+            roundControl1.BackgroundColor = SystemColors.Control;
+            roundControl1.BorderColor = SystemColors.InactiveBorder;
             roundControl1.BorderWidth = 1F;
             roundControl1.Controls.Add(pnlInfo);
             roundControl1.Controls.Add(pnlProfilePicture);
@@ -70,9 +70,9 @@
             // 
             lblStatus.Anchor = AnchorStyles.Left | AnchorStyles.Right;
             lblStatus.AutoEllipsis = true;
-            lblStatus.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblStatus.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblStatus.ForeColor = SystemColors.ControlDark;
-            lblStatus.Location = new Point(1, 31);
+            lblStatus.Location = new Point(2, 31);
             lblStatus.Name = "lblStatus";
             lblStatus.Size = new Size(100, 17);
             lblStatus.TabIndex = 3;
@@ -83,8 +83,8 @@
             // 
             lblUser.Anchor = AnchorStyles.Left | AnchorStyles.Right;
             lblUser.AutoEllipsis = true;
-            lblUser.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            lblUser.ForeColor = SystemColors.Control;
+            lblUser.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblUser.ForeColor = SystemColors.WindowText;
             lblUser.Location = new Point(0, 8);
             lblUser.Name = "lblUser";
             lblUser.Size = new Size(172, 31);
@@ -108,8 +108,8 @@
             crclrPctrBxProfile.DrawOutline = true;
             crclrPctrBxProfile.Location = new Point(10, 10);
             crclrPctrBxProfile.Name = "crclrPctrBxProfile";
-            crclrPctrBxProfile.OutlineColor = Color.White;
-            crclrPctrBxProfile.OutlineWidth = 2F;
+            crclrPctrBxProfile.OutlineColor = SystemColors.ActiveBorder;
+            crclrPctrBxProfile.OutlineWidth = 1F;
             crclrPctrBxProfile.Size = new Size(41, 41);
             crclrPctrBxProfile.SizeMode = PictureBoxSizeMode.Zoom;
             crclrPctrBxProfile.TabIndex = 0;

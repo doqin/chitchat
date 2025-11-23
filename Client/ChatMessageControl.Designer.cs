@@ -75,7 +75,7 @@
             lblTimestamp.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             lblTimestamp.AutoSize = true;
             lblTimestamp.Font = new Font("Segoe UI", 7F);
-            lblTimestamp.ForeColor = Color.White;
+            lblTimestamp.ForeColor = SystemColors.GrayText;
             lblTimestamp.Location = new Point(3, 65);
             lblTimestamp.Name = "lblTimestamp";
             lblTimestamp.Padding = new Padding(0, 2, 0, 0);
@@ -98,6 +98,7 @@
             // 
             // crclrPicBoxProfilePicture
             // 
+            crclrPicBoxProfilePicture.DrawOutline = false;
             crclrPicBoxProfilePicture.Location = new Point(3, 3);
             crclrPicBoxProfilePicture.Name = "crclrPicBoxProfilePicture";
             crclrPicBoxProfilePicture.OutlineColor = Color.White;
@@ -139,6 +140,7 @@
             AutoSizeMode = AutoSizeMode.GrowAndShrink;
             BackColor = Color.Transparent;
             Controls.Add(flowPanelLayout);
+            DoubleBuffered = true;
             Margin = new Padding(3, 2, 3, 2);
             Name = "ChatMessageControl";
             Size = new Size(174, 87);

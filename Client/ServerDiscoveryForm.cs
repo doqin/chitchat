@@ -30,18 +30,27 @@ namespace Client
                     Console.WriteLine("Server added to the list.");
                     var serverControl = new ServerControl();
                     serverControl.ServerName = serverList[e.NewIndex].Name;
-                    serverControl.ServerAddress = serverList[e.NewIndex].IPAddress;
+                    serverControl.ServerAddress = $"{serverList[e.NewIndex].IPAddress}:{serverList[e.NewIndex].Port}";
                     serverControl.Width = flwLytPnlServers.ClientSize.Width - 6; // Adjust width to fit within the panel
-                    serverControl.BackgroundColor = Color.FromArgb(30, 30, 30);
-                    serverControl.UseMouseOverBackColor = true;
-                    serverControl.MouseOverBackColor = Color.FromArgb(50, 50, 50);
-                    serverControl.ServerNameColor = Color.White;
+                    serverControl.BackgroundColor = Color.White;
+                    serverControl.BorderColor = Color.White;
+                    serverControl.MouseOverBackColor = Color.FromArgb(246, 245, 244);
+                    //serverControl.BackgroundColor = Color.FromArgb(30, 30, 30);
+                    //serverControl.UseMouseOverBackColor = true;
+                    //serverControl.MouseOverBackColor = Color.FromArgb(50, 50, 50);
+                    //serverControl.ServerNameColor = Color.White;
                     serverControl.Click += (s, args) =>
                     {
-                        
+                        serverControl.backgroundColor = Color.FromArgb(246, 245, 244);
+
                         // Dispose any previously hosted chat
                         if (hostedChatForm != null)
                         {
+                            if (hostedChatForm.serverIp == serverList[e.NewIndex].IPAddress && hostedChatForm.serverPort == serverList[e.NewIndex].Port)
+                            {
+                                // Already hosting this chat, do nothing
+                                return;
+                            }
                             try
                             {
                                 hostedChatForm.Close();
@@ -108,7 +117,7 @@ namespace Client
 
         private void ServerDiscoveryForm_Load(object sender, EventArgs e)
         {
-            Extensions.DarkMode.EnableDarkTitleBar(this);
+            //Extensions.DarkMode.EnableDarkTitleBar(this);
             serverList.Clear();
             Cursor.Current = Cursors.WaitCursor;
 
@@ -116,12 +125,27 @@ namespace Client
             Discoverer discoverer = new Discoverer(udpPort);
             discoverer.ListenForServer(serverList, timeoutMs);
             Cursor.Current = Cursors.Default;
+
+            if (string.IsNullOrEmpty(ConfigManager.Current!.Username))
+            {
+                var loginForm = new LoginForm();
+                var result = loginForm.ShowDialog();
+            }
+            if (!string.IsNullOrEmpty(ConfigManager.Current!.ProfileImagePath) && Path.Exists(Path.Combine("Cached", ConfigManager.Current!.ProfileImagePath)))
+            {
+                circularPictureBox1.Image = Image.FromFile(Path.Combine("Cached", ConfigManager.Current!.ProfileImagePath));
+            }
         }
 
-        private void splitContainerMain_Panel2_Paint(object sender, PaintEventArgs e)
+        private void splitContainerMain_Paint(object sender, PaintEventArgs e)
         {
-
+            using (Pen pen = new Pen(Color.FromArgb(222, 220, 218), 1))
+            {
+                // Draw a line at the splitter
+                e.Graphics.DrawLine(pen, splitContainerMain.SplitterDistance, 0, splitContainerMain.SplitterDistance, splitContainerMain.Height);
+            }
         }
+
         private void ServerDiscoveryForm_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Escape)
@@ -168,6 +192,15 @@ namespace Client
             Discoverer discoverer = new Discoverer(udpPort);
             discoverer.ListenForServer(serverList, timeoutMs);
             Cursor.Current = Cursors.Default;
+        }
+
+        private void pnlLeft_Paint(object sender, PaintEventArgs e)
+        {
+            using (Pen pen = new Pen(Color.FromArgb(222, 220, 218), 1))
+            {
+                // Draw a line at the right edge of pnlLeft
+                e.Graphics.DrawLine(pen, pnlLeft.Width - 1, 0, pnlLeft.Width - 1, splitContainerMain.Height);
+            }
         }
     }
 }
