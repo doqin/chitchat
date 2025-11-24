@@ -1,13 +1,10 @@
 ﻿using Protocol;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Net.Sockets;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,6 +19,11 @@ namespace Client
         private Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingFetches;
         private bool _isRight;
         private static readonly SemaphoreSlim _readCache = new SemaphoreSlim(1, 1);
+
+        private string messageId;
+        private ReactionManager reactionManager;
+        private string currentUserId;
+        private ReactionRowControl reactionRowControl;
 
         public string Username
         {
@@ -43,12 +45,24 @@ namespace Client
             }
         }
 
-        public ChatMessageControl(Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingAttachmentFetches, TcpClient client, ChatMessage chatMessage, bool isRight)
+        // Add msgId here later
+        public ChatMessageControl(
+            Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingAttachmentFetches,
+            ReactionManager manager,
+            TcpClient client,
+            ChatMessage chatMessage,
+            bool isRight
+        )
         {
+            reactionManager = manager ?? throw new ArgumentNullException(nameof(manager));
             pendingFetches = pendingAttachmentFetches;
             _isRight = isRight;
             _chatMessage = chatMessage;
             _client = client;
+
+            // TODO: Get user id
+            currentUserId = chatMessage.Address;//userId;
+
             InitializeComponent();
             if (_isRight)
             {
@@ -59,6 +73,30 @@ namespace Client
             }
             var tooltip = new ToolTip();
             tooltip.SetToolTip(crclrPicBoxProfilePicture, _chatMessage.Username);
+
+            // Khởi tạo reaction row
+            reactionRowControl = new ReactionRowControl();
+            reactionRowControl.SetCurrentUserId(currentUserId);
+            reactionRowControl.ReactionClicked += (emoji) =>
+            {
+                reactionManager.ToggleReaction(chatMessage.Id, emoji, currentUserId);
+            };
+
+            // Subscribe event reaction
+            reactionManager.On_Reaction_Updated += ReactionManager_OnReactionChanged;
+
+            // Thêm vào UI
+            reactionRowControl.Size = new Size(400, 30);
+            reactionRowControl.Location = new Point(0, 100);
+            reactionRowControl.Visible = false;
+            reactionRowControl.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
+            this.Controls.Add(reactionRowControl);
+
+            // click ra ngoài ẩn
+            this.Click += (s, e) => { if (reactionControl1.Visible) HideReactionControl(); };
+
+            // Load message + attachment
+            //rndCtrlChatBubble_Load(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -112,6 +150,11 @@ namespace Client
             //lblUsername.Text = _chatMessage.Username;
             lblMessage.Text = _chatMessage.Message;
             lblTimestamp.Text = DateTime.Now.Subtract(_chatMessage.TimeSent).Days > 0 ? _chatMessage.TimeSent.ToString("g") : _chatMessage.TimeSent.ToString("t");
+            foreach (Control c in pnlReaction.Controls)
+            {
+                c.MouseEnter += pnlReaction_MouseEnter;
+                c.MouseLeave += pnlReaction_MouseLeave;
+            }
             Task.Run(() =>
             {
                 if (!string.IsNullOrEmpty(_chatMessage.ProfileImagePath))
@@ -242,14 +285,10 @@ namespace Client
                                 flowPanelAttachments.Controls.Add(picBox);
                             }));
                         }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"Error fetching image: {ex.Message}");
-                        }
+                        catch { /* handle errors */ }
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"Adding attachment control for: {attachment.FileName}");
                         AttachmentControl attachmentControl = new AttachmentControl(pendingFetches, _client, attachment.FileName);
                         if (_isRight)
                         {
@@ -264,5 +303,51 @@ namespace Client
                 }
             });
         }
+
+        private void btnMainEmoji_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("Main emoji button clicked.");
+            reactionControl1.ShowEmojis();
+            pnlReaction.Visible = false;
+        }
+
+        private void HideReactionControl()
+        {
+            reactionControl1.Visible = false;
+            pnlReaction.Visible = true;
+        }
+
+        // Xử lý khi người dùng chọn một emoji trong ReactionControl
+        private void ReactionControl1_EmojiClicked(string emoji)
+        {
+            MessageBox.Show($"Bạn vừa chọn emoji: {emoji}");
+            HideReactionControl();
+        }
+
+        private void ReactionManager_OnReactionChanged(string changedMessageId)
+        {
+            if (changedMessageId != messageId) return;
+
+            var state = reactionManager.GetState(messageId);
+
+            reactionRowControl.SetState(state);
+            reactionRowControl.Visible = state.Emoji_To_Users.Any();
+        }
+
+        private void pnlReaction_MouseEnter(object sender, EventArgs e)
+        {
+            btnMainEmoji.Visible = true;
+        }
+
+        private void pnlReaction_MouseLeave(object sender, EventArgs e)
+        {
+            var cursorPos = pnlReaction.PointToClient(Cursor.Position);
+            if (!pnlReaction.ClientRectangle.Contains(cursorPos))
+            {
+                btnMainEmoji.Visible = false;
+            }
+        }
+
+        private void btnMainEmoji_Click_1(object sender, EventArgs e) => btnMainEmoji_Click(sender, e);
     }
 }

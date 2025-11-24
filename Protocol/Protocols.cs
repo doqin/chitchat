@@ -116,6 +116,7 @@ namespace Protocol
 
     public class ChatMessage
     {
+        public string Id { get; set; }
         public DateTime TimeSent { get; set; }
         public string Username { get; set; }
         public string Message { get; set; }

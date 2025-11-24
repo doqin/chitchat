@@ -1,13 +1,13 @@
 ﻿namespace Client
 {
-    partial class SplashScreen
+    partial class MainButtonReaction
     {
-        /// <summary>
+        /// <summary> 
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
-        /// <summary>
+        /// <summary> 
         /// Clean up any resources being used.
         /// </summary>
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
@@ -20,35 +20,38 @@
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
+        #region Component Designer generated code
 
-        /// <summary>
-        /// Required method for Designer support - do not modify
+        /// <summary> 
+        /// Required method for Designer support - do not modify 
         /// the contents of this method with the code editor.
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SplashScreen));
+            button1 = new Button();
             SuspendLayout();
             // 
-            // SplashScreen
+            // button1
+            // 
+            button1.Dock = DockStyle.Fill;
+            button1.Location = new Point(0, 0);
+            button1.Name = "button1";
+            button1.Size = new Size(150, 150);
+            button1.TabIndex = 0;
+            button1.Text = "👽";
+            button1.UseVisualStyleBackColor = true;
+            // 
+            // MainButtonReaction
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.SteelBlue;
-            BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
-            BackgroundImageLayout = ImageLayout.Zoom;
-            ClientSize = new Size(800, 450);
-            DoubleBuffered = true;
-            FormBorderStyle = FormBorderStyle.None;
-            Name = "SplashScreen";
-            StartPosition = FormStartPosition.CenterScreen;
-            Text = "Form1";
-            TopMost = true;
-            Load += SplashScreen_Load;
+            Controls.Add(button1);
+            Name = "MainButtonReaction";
             ResumeLayout(false);
         }
 
         #endregion
+
+        private Button button1;
     }
 }

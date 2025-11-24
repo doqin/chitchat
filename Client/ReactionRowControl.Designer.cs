@@ -1,15 +1,11 @@
-﻿
-namespace Client
+﻿namespace Client
 {
-    partial class CircularPictureBox : PictureBox
+    partial class ReactionRowControl
     {
         /// <summary> 
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
-
-        public SizeF AutoScaleDimensions { get; private set; }
-        public AutoScaleMode AutoScaleMode { get; private set; }
 
         /// <summary> 
         /// Clean up any resources being used.
@@ -32,17 +28,31 @@ namespace Client
         /// </summary>
         private void InitializeComponent()
         {
+            flowLayoutPanelReactions = new FlowLayoutPanel();
             SuspendLayout();
             // 
-            // CircularPictureBox
+            // flowLayoutPanel1
+            // 
+            flowLayoutPanelReactions.AutoSize = true;
+            flowLayoutPanelReactions.Dock = DockStyle.Fill;
+            flowLayoutPanelReactions.Location = new Point(0, 0);
+            flowLayoutPanelReactions.Name = "flowLayoutPanel1";
+            flowLayoutPanelReactions.Size = new Size(150, 150);
+            flowLayoutPanelReactions.TabIndex = 0;
+            flowLayoutPanelReactions.WrapContents = false;
+            // 
+            // ReactionRowControl
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            Name = "CircularPictureBox";
-            //Load += CircularPictureBox_Load;
+            Controls.Add(flowLayoutPanelReactions);
+            Name = "ReactionRowControl";
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
+
+        private FlowLayoutPanel flowLayoutPanelReactions;
     }
 }

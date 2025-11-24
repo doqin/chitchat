@@ -19,7 +19,7 @@ namespace Server
                 connection.Open();
                 string tableSql = @"
                 CREATE TABLE IF NOT EXISTS Messages (
-                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Id STRING PRIMARY KEY,
                     Username TEXT NOT NULL,
                     Message TEXT,
                     Address TEXT NOT NULL,
@@ -30,7 +30,7 @@ namespace Server
                 
                 CREATE TABLE IF NOT EXISTS Attachments (
                     Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    MessageId INTEGER NOT NULL,
+                    MessageId STRING NOT NULL,
                     FileName TEXT NOT NULL,
                     IsImage BOOLEAN NOT NULL,
                     FOREIGN KEY(MessageId) REFERENCES Messages(Id)
@@ -53,13 +53,14 @@ namespace Server
                     using (var transaction = connection.BeginTransaction())
                     {
                         string insertMessageSql = @"
-                        INSERT INTO Messages (Username, Message, Address, Port, ProfileImagePath, TimeSent)
-                        VALUES (@Username, @Message, @Address, @Port, @ProfileImagePath, @TimeSent);
+                        INSERT INTO Messages (Id, Username, Message, Address, Port, ProfileImagePath, TimeSent)
+                        VALUES (@Id, @Username, @Message, @Address, @Port, @ProfileImagePath, @TimeSent);
                         SELECT last_insert_rowid();
                         ";
                         long messageId;
                         using (var command = new SQLiteCommand(insertMessageSql, connection))
                         {
+                            command.Parameters.AddWithValue("@Id", chatMessage.Id);
                             command.Parameters.AddWithValue("@Username", chatMessage.Username);
                             command.Parameters.AddWithValue("@Message", chatMessage.Message);
                             command.Parameters.AddWithValue("@Address", chatMessage.Address);
@@ -116,6 +117,7 @@ namespace Server
                         {
                             var chatMessage = new Protocol.ChatMessage
                             {
+                                Id = reader.GetString(0),
                                 Username = reader.GetString(1),
                                 Message = reader.GetString(2),
                                 Address = reader.GetString(3),
@@ -124,7 +126,6 @@ namespace Server
                                 TimeSent = reader.GetDateTime(6),
                                 Attachments = new Protocol.Attachment[] { }
                             };
-                            long messageId = reader.GetInt64(0);
                             // Fetch attachments
                             string selectAttachmentsSql = @"
                             SELECT FileName, IsImage
@@ -133,7 +134,7 @@ namespace Server
                             ";
                             using (var attachmentCommand = new SQLiteCommand(selectAttachmentsSql, connection))
                             {
-                                attachmentCommand.Parameters.AddWithValue("@MessageId", messageId);
+                                attachmentCommand.Parameters.AddWithValue("@MessageId", chatMessage.Id);
                                 using (var attachmentReader = attachmentCommand.ExecuteReader())
                                 {
                                     List<Protocol.Attachment> attachments = new List<Protocol.Attachment>();

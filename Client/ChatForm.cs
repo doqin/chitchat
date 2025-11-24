@@ -26,6 +26,7 @@ namespace Client
         public int serverPort { get; }
         private readonly string profilePictureAttachment;
         private TcpClient tcpClient;
+        private ReactionManager reactionManager;
 
         private Panel dummy;
 
@@ -39,6 +40,7 @@ namespace Client
             this.serverName = serverName;
             serverIp = ip;
             serverPort = port;
+            reactionManager = new ReactionManager();
             tcpClient = new TcpClient();
             try
             {
@@ -110,10 +112,11 @@ namespace Client
                                 ChatMessage chatMessage = JsonSerializer.Deserialize<ChatMessage>(wrapper.Payload);
                                 System.Diagnostics.Debug.WriteLine($"ChatForm | Received: {chatMessage?.Message} from {chatMessage?.Username} at {chatMessage?.TimeSent}");
 
+                                string msgId = Guid.NewGuid().ToString();
                                 var localEndPoint = tcpClient.Client.LocalEndPoint as IPEndPoint;
                                 if (chatMessage.Address == localEndPoint.Address.ToString())
                                 {
-                                    var item = new ChatMessageControl(pendingAttachmentFetches, client, chatMessage, true);
+                                    var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, true);
                                     smthFlwLytPnlMessages.Invoke(() =>
                                     {
                                         smthFlwLytPnlMessages.Controls.Add(item);
@@ -121,7 +124,7 @@ namespace Client
                                 }
                                 else
                                 {
-                                    var item = new ChatMessageControl(pendingAttachmentFetches, client, chatMessage, false);
+                                    var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, false);
                                     smthFlwLytPnlMessages.Invoke(() =>
                                     {
                                         smthFlwLytPnlMessages.Controls.Add(item);
@@ -129,6 +132,7 @@ namespace Client
                                 }
 
                                 break;
+
                             // If the message is a file confirmation, set result to the pending TaskCompletionSource
                             case Types.FileConfirmation:
                                 FileConfirmation confirmation = JsonSerializer.Deserialize<FileConfirmation>(wrapper.Payload);
@@ -184,13 +188,13 @@ namespace Client
                     var localEndPoint = tcpClient.Client.LocalEndPoint as IPEndPoint;
                     if (chatMessage.Address == localEndPoint.Address.ToString())
                     {
-                        var item = new ChatMessageControl(pendingAttachmentFetches, client, chatMessage, true);
+                        var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, true);
                         smthFlwLytPnlMessages.Controls.Add(item);
                         smthFlwLytPnlMessages.Controls.SetChildIndex(item, 0);
                     }
                     else
                     {
-                        var item = new ChatMessageControl(pendingAttachmentFetches, client, chatMessage, false);
+                        var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, false);
                         smthFlwLytPnlMessages.Controls.Add(item);
                         smthFlwLytPnlMessages.Controls.SetChildIndex(item, 0);
                     }
@@ -295,6 +299,7 @@ namespace Client
             var endPoint = tcpClient.Client.LocalEndPoint as IPEndPoint;
             ChatMessage chatMessage = new()
             {
+                Id = Guid.NewGuid().ToString(),
                 TimeSent = timeSent,
                 Username = username,
                 Message = message,
@@ -502,5 +507,7 @@ namespace Client
         private void ChatForm_Paint(object sender, PaintEventArgs e)
         {
         }
+
+       
     }
 }
