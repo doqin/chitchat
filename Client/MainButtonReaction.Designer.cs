@@ -1,6 +1,6 @@
 ﻿namespace Client
 {
-    partial class RoundControl
+    partial class MainButtonReaction
     {
         /// <summary> 
         /// Required designer variable.
@@ -28,21 +28,30 @@
         /// </summary>
         private void InitializeComponent()
         {
+            button1 = new Button();
             SuspendLayout();
             // 
-            // RoundControl
+            // button1
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            button1.Dock = DockStyle.Fill;
+            button1.Location = new Point(0, 0);
+            button1.Name = "button1";
+            button1.Size = new Size(150, 150);
+            button1.TabIndex = 0;
+            button1.Text = "👽";
+            button1.UseVisualStyleBackColor = true;
+            // 
+            // MainButtonReaction
+            // 
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.Transparent;
-            DoubleBuffered = true;
-            Margin = new Padding(1);
-            Name = "RoundControl";
-            Size = new Size(66, 73);
+            Controls.Add(button1);
+            Name = "MainButtonReaction";
             ResumeLayout(false);
-
         }
 
         #endregion
+
+        private Button button1;
     }
 }

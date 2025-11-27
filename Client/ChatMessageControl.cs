@@ -1,14 +1,12 @@
 ﻿using Protocol;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Net.Sockets;
-using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -19,6 +17,12 @@ namespace Client
         private readonly ChatMessage _chatMessage;
         private TcpClient _client;
         private Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingFetches;
+        private bool _isRight;
+        private static readonly SemaphoreSlim _readCache = new SemaphoreSlim(1, 1);
+
+        private string messageId;
+        private ReactionManager reactionManager;
+        private string currentUserId;
 
         public string Username
         {
@@ -40,12 +44,46 @@ namespace Client
             }
         }
 
-        public ChatMessageControl(Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingAttachmentFetches, TcpClient client, ChatMessage chatMessage)
+        public ChatMessageControl(
+            Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingAttachmentFetches,
+            ReactionManager manager,
+            TcpClient client,
+            ChatMessage chatMessage,
+            bool isRight
+        )
         {
+            reactionManager = manager ?? throw new ArgumentNullException(nameof(manager));
             pendingFetches = pendingAttachmentFetches;
+            _isRight = isRight;
             _chatMessage = chatMessage;
             _client = client;
+            currentUserId = chatMessage.Address;
+            messageId = chatMessage.Id;
+
             InitializeComponent();
+            if (_isRight)
+            {
+                this.Anchor = AnchorStyles.Right;
+                this.flowPanelLayout.FlowDirection = FlowDirection.RightToLeft;
+                this.rndCtrlChatBubble.Anchor = AnchorStyles.Right;
+                this.lblTimestamp.Anchor = AnchorStyles.Right;
+            }
+            var tooltip = new ToolTip();
+            tooltip.SetToolTip(crclrPicBoxProfilePicture, _chatMessage.Username);
+
+            // Subscribe event reaction
+            reactionManager.On_Reaction_Updated += ReactionManager_OnReactionChanged;
+
+            // Initialize reaction row
+            rctionRwCtrlRow.SetCurrentUserId(currentUserId);
+            rctionRwCtrlRow.ReactionClicked += rctionRwCtrlRow_ReactionClicked;
+
+
+            // click ra ngoài ẩn
+            this.Click += (s, e) => { if (reactionControl1.Visible) HideReactionControl(); };
+
+            // Load message + attachment
+            //rndCtrlChatBubble_Load(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -94,21 +132,117 @@ namespace Client
             return image;
         }
 
-        private void rndCtrlChatBubble_Load(object sender, EventArgs e)
+        private void ChatMessageControl_Load(object sender, EventArgs e)
         {
-            lblUsername.Text = _chatMessage.Username;
+            //lblUsername.Text = _chatMessage.Username;
             lblMessage.Text = _chatMessage.Message;
             lblTimestamp.Text = DateTime.Now.Subtract(_chatMessage.TimeSent).Days > 0 ? _chatMessage.TimeSent.ToString("g") : _chatMessage.TimeSent.ToString("t");
+            foreach (Control c in pnlReaction.Controls)
+            {
+                c.MouseEnter += pnlReaction_MouseEnter;
+                c.MouseLeave += pnlReaction_MouseLeave;
+            }
+            if (_isRight) { 
+                rctionRwCtrlRow.Anchor = AnchorStyles.Right;
+                rctionRwCtrlRow.FlowDirection = FlowDirection.RightToLeft;
+            }
             Task.Run(() =>
             {
+                if (!string.IsNullOrEmpty(_chatMessage.ProfileImagePath))
+                {
+                    var cacheDirectory = Path.Combine(Application.StartupPath, "Cached");
+                    Directory.CreateDirectory(cacheDirectory);
+                    var cachedImagePath = Path.Combine(cacheDirectory, _chatMessage.ProfileImagePath);
+
+                    System.Diagnostics.Debug.WriteLine($"Waiting for cache lock to unlock: {_chatMessage.ProfileImagePath}");
+                    _readCache.Wait();
+                    try
+                    {
+                        if (System.IO.File.Exists(cachedImagePath))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Loading cached profile image: {_chatMessage.ProfileImagePath}");
+
+                            Image profileImage = Image.FromFile(cachedImagePath);
+                            // Update the UI on the main thread
+                            crclrPicBoxProfilePicture.Invoke((MethodInvoker)(() =>
+                            {
+                                crclrPicBoxProfilePicture.Image = profileImage;
+                            }));
+                        }
+                        else
+                        {
+                            try
+                            {
+                                System.Diagnostics.Debug.WriteLine($"Fetching profile image: {_chatMessage.ProfileImagePath}");
+                                var request = new Wrapper
+                                {
+                                    Type = Types.GetFile,
+                                    Payload = _chatMessage.ProfileImagePath
+                                };
+                                string requestJson = JsonSerializer.Serialize(request);
+                                // Fetch the profile image data from the server
+                                var filePath = Protocol.File.FetchFile(_client, pendingFetches, _chatMessage.ProfileImagePath, cachedImagePath, requestJson);
+                                if (string.IsNullOrEmpty(filePath) || (!string.IsNullOrEmpty(filePath) && filePath == "Not found"))
+                                {
+                                    throw new FileNotFoundException("Profile image not found on server.");
+                                }
+                                // Load image
+                                Image profileImage = Image.FromFile(filePath);
+                                // Update the UI on the main thread
+                                crclrPicBoxProfilePicture.Invoke((MethodInvoker)(() =>
+                                {
+                                    crclrPicBoxProfilePicture.Image = profileImage;
+                                }));
+                                System.Diagnostics.Debug.WriteLine($"Profile image fetched and set: {_chatMessage.ProfileImagePath}");
+                            }
+                            catch (Exception ex)
+                            {
+                                System.Diagnostics.Debug.WriteLine($"Error fetching profile image: {ex.Message}");
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        _readCache.Release();
+                    }
+                }
+
                 foreach (var attachment in _chatMessage.Attachments)
                 {
                     System.Diagnostics.Debug.WriteLine($"Checking attachment: {attachment.FileName}");
+                    var cacheDirectory = Path.Combine(Application.StartupPath, "Cached");
+                    Directory.CreateDirectory(cacheDirectory);
+                    var cachedAttachmentPath = Path.Combine(cacheDirectory, attachment.FileName);
+
                     if (attachment.IsImage)
                     {
-                        System.Diagnostics.Debug.WriteLine($"Fetching image attachment: {attachment.FileName}");
+                        if (System.IO.File.Exists(cachedAttachmentPath))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Loading cached image attachment: {attachment.FileName}");
+                            Image image = Image.FromFile(cachedAttachmentPath);
+                            image = CorrectImageOrientation(image);
+                            PictureBox picBox = new PictureBox
+                            {
+                                Image = image,
+                                SizeMode = PictureBoxSizeMode.Zoom,
+                                Padding = new Padding(5),
+                                Size = new Size(400, image.Height * 400 / image.Width),
+                            };
+                            if (_isRight)
+                            {
+                                picBox.Anchor = AnchorStyles.Right;
+                            }
+                            // Update the UI on the main thread
+                            flowPanelAttachments.Invoke((MethodInvoker)(() =>
+                            {
+                                flowPanelAttachments.Controls.Add(picBox);
+                            }));
+                            continue;
+                        }
+
                         try
                         {
+                            System.Diagnostics.Debug.WriteLine($"Fetching image attachment: {attachment.FileName}");
                             var request = new Wrapper
                             {
                                 Type = Types.GetFile,
@@ -116,7 +250,7 @@ namespace Client
                             };
                             string requestJson = JsonSerializer.Serialize(request);
                             // Fetch the attachment data from the server
-                            var filePath = Protocol.File.FetchFile(_client, pendingFetches, attachment.FileName, Path.Combine("Cached", attachment.FileName), requestJson);
+                            var filePath = Protocol.File.FetchFile(_client, pendingFetches, attachment.FileName, cachedAttachmentPath, requestJson);
                             if (string.IsNullOrEmpty(filePath) || (!string.IsNullOrEmpty(filePath) && filePath == "Not found"))
                             {
                                 throw new FileNotFoundException("Image not found on server.");
@@ -132,21 +266,25 @@ namespace Client
                                 Padding = new Padding(5),
                                 Size = new Size(400, image.Height * 400 / image.Width),
                             };
+                            if (_isRight)
+                            {
+                                picBox.Anchor = AnchorStyles.Right;
+                            }
                             // Update the UI on the main thread
                             flowPanelAttachments.Invoke((MethodInvoker)(() =>
                             {
                                 flowPanelAttachments.Controls.Add(picBox);
                             }));
                         }
-                        catch (Exception ex)
-                        {
-                            System.Diagnostics.Debug.WriteLine($"Error fetching image: {ex.Message}");
-                        }
+                        catch { /* handle errors */ }
                     }
                     else
                     {
-                        System.Diagnostics.Debug.WriteLine($"Adding attachment control for: {attachment.FileName}");
                         AttachmentControl attachmentControl = new AttachmentControl(pendingFetches, _client, attachment.FileName);
+                        if (_isRight)
+                        {
+                            attachmentControl.Anchor = AnchorStyles.Right;
+                        }
                         // Update the UI on the main thread
                         flowPanelAttachments.Invoke((MethodInvoker)(() =>
                         {
@@ -156,5 +294,82 @@ namespace Client
                 }
             });
         }
+
+        private void UpdateReaction(string messageId, string emoji, string userId)
+        {
+            var stream = _client.GetStream();
+            var reactionUpdate = new Wrapper
+            {
+                Type = Types.UpdateReaction,
+                Payload = JsonSerializer.Serialize(new UpdateReaction
+                {
+                    MessageId = messageId,
+                    Emoji = emoji,
+                    UserId = userId
+                })
+            };
+            var json = JsonSerializer.Serialize(reactionUpdate);
+            Wrapper.SendJson(stream, json);
+        }
+
+        private void btnMainEmoji_Click(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("Main emoji button clicked.");
+            reactionControl1.ShowEmojis();
+            pnlReaction.Visible = false;
+        }
+
+        private void HideReactionControl()
+        {
+            reactionControl1.Visible = false;
+            pnlReaction.Visible = true;
+        }
+
+        // Xử lý khi người dùng chọn một emoji trong ReactionControl
+        private void ReactionControl1_EmojiClicked(string emoji)
+        {
+            //MessageBox.Show($"Bạn vừa chọn emoji: {emoji}");
+            System.Diagnostics.Debug.WriteLine($"{emoji}");
+            UpdateReaction(messageId, emoji, currentUserId);
+            HideReactionControl();
+        }
+
+        private void rctionRwCtrlRow_ReactionClicked(string emoji)
+        {
+            System.Diagnostics.Debug.WriteLine($"Reaction row emoji clicked: {emoji}");
+            UpdateReaction(messageId, emoji, currentUserId);
+        }
+
+        private void ReactionManager_OnReactionChanged(string changedMessageId)
+        {
+            //System.Diagnostics.Debug.WriteLine($"Reaction updated for message ID: {changedMessageId}");
+            if (changedMessageId != messageId)
+            {
+                //System.Diagnostics.Debug.WriteLine("Message ID does not match. Ignoring update.");
+                return;
+            }
+
+            var state = reactionManager.GetState(messageId);
+
+            System.Diagnostics.Debug.WriteLine($"Updating reaction row for message ID: {changedMessageId}");
+            rctionRwCtrlRow.SetState(state);
+            //reactionRowControl.Visible = state.Emoji_To_Users.Any(); This is kinda useless lol
+        }
+
+        private void pnlReaction_MouseEnter(object sender, EventArgs e)
+        {
+            btnMainEmoji.Visible = true;
+        }
+
+        private void pnlReaction_MouseLeave(object sender, EventArgs e)
+        {
+            var cursorPos = pnlReaction.PointToClient(Cursor.Position);
+            if (!pnlReaction.ClientRectangle.Contains(cursorPos))
+            {
+                btnMainEmoji.Visible = false;
+            }
+        }
+
+        private void btnMainEmoji_Click_1(object sender, EventArgs e) => btnMainEmoji_Click(sender, e);
     }
 }

@@ -14,6 +14,8 @@ namespace Client
     {
         public string Username;
         public int ServerPort;
+        public string file = "";
+
         public LoginForm()
         {
             InitializeComponent();
@@ -24,8 +26,15 @@ namespace Client
         {
             Username = string.IsNullOrWhiteSpace(txtUsername?.Text) ? "username" : txtUsername.Text.Trim();
             ServerPort = int.TryParse(txtPort?.Text, out var p) ? p : 0;
-            this.DialogResult = DialogResult.OK;
-            LoginForm.ActiveForm?.Close();
+            DialogResult = DialogResult.OK;
+            ConfigManager.Current!.Username = Username;
+            ConfigManager.Current!.UdpPort = txtPort?.Text ?? "9999";
+            if (!string.IsNullOrEmpty(file))
+            {
+                ConfigManager.Current!.ProfileImagePath = file;
+            }
+            ConfigManager.Save();
+            ActiveForm?.Close();
         }
 
         private void EnterPressed(object sender, KeyEventArgs e)
@@ -41,7 +50,7 @@ namespace Client
             var result = openFileDialog1.ShowDialog();
             if (result == DialogResult.OK)
             {
-                var file = openFileDialog1.FileName;
+                file = openFileDialog1.FileName;
                 circularPictureBox1.Image = Image.FromFile(file);
             }
         }

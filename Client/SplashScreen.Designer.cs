@@ -45,7 +45,7 @@
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Form1";
             TopMost = true;
-           // Load += SplashScreen_Load;
+            Load += SplashScreen_Load;
             ResumeLayout(false);
         }
 

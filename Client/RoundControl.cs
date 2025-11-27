@@ -67,6 +67,7 @@ namespace Client
         public RoundControl()
         {
             InitializeComponent();
+            this.DoubleBuffered = true;
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -78,9 +79,9 @@ namespace Client
         }
 
         private void drawBorder(Graphics g) =>
-            g.DrawRoundedRectangle(_borderPen, 10, 10, Width - 20, Height - 20, _radius);
+            g.DrawRoundedRectangle(_borderPen, 1, 1, Width - 2, Height - 2, _radius);
 
         private void drawBackground(Graphics g) =>
-            g.FillRoundedRectangle(_backgroundBrush, 10, 10, Width - 20, Height - 20, _radius);
+            g.FillRoundedRectangle(_backgroundBrush, 1, 1, Width - 2, Height - 2, _radius);
     }
 }

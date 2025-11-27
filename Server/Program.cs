@@ -94,6 +94,9 @@ namespace Server
                                 case Types.GetMessages:
                                     HandleGetMessages(client, wrapper);
                                     break;
+                                case Types.UpdateReaction:
+                                    HandleUpdateReaction(client, wrapper);
+                                    break;
                                 default:
                                     Console.WriteLine("Unknown message type received.");
                                     continue;
@@ -110,6 +113,41 @@ namespace Server
                     lock (clientsLock) clients.Remove(client);
                     Console.WriteLine($"Client disconnected: {client.Client.RemoteEndPoint}");
                     client.Close();
+                }
+            }
+        }
+
+        private static void HandleUpdateReaction(TcpClient client, Wrapper wrapper)
+        {
+            UpdateReaction payload = JsonSerializer.Deserialize<UpdateReaction>(wrapper.Payload);
+            if (payload != null)
+            {
+                Console.WriteLine($"Client {client.Client.RemoteEndPoint} updating reaction: {payload.Emoji} on message {payload.MessageId} by {payload.UserId}");
+                MessageDatabase.InsertOrRemoveReaction(payload.MessageId, payload.Emoji, payload.UserId);
+                // Broadcast the reaction update to all clients
+                string responsePayload = JsonSerializer.Serialize(payload);
+                Wrapper responseWrapper = new Wrapper
+                {
+                    Type = Types.UpdateReaction,
+                    Payload = responsePayload
+                };
+                string finalJson = JsonSerializer.Serialize(responseWrapper);
+                lock (clientsLock)
+                {
+                    foreach (var c in clients)
+                    {
+                        try
+                        {
+                            NetworkStream stream = c.GetStream();
+                            Wrapper.SendJson(stream, finalJson);
+                            Console.WriteLine($"Sent reaction update to {c.Client.RemoteEndPoint}");
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine($"Error sending reaction update to client: {e.Message}");
+                            // Ignore dead clients
+                        }
+                    }
                 }
             }
         }
@@ -184,6 +222,7 @@ namespace Server
                     int bytesRead;
                     while ((bytesRead = fs.Read(buffer, 0, buffer.Length)) > 0)
                     {
+                        Console.WriteLine($"Sending {bytesRead} bytes of file data...");
                         stream.Write(buffer, 0, bytesRead);
                     }
                 }

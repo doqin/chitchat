@@ -1,13 +1,14 @@
 ﻿
 namespace Client
 {
-    partial class CircularPictureBox
+    partial class CircularPictureBox : PictureBox
     {
         /// <summary> 
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components = null;
 
+        public SizeF AutoScaleDimensions { get; private set; }
         public AutoScaleMode AutoScaleMode { get; private set; }
 
         /// <summary> 
@@ -31,8 +32,15 @@ namespace Client
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            SuspendLayout();
+            // 
+            // CircularPictureBox
+            // 
+            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleMode = AutoScaleMode.Font;
+            Name = "CircularPictureBox";
+            //Load += CircularPictureBox_Load;
+            ResumeLayout(false);
         }
 
         #endregion
