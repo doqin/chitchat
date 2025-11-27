@@ -23,7 +23,6 @@ namespace Client
         private string messageId;
         private ReactionManager reactionManager;
         private string currentUserId;
-        private ReactionRowControl reactionRowControl;
 
         public string Username
         {
@@ -45,7 +44,6 @@ namespace Client
             }
         }
 
-        // Add msgId here later
         public ChatMessageControl(
             Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingAttachmentFetches,
             ReactionManager manager,
@@ -59,9 +57,8 @@ namespace Client
             _isRight = isRight;
             _chatMessage = chatMessage;
             _client = client;
-
-            // TODO: Get user id
-            currentUserId = chatMessage.Address;//userId;
+            currentUserId = chatMessage.Address;
+            messageId = chatMessage.Id;
 
             InitializeComponent();
             if (_isRight)
@@ -74,23 +71,13 @@ namespace Client
             var tooltip = new ToolTip();
             tooltip.SetToolTip(crclrPicBoxProfilePicture, _chatMessage.Username);
 
-            // Khởi tạo reaction row
-            reactionRowControl = new ReactionRowControl();
-            reactionRowControl.SetCurrentUserId(currentUserId);
-            reactionRowControl.ReactionClicked += (emoji) =>
-            {
-                reactionManager.ToggleReaction(chatMessage.Id, emoji, currentUserId);
-            };
-
             // Subscribe event reaction
             reactionManager.On_Reaction_Updated += ReactionManager_OnReactionChanged;
 
-            // Thêm vào UI
-            reactionRowControl.Size = new Size(400, 30);
-            reactionRowControl.Location = new Point(0, 100);
-            reactionRowControl.Visible = false;
-            reactionRowControl.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom;
-            this.Controls.Add(reactionRowControl);
+            // Initialize reaction row
+            rctionRwCtrlRow.SetCurrentUserId(currentUserId);
+            rctionRwCtrlRow.ReactionClicked += rctionRwCtrlRow_ReactionClicked;
+
 
             // click ra ngoài ẩn
             this.Click += (s, e) => { if (reactionControl1.Visible) HideReactionControl(); };
@@ -154,6 +141,10 @@ namespace Client
             {
                 c.MouseEnter += pnlReaction_MouseEnter;
                 c.MouseLeave += pnlReaction_MouseLeave;
+            }
+            if (_isRight) { 
+                rctionRwCtrlRow.Anchor = AnchorStyles.Right;
+                rctionRwCtrlRow.FlowDirection = FlowDirection.RightToLeft;
             }
             Task.Run(() =>
             {
@@ -320,18 +311,32 @@ namespace Client
         // Xử lý khi người dùng chọn một emoji trong ReactionControl
         private void ReactionControl1_EmojiClicked(string emoji)
         {
-            MessageBox.Show($"Bạn vừa chọn emoji: {emoji}");
+            //MessageBox.Show($"Bạn vừa chọn emoji: {emoji}");
+            System.Diagnostics.Debug.WriteLine($"{emoji}");
+            reactionManager.ToggleReaction(messageId, emoji, currentUserId);
             HideReactionControl();
+        }
+
+        private void rctionRwCtrlRow_ReactionClicked(string emoji)
+        {
+            System.Diagnostics.Debug.WriteLine($"Reaction row emoji clicked: {emoji}");
+            reactionManager.ToggleReaction(messageId, emoji, currentUserId);
         }
 
         private void ReactionManager_OnReactionChanged(string changedMessageId)
         {
-            if (changedMessageId != messageId) return;
+            //System.Diagnostics.Debug.WriteLine($"Reaction updated for message ID: {changedMessageId}");
+            if (changedMessageId != messageId)
+            {
+                //System.Diagnostics.Debug.WriteLine("Message ID does not match. Ignoring update.");
+                return;
+            }
 
             var state = reactionManager.GetState(messageId);
 
-            reactionRowControl.SetState(state);
-            reactionRowControl.Visible = state.Emoji_To_Users.Any();
+            System.Diagnostics.Debug.WriteLine($"Updating reaction row for message ID: {changedMessageId}");
+            rctionRwCtrlRow.SetState(state);
+            //reactionRowControl.Visible = state.Emoji_To_Users.Any(); This is kinda useless lol
         }
 
         private void pnlReaction_MouseEnter(object sender, EventArgs e)
