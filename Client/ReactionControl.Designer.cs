@@ -57,7 +57,6 @@
             button1.Text = "😀";
             button1.UseVisualStyleBackColor = true;
             button1.Visible = false;
-            button1.Click += btnEmoji_Click;
             // 
             // button2
             // 
@@ -68,7 +67,6 @@
             button2.Text = "\U0001f923";
             button2.UseVisualStyleBackColor = true;
             button2.Visible = false;
-            button2.Click += btnEmoji_Click;
             // 
             // button3
             // 
@@ -79,7 +77,6 @@
             button3.Text = "😍";
             button3.UseVisualStyleBackColor = false;
             button3.Visible = false;
-            button3.Click += btnEmoji_Click;
             // 
             // ReactionControl
             // 

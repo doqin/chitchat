@@ -35,6 +35,14 @@ namespace Server
                     IsImage BOOLEAN NOT NULL,
                     FOREIGN KEY(MessageId) REFERENCES Messages(Id)
                 );
+
+                CREATE TABLE IF NOT EXISTS Reactions (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    MessageId STRING NOT NULL,
+                    Emoji TEXT NOT NULL,
+                    UserId TEXT NOT NULL,
+                    FOREIGN KEY(MessageId) REFERENCES Messages(Id)
+                );
                 ";
                 using (var command = new SQLiteCommand(tableSql, connection))
                 {
@@ -150,12 +158,92 @@ namespace Server
                                     chatMessage.Attachments = attachments.ToArray();
                                 }
                             }
-                        messages.Add(chatMessage);
+
+                            // Fetch reactions
+                            string selectReactionsSql = @"
+                            SELECT Emoji, UserId
+                            FROM Reactions
+                            WHERE MessageId = @MessageId;
+                            ";
+                            using (var reactionCommand = new SQLiteCommand(selectReactionsSql, connection))
+                            {
+                                reactionCommand.Parameters.AddWithValue("@MessageId", chatMessage.Id);
+                                using (var reactionReader = reactionCommand.ExecuteReader())
+                                {
+                                    Protocol.ReactionState reactionState = new Protocol.ReactionState(chatMessage.Id);
+                                    while (reactionReader.Read())
+                                    {
+                                        if (reactionState.Emoji_To_Users == null)
+                                        {
+                                            reactionState.Emoji_To_Users = new Dictionary<string, HashSet<string>>();
+                                        }
+                                        string emoji = reactionReader.GetString(0);
+                                        string userId = reactionReader.GetString(1);
+                                        if (!reactionState.Emoji_To_Users.ContainsKey(emoji))
+                                        {
+                                            reactionState.Emoji_To_Users[emoji] = new HashSet<string>();
+                                        }
+                                        reactionState.Emoji_To_Users[emoji].Add(userId);
+                                    }
+                                    chatMessage.ReactionState = reactionState;
+                                }
+                            }
+                            messages.Add(chatMessage);
                         }
                     }
                 }
             }
             return messages.ToArray();
+        }
+
+        public static void InsertOrRemoveReaction(string messageId, string emoji, string userId)
+        {
+            using (var connection = new SQLiteConnection(connectionString))
+            {
+                connection.Open();
+                // Check if reaction exists
+                string checkSql = @"
+                SELECT COUNT(*) FROM Reactions
+                WHERE MessageId = @MessageId AND Emoji = @Emoji AND UserId = @UserId;
+                ";
+                using (var checkCommand = new SQLiteCommand(checkSql, connection))
+                {
+                    checkCommand.Parameters.AddWithValue("@MessageId", messageId);
+                    checkCommand.Parameters.AddWithValue("@Emoji", emoji);
+                    checkCommand.Parameters.AddWithValue("@UserId", userId);
+                    long count = (long)checkCommand.ExecuteScalar();
+                    if (count > 0)
+                    {
+                        // Reaction exists, remove it
+                        string deleteSql = @"
+                        DELETE FROM Reactions
+                        WHERE MessageId = @MessageId AND Emoji = @Emoji AND UserId = @UserId;
+                        ";
+                        using (var deleteCommand = new SQLiteCommand(deleteSql, connection))
+                        {
+                            deleteCommand.Parameters.AddWithValue("@MessageId", messageId);
+                            deleteCommand.Parameters.AddWithValue("@Emoji", emoji);
+                            deleteCommand.Parameters.AddWithValue("@UserId", userId);
+                            deleteCommand.ExecuteNonQuery();
+                        }
+                    }
+                    else
+                    {
+                        // Reaction does not exist, insert it
+                        string insertSql = @"
+                        INSERT INTO Reactions (MessageId, Emoji, UserId)
+                        VALUES (@MessageId, @Emoji, @UserId);
+                        ";
+                        using (var insertCommand = new SQLiteCommand(insertSql, connection))
+                        {
+                            insertCommand.Parameters.AddWithValue("@MessageId", messageId);
+                            insertCommand.Parameters.AddWithValue("@Emoji", emoji);
+                            insertCommand.Parameters.AddWithValue("@UserId", userId);
+                            insertCommand.ExecuteNonQuery();
+                        }
+                    }
+                }
+            }
         }
     }
 }

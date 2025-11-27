@@ -7,16 +7,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Protocol;
 
 namespace Client
 {
-    public partial class ReactionRowControl : UserControl
+    public partial class ReactionRowControl : FlowLayoutPanel
     {
-        private string currentUserId;
-        public ReactionRowControl()
-        {
-            InitializeComponent();
-        }
+
+        private string? currentUserId;
 
         public void SetCurrentUserId(string userId)
         {
@@ -29,32 +27,40 @@ namespace Client
         // Build UI dựa trên ReactionState
         public void SetState(ReactionState state)
         {
-            flowLayoutPanelReactions.Controls.Clear();
+            if (currentUserId == null)
+                throw new InvalidOperationException("CurrentUserId must be set before setting state.");
 
-            foreach (var kvp in state.GetEmojiCounts())
+            System.Diagnostics.Debug.WriteLine($"Setting state");
+            this.Invoke(() =>
             {
-                string emoji = kvp.Key;
-                int count = kvp.Value;
-
-                var btn = new Button
+                Controls.Clear();
+                foreach (var kvp in state.GetEmojiCounts())
                 {
-                    Text = $"{emoji} {count}",
-                    AutoSize = true,
-                    BackColor = state.HasUserReacted(emoji, currentUserId) ? Color.LightBlue : Color.White,
-                    FlatStyle = FlatStyle.Flat,
-                    Padding = new Padding(3),
-                    Margin = new Padding(2)
-                };
+                    string emoji = kvp.Key;
+                    int count = kvp.Value;
+                    System.Diagnostics.Debug.WriteLine($"Adding reaction button: {emoji} with count {count}");
 
-                btn.Click += (s, e) =>
-                {
-                    ReactionClicked?.Invoke(emoji); // báo ChatMessageControl toggle
-                };
+                    var btn = new Button
+                    {
+                        Text = $"{emoji} {count}",
+                        Font = new Font(FontFamily.GenericSerif, 12),
+                        AutoSize = true,
+                        BackColor = state.HasUserReacted(emoji, currentUserId) ? Color.LightBlue : Color.White,
+                        //FlatStyle = FlatStyle.Flat,
+                        Padding = new Padding(3),
+                        Margin = new Padding(2)
+                    };
 
-                flowLayoutPanelReactions.Controls.Add(btn);
-            }
+                    btn.Click += (s, e) =>
+                    {
+                        ReactionClicked?.Invoke(emoji); // báo ChatMessageControl toggle
+                    };
 
-            this.Visible = state.GetEmojiCounts().Count > 0;
+                    Controls.Add(btn);
+                }
+
+                //Visible = state.GetEmojiCounts().Count > 0;
+            });
         }
     }
 }
