@@ -32,6 +32,7 @@ namespace Protocol
         SendFiles,
         GetFile,
         FileConfirmation,
+        UpdateReaction,
     }
 
     public class Wrapper
@@ -103,6 +104,13 @@ namespace Protocol
         }
     }
 
+    public class UpdateReaction
+    {
+        public string MessageId { get; set; }
+        public string Emoji { get; set; }
+        public string UserId { get; set; } // Which is the client's IP for now
+    }
+
     public class GetMessages
     {
         public int Count { get; set; }
@@ -124,6 +132,7 @@ namespace Protocol
         public string Port { get; set; }
         public string ProfileImagePath { get; set; }
         public Attachment[] Attachments { get; set; }
+        public ReactionState ReactionState { get; set; }
     }
 
     public class Attachment
@@ -284,6 +293,33 @@ namespace Protocol
             }
 
             return newFilePath;
+        }
+    }
+
+    public class ReactionState
+    {
+        public string MessageId { get; set; }
+        public Dictionary<string, HashSet<string>> Emoji_To_Users { get; set; } = new Dictionary<string, HashSet<string>>();
+
+        public ReactionState()
+        {
+            MessageId = string.Empty;
+        }
+
+        public ReactionState(string messageId)
+        {
+            MessageId = messageId;
+        }
+
+        // Lấy số lượng react cho mỗi emoji
+        public Dictionary<string, int> GetEmojiCounts()
+        {
+            return Emoji_To_Users.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Count);
+        }
+
+        public bool HasUserReacted(string emoji, string username)
+        {
+            return Emoji_To_Users.ContainsKey(emoji) && Emoji_To_Users[emoji].Contains(username);
         }
     }
 }

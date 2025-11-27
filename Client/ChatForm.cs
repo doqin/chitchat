@@ -73,7 +73,7 @@ namespace Client
             }
             InitializeComponent();
             smthFlwLytPnlMessages.MouseWheel += FlwLytPnlMessages_MouseWheel;
-            Text = $"Chat - {username} @ {serverName} | {serverIp}:{serverPort}";
+            Text = $"{serverName} - {username} @ {serverName} | {serverIp}:{serverPort}";
             this.DoubleBuffered = true;
 
         }
@@ -156,6 +156,9 @@ namespace Client
                             case Types.SendMessages:
                                 HandleSendMessages(client, wrapper);
                                 break;
+                            case Types.UpdateReaction:
+                                HandleUpdateReaction(client, wrapper);
+                                break;
                             default:
                                 System.Diagnostics.Debug.WriteLine($"ChatForm | Unknown message type: {wrapper.Type}");
                                 break;
@@ -173,6 +176,12 @@ namespace Client
                 }
             }
             System.Diagnostics.Debug.WriteLine("ChatForm | Disconnected from server");
+        }
+
+        private void HandleUpdateReaction(TcpClient client, Wrapper wrapper)
+        {
+            UpdateReaction reaction = JsonSerializer.Deserialize<UpdateReaction>(wrapper.Payload);
+            reactionManager.ToggleReaction(reaction.MessageId, reaction.Emoji, reaction.UserId);
         }
 
         private void HandleSendMessages(TcpClient client, Wrapper wrapper)
@@ -197,6 +206,10 @@ namespace Client
                         var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, false);
                         smthFlwLytPnlMessages.Controls.Add(item);
                         smthFlwLytPnlMessages.Controls.SetChildIndex(item, 0);
+                    }
+                    if (chatMessage.ReactionState != null)
+                    {
+                        reactionManager.SetReactionState(chatMessage.Id, chatMessage.ReactionState);
                     }
                 }
                 smthFlwLytPnlMessages.ResumeLayout(true);
@@ -507,7 +520,5 @@ namespace Client
         private void ChatForm_Paint(object sender, PaintEventArgs e)
         {
         }
-
-       
     }
 }

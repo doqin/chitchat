@@ -295,6 +295,23 @@ namespace Client
             });
         }
 
+        private void UpdateReaction(string messageId, string emoji, string userId)
+        {
+            var stream = _client.GetStream();
+            var reactionUpdate = new Wrapper
+            {
+                Type = Types.UpdateReaction,
+                Payload = JsonSerializer.Serialize(new UpdateReaction
+                {
+                    MessageId = messageId,
+                    Emoji = emoji,
+                    UserId = userId
+                })
+            };
+            var json = JsonSerializer.Serialize(reactionUpdate);
+            Wrapper.SendJson(stream, json);
+        }
+
         private void btnMainEmoji_Click(object sender, EventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("Main emoji button clicked.");
@@ -313,14 +330,14 @@ namespace Client
         {
             //MessageBox.Show($"Bạn vừa chọn emoji: {emoji}");
             System.Diagnostics.Debug.WriteLine($"{emoji}");
-            reactionManager.ToggleReaction(messageId, emoji, currentUserId);
+            UpdateReaction(messageId, emoji, currentUserId);
             HideReactionControl();
         }
 
         private void rctionRwCtrlRow_ReactionClicked(string emoji)
         {
             System.Diagnostics.Debug.WriteLine($"Reaction row emoji clicked: {emoji}");
-            reactionManager.ToggleReaction(messageId, emoji, currentUserId);
+            UpdateReaction(messageId, emoji, currentUserId);
         }
 
         private void ReactionManager_OnReactionChanged(string changedMessageId)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Protocol;
 
 namespace Client
 {
@@ -23,6 +24,13 @@ namespace Client
         /// thread-safe if updates may occur concurrently.
         /// </remarks>
         public event Action<string> On_Reaction_Updated = _ => { };
+
+        public void SetReactionState(string messageId, ReactionState state)
+        {
+            System.Diagnostics.Debug.WriteLine($"Setting reaction state for {messageId}");
+            _reactionStates[messageId] = state;
+            On_Reaction_Updated?.Invoke(messageId);
+        }
 
         // Toggle reaction local
         public void ToggleReaction(string messageId, string emoji, string userId)
