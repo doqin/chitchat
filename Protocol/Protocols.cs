@@ -33,6 +33,9 @@ namespace Protocol
         GetFile,
         FileConfirmation,
         UpdateReaction,
+        ConnectedUsers,
+        UserConnected,
+        UserDisconnected,
     }
 
     public class Wrapper
@@ -102,6 +105,27 @@ namespace Protocol
             string json = Encoding.UTF8.GetString(buffer, 0, messageLength);
             return json;
         }
+    }
+
+    public class User
+    {
+        public string Username { get; set; }
+        public TcpClient Client { get; set; }
+    }
+
+    public class ConnectedUsers
+    {
+        public List<string> Usernames { get; set; }
+    }
+
+    public class UserConnected
+    {
+        public string Username { get; set; }
+    }
+
+    public class UserDisconnected
+    {
+        public string Username { get; set; }
     }
 
     public class UpdateReaction

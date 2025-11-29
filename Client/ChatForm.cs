@@ -34,6 +34,8 @@ namespace Client
         private Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingAttachmentFetches = new();
         private readonly SemaphoreSlim streamReadLock = new(1, 1);
 
+        private ConnectedUsers connectedUsers = new();
+
         public ChatForm(string username, string serverName, string ip, int port, string profilePicturePath)
         {
             this.username = username;
@@ -46,6 +48,25 @@ namespace Client
             {
                 tcpClient.Connect(serverIp, serverPort);
                 System.Diagnostics.Debug.WriteLine($"Connected to {serverName}");
+                Wrapper wrapper = new Wrapper
+                {
+                    Type = Types.UserConnected,
+                    Payload = JsonSerializer.Serialize(new UserConnected
+                    {
+                        Username = username,
+                    })
+                };
+                string json = JsonSerializer.Serialize(wrapper);
+                NetworkStream stream = tcpClient.GetStream();
+                Wrapper.SendJson(stream, json);
+                // Get connected users information
+                json = Wrapper.ReadJson(stream);
+                wrapper = JsonSerializer.Deserialize<Wrapper>(json);
+                if (wrapper.Type == Types.ConnectedUsers)
+                {
+                    connectedUsers = JsonSerializer.Deserialize<ConnectedUsers>(wrapper.Payload);
+                    System.Diagnostics.Debug.WriteLine($"Connected users: {string.Join(", ", connectedUsers.Usernames)}");
+                }
                 Task.Run(async () => await HandleResponse(tcpClient));
             }
             catch (Exception)
@@ -72,6 +93,7 @@ namespace Client
                 profilePictureAttachment = profilePicturePath;
             }
             InitializeComponent();
+            lblUserInfo.Text = $"Connected Users: {string.Join(", ", connectedUsers.Usernames)}";
             smthFlwLytPnlMessages.MouseWheel += FlwLytPnlMessages_MouseWheel;
             Text = $"{serverName} - {username} @ {serverName} | {serverIp}:{serverPort}";
             this.DoubleBuffered = true;
@@ -158,6 +180,24 @@ namespace Client
                                 break;
                             case Types.UpdateReaction:
                                 HandleUpdateReaction(client, wrapper);
+                                break;
+                            case Types.UserConnected:
+                                UserConnected userConnected = JsonSerializer.Deserialize<UserConnected>(wrapper.Payload);
+                                connectedUsers.Usernames.Add(userConnected.Username);
+                                System.Diagnostics.Debug.WriteLine($"ChatForm | User connected: {userConnected.Username}");
+                                lblUserInfo.Invoke(() =>
+                                {
+                                    lblUserInfo.Text = $"Connected Users: {string.Join(", ", connectedUsers.Usernames)}";
+                                });
+                                break;
+                            case Types.UserDisconnected:
+                                UserConnected userDisconnected = JsonSerializer.Deserialize<UserConnected>(wrapper.Payload);
+                                connectedUsers.Usernames.Remove(userDisconnected.Username);
+                                System.Diagnostics.Debug.WriteLine($"ChatForm | User disconnected: {userDisconnected.Username}");
+                                lblUserInfo.Invoke(() =>
+                                {
+                                    lblUserInfo.Text = $"Connected Users: {string.Join(", ", connectedUsers.Usernames)}";
+                                });
                                 break;
                             default:
                                 System.Diagnostics.Debug.WriteLine($"ChatForm | Unknown message type: {wrapper.Type}");

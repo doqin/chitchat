@@ -36,9 +36,12 @@
             roundButtonControl1 = new RoundButtonControl();
             flwLytPnlAttachments = new FlowLayoutPanel();
             smthFlwLytPnlMessages = new SmoothFlowLayoutPanel();
+            pnlTop = new Panel();
+            lblUserInfo = new Label();
             pnlChatPanel.SuspendLayout();
             roundControl1.SuspendLayout();
             panel1.SuspendLayout();
+            pnlTop.SuspendLayout();
             SuspendLayout();
             // 
             // openFileDialog1
@@ -144,12 +147,32 @@
             smthFlwLytPnlMessages.SizeChanged += smthFlwLytPnlMessages_SizeChanged;
             smthFlwLytPnlMessages.ControlAdded += smthFlwLytPnlMessages_ControlAdded;
             // 
+            // pnlTop
+            // 
+            pnlTop.BackColor = SystemColors.Window;
+            pnlTop.Controls.Add(lblUserInfo);
+            pnlTop.Dock = DockStyle.Top;
+            pnlTop.Location = new Point(0, 0);
+            pnlTop.Name = "pnlTop";
+            pnlTop.Size = new Size(803, 47);
+            pnlTop.TabIndex = 0;
+            // 
+            // lblUserInfo
+            // 
+            lblUserInfo.AutoSize = true;
+            lblUserInfo.Location = new Point(19, 16);
+            lblUserInfo.Name = "lblUserInfo";
+            lblUserInfo.Size = new Size(38, 15);
+            lblUserInfo.TabIndex = 0;
+            lblUserInfo.Text = "label1";
+            // 
             // ChatForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(246, 245, 244);
             ClientSize = new Size(803, 479);
+            Controls.Add(pnlTop);
             Controls.Add(smthFlwLytPnlMessages);
             Controls.Add(flwLytPnlAttachments);
             Controls.Add(pnlChatPanel);
@@ -162,6 +185,8 @@
             roundControl1.ResumeLayout(false);
             roundControl1.PerformLayout();
             panel1.ResumeLayout(false);
+            pnlTop.ResumeLayout(false);
+            pnlTop.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -176,5 +201,7 @@
         private Panel panel1;
         private RoundButtonControl roundButtonControl1;
         private SmoothFlowLayoutPanel smthFlwLytPnlMessages;
+        private Panel pnlTop;
+        private Label lblUserInfo;
     }
 }
