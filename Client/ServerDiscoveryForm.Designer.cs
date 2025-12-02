@@ -36,9 +36,9 @@
             roundButtonControl1 = new RoundButtonControl();
             label1 = new Label();
             pnlLeft = new Panel();
-            roundButtonControl2 = new RoundButtonControl();
+            btnSettings = new RoundButtonControl();
             panel1 = new Panel();
-            circularPictureBox1 = new CircularPictureBox();
+            picAvatar = new CircularPictureBox();
             lblProceed = new Label();
             lblWelcome = new Label();
             label2 = new Label();
@@ -50,7 +50,7 @@
             pnlTop.SuspendLayout();
             pnlLeft.SuspendLayout();
             panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)circularPictureBox1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)picAvatar).BeginInit();
             SuspendLayout();
             // 
             // splitContainerMain
@@ -173,7 +173,7 @@
             // pnlLeft
             // 
             pnlLeft.BackColor = Color.FromArgb(247, 245, 243);
-            pnlLeft.Controls.Add(roundButtonControl2);
+            pnlLeft.Controls.Add(btnSettings);
             pnlLeft.Controls.Add(panel1);
             pnlLeft.Dock = DockStyle.Left;
             pnlLeft.ForeColor = SystemColors.ActiveBorder;
@@ -183,31 +183,32 @@
             pnlLeft.TabIndex = 1;
             pnlLeft.Paint += pnlLeft_Paint;
             // 
-            // roundButtonControl2
+            // btnSettings
             // 
-            roundButtonControl2.ActiveBorderColor = SystemColors.ActiveBorder;
-            roundButtonControl2.BackColor = Color.Transparent;
-            roundButtonControl2.BackgroundColor = Color.FromArgb(247, 245, 243);
-            roundButtonControl2.BorderColor = Color.FromArgb(247, 245, 243);
-            roundButtonControl2.BorderWidth = 1F;
-            roundButtonControl2.ButtonBackgroundImage = Properties.Resources.settings;
-            roundButtonControl2.ButtonBackgroundImageLayout = ImageLayout.Zoom;
-            roundButtonControl2.ButtonPadding = new Padding(10);
-            roundButtonControl2.ButtonText = "";
-            roundButtonControl2.ButtonTextColor = SystemColors.ActiveBorder;
-            roundButtonControl2.Dock = DockStyle.Bottom;
-            roundButtonControl2.Location = new Point(0, 531);
-            roundButtonControl2.Margin = new Padding(1);
-            roundButtonControl2.MouseOverBackColor = SystemColors.ButtonHighlight;
-            roundButtonControl2.Name = "roundButtonControl2";
-            roundButtonControl2.Radius = 10;
-            roundButtonControl2.Size = new Size(62, 47);
-            roundButtonControl2.TabIndex = 1;
-            roundButtonControl2.UseMouseOverBackColor = true;
+            btnSettings.ActiveBorderColor = SystemColors.ActiveBorder;
+            btnSettings.BackColor = Color.Transparent;
+            btnSettings.BackgroundColor = Color.FromArgb(247, 245, 243);
+            btnSettings.BorderColor = Color.FromArgb(247, 245, 243);
+            btnSettings.BorderWidth = 1F;
+            btnSettings.ButtonBackgroundImage = Properties.Resources.settings;
+            btnSettings.ButtonBackgroundImageLayout = ImageLayout.Zoom;
+            btnSettings.ButtonPadding = new Padding(10);
+            btnSettings.ButtonText = "";
+            btnSettings.ButtonTextColor = SystemColors.ActiveBorder;
+            btnSettings.Dock = DockStyle.Bottom;
+            btnSettings.Location = new Point(0, 531);
+            btnSettings.Margin = new Padding(1);
+            btnSettings.MouseOverBackColor = SystemColors.ButtonHighlight;
+            btnSettings.Name = "btnSettings";
+            btnSettings.Radius = 10;
+            btnSettings.Size = new Size(62, 47);
+            btnSettings.TabIndex = 1;
+            btnSettings.UseMouseOverBackColor = true;
+            btnSettings.Click += roundButtonControl2_Click;
             // 
             // panel1
             // 
-            panel1.Controls.Add(circularPictureBox1);
+            panel1.Controls.Add(picAvatar);
             panel1.Dock = DockStyle.Bottom;
             panel1.Location = new Point(0, 578);
             panel1.Name = "panel1";
@@ -215,24 +216,24 @@
             panel1.Size = new Size(62, 61);
             panel1.TabIndex = 2;
             // 
-            // circularPictureBox1
+            // picAvatar
             // 
-            circularPictureBox1.Dock = DockStyle.Fill;
-            circularPictureBox1.DrawOutline = false;
-            circularPictureBox1.Location = new Point(10, 10);
-            circularPictureBox1.Name = "circularPictureBox1";
-            circularPictureBox1.OutlineColor = Color.White;
-            circularPictureBox1.OutlineWidth = 2F;
-            circularPictureBox1.Size = new Size(41, 41);
-            circularPictureBox1.TabIndex = 0;
-            circularPictureBox1.TabStop = false;
+            picAvatar.Dock = DockStyle.Fill;
+            picAvatar.DrawOutline = false;
+            picAvatar.Location = new Point(10, 10);
+            picAvatar.Name = "picAvatar";
+            picAvatar.OutlineColor = Color.White;
+            picAvatar.OutlineWidth = 2F;
+            picAvatar.Size = new Size(41, 41);
+            picAvatar.TabIndex = 0;
+            picAvatar.TabStop = false;
             // 
             // lblProceed
             // 
             lblProceed.Anchor = AnchorStyles.None;
             lblProceed.AutoSize = true;
             lblProceed.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblProceed.Location = new Point(254, 316);
+            lblProceed.Location = new Point(278, 316);
             lblProceed.Name = "lblProceed";
             lblProceed.Size = new Size(318, 17);
             lblProceed.TabIndex = 1;
@@ -243,7 +244,7 @@
             lblWelcome.Anchor = AnchorStyles.None;
             lblWelcome.AutoSize = true;
             lblWelcome.Font = new Font("Segoe UI", 18F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblWelcome.Location = new Point(225, 284);
+            lblWelcome.Location = new Point(249, 284);
             lblWelcome.Name = "lblWelcome";
             lblWelcome.Size = new Size(379, 32);
             lblWelcome.TabIndex = 0;
@@ -282,7 +283,7 @@
             pnlTop.ResumeLayout(false);
             pnlLeft.ResumeLayout(false);
             panel1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)circularPictureBox1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)picAvatar).EndInit();
             ResumeLayout(false);
         }
 
@@ -304,14 +305,14 @@
         private RoundButtonControl roundButtonControl1;
         private FlowLayoutPanel flwLytPnlServers;
         private SearchControl searchControl3;
-        private RoundButtonControl roundButtonControl2;
+        private RoundButtonControl btnSettings;
         private ProfileControl profileControl1;
         private Panel pnlServers;
         private Panel pnlLeft;
         private Label label1;
         private Label lblWelcome;
         private Label lblProceed;
-        private CircularPictureBox circularPictureBox1;
+        private CircularPictureBox picAvatar;
         private Panel panel1;
     }
 }
