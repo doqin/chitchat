@@ -83,6 +83,8 @@ namespace Client
                         chatForm.TopLevel = false;
                         chatForm.FormBorderStyle = FormBorderStyle.None;
                         chatForm.Dock = DockStyle.Fill;
+                        //Mất focus vào chatform
+                        AddMouseDownToLoseFocusExternal(this, chatForm);
 
                         // Ensure the split container exists in the designer; adjust name if necessary
                         if (splitContainerMain == null)
@@ -200,6 +202,21 @@ namespace Client
             {
                 // Draw a line at the right edge of pnlLeft
                 e.Graphics.DrawLine(pen, pnlLeft.Width - 1, 0, pnlLeft.Width - 1, splitContainerMain.Height);
+            }
+        }
+
+        private void AddMouseDownToLoseFocusExternal(Control parent, ChatForm chatForm)
+        {
+            // Đăng ký MouseDown cho control hiện tại
+            parent.MouseDown += (s, e) =>
+            {
+                chatForm.ActiveControl = null;
+            };
+
+            // Đệ quy cho tất cả control con
+            foreach (Control c in parent.Controls)
+            {
+                AddMouseDownToLoseFocusExternal(c, chatForm);
             }
         }
     }

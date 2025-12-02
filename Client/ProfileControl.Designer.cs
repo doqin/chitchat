@@ -49,11 +49,10 @@
             roundControl1.BorderWidth = 1F;
             roundControl1.Controls.Add(pnlInfo);
             roundControl1.Controls.Add(pnlProfilePicture);
-            roundControl1.Location = new Point(3, 2);
-            roundControl1.Margin = new Padding(3, 2, 3, 2);
+            roundControl1.Location = new Point(3, 3);
             roundControl1.Name = "roundControl1";
             roundControl1.Radius = 10;
-            roundControl1.Size = new Size(250, 61);
+            roundControl1.Size = new Size(286, 81);
             roundControl1.TabIndex = 0;
             // 
             // pnlInfo
@@ -63,7 +62,7 @@
             pnlInfo.Dock = DockStyle.Fill;
             pnlInfo.Location = new Point(59, 0);
             pnlInfo.Name = "pnlInfo";
-            pnlInfo.Size = new Size(191, 61);
+            pnlInfo.Size = new Size(227, 81);
             pnlInfo.TabIndex = 5;
             // 
             // lblStatus
@@ -72,9 +71,9 @@
             lblStatus.AutoEllipsis = true;
             lblStatus.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblStatus.ForeColor = SystemColors.ControlDark;
-            lblStatus.Location = new Point(2, 31);
+            lblStatus.Location = new Point(2, 51);
             lblStatus.Name = "lblStatus";
-            lblStatus.Size = new Size(100, 17);
+            lblStatus.Size = new Size(150, 23);
             lblStatus.TabIndex = 3;
             lblStatus.Text = "status";
             lblStatus.TextAlign = ContentAlignment.MiddleLeft;
@@ -85,9 +84,9 @@
             lblUser.AutoEllipsis = true;
             lblUser.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblUser.ForeColor = SystemColors.WindowText;
-            lblUser.Location = new Point(0, 8);
+            lblUser.Location = new Point(0, 21);
             lblUser.Name = "lblUser";
-            lblUser.Size = new Size(172, 31);
+            lblUser.Size = new Size(205, 41);
             lblUser.TabIndex = 2;
             lblUser.Text = "username";
             lblUser.TextAlign = ContentAlignment.MiddleLeft;
@@ -99,7 +98,7 @@
             pnlProfilePicture.Location = new Point(0, 0);
             pnlProfilePicture.Name = "pnlProfilePicture";
             pnlProfilePicture.Padding = new Padding(10);
-            pnlProfilePicture.Size = new Size(59, 61);
+            pnlProfilePicture.Size = new Size(59, 81);
             pnlProfilePicture.TabIndex = 4;
             // 
             // crclrPctrBxProfile
@@ -107,23 +106,24 @@
             crclrPctrBxProfile.Dock = DockStyle.Fill;
             crclrPctrBxProfile.DrawOutline = true;
             crclrPctrBxProfile.Location = new Point(10, 10);
+            crclrPctrBxProfile.Margin = new Padding(3, 4, 3, 4);
             crclrPctrBxProfile.Name = "crclrPctrBxProfile";
             crclrPctrBxProfile.OutlineColor = SystemColors.ActiveBorder;
             crclrPctrBxProfile.OutlineWidth = 1F;
-            crclrPctrBxProfile.Size = new Size(41, 41);
+            crclrPctrBxProfile.Size = new Size(61, 61);
             crclrPctrBxProfile.SizeMode = PictureBoxSizeMode.Zoom;
             crclrPctrBxProfile.TabIndex = 0;
             crclrPctrBxProfile.TabStop = false;
             // 
             // ProfileControl
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Transparent;
             Controls.Add(roundControl1);
-            Margin = new Padding(2);
+            Margin = new Padding(2, 3, 2, 3);
             Name = "ProfileControl";
-            Size = new Size(256, 65);
+            Size = new Size(293, 87);
             Load += ProfileControl_Load;
             Resize += ProfileControl_Resize;
             roundControl1.ResumeLayout(false);

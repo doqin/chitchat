@@ -515,6 +515,24 @@ namespace Client
                 smthFlwLytPnlMessages.Controls.Add(dummy);
             });
             GetMessages(50, DateTime.Now);
+            // Click ra ngoài thì mất focus vào textbox
+            AddMouseDownToLoseFocus(this);
+        }
+
+        private void AddMouseDownToLoseFocus(Control parent)
+        {
+            if (!(parent is Button) && !(parent is TextBox))
+            {
+                parent.MouseDown += (s, e) =>
+                {
+                    this.ActiveControl = null; // mất focus textbox
+                };
+            }
+
+            foreach (Control c in parent.Controls)
+            {
+                AddMouseDownToLoseFocus(c);
+            }
         }
 
         private void FlwLytPnlMessages_MouseWheel(object? sender, MouseEventArgs e)
@@ -536,11 +554,6 @@ namespace Client
             }
         }
 
-        private void txtbxMessage_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void roundButtonControl1_Click(object sender, EventArgs e)
         {
             var result = openFileDialog1.ShowDialog();
@@ -559,6 +572,43 @@ namespace Client
 
         private void ChatForm_Paint(object sender, PaintEventArgs e)
         {
+        }
+
+        private void btn_send_Click(object sender, EventArgs e)
+        {
+            // Lấy attachment nếu có
+            Attachment[] attachments = Array.Empty<Attachment>();
+            if (flwLytPnlAttachments.Controls.Count > 0)
+            {
+                string[] files = flwLytPnlAttachments.Controls
+                    .OfType<SelectedFileControl>()
+                    .Select(f => f.FilePath)
+                    .ToArray();
+
+                var paths = SendFiles(files);
+                if (paths.Length > 0)
+                {
+                    attachments = paths;
+                }
+                else
+                {
+                    MessageBox.Show("All selected files were rejected by the server.", "File Upload Rejected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Clear attachment panel
+                flwLytPnlAttachments.Invoke(() =>
+                {
+                    flwLytPnlAttachments.Controls.Clear();
+                });
+            }
+
+            // Lấy text và gửi message nếu không rỗng
+            if (!string.IsNullOrWhiteSpace(txtbxMessage.Text) || attachments.Length != 0)
+            {
+                SendMessage(DateTime.Now, username, txtbxMessage.Text.Trim(), attachments);
+                txtbxMessage.Clear();
+            }
         }
     }
 }
