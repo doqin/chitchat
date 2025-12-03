@@ -101,6 +101,9 @@ namespace Server
                                 case Types.UserConnected:
                                     HandleUserConnected(client, wrapper);
                                     break;
+                                case Types.CheckFileExists:
+                                    HandleCheckFileExists(client, wrapper);
+                                    break;
                                 default:
                                     Console.WriteLine("Unknown message type received.");
                                     continue;
@@ -117,6 +120,27 @@ namespace Server
                     HandleClientDisconnect(client);
                 }
             }
+        }
+
+        private static void HandleCheckFileExists(TcpClient client, Wrapper wrapper)
+        {
+            var payload = wrapper.Payload;
+            var filePath = Path.Combine("Received Files", payload);
+            bool exists = System.IO.File.Exists(filePath);
+            CheckFileExistsResponse response = new CheckFileExistsResponse
+            {
+                FileName = payload,
+                Exists = exists
+            };
+            string responsePayload = JsonSerializer.Serialize(response);
+            Wrapper responseWrapper = new Wrapper
+            {
+                Type = Types.CheckFileExistsResponse,
+                Payload = responsePayload
+            };
+            string finalJson = JsonSerializer.Serialize(responseWrapper);
+            NetworkStream stream = client.GetStream();
+            Wrapper.SendJson(stream, finalJson);
         }
 
         private static void HandleUserConnected(TcpClient client, Wrapper wrapper)
@@ -247,7 +271,7 @@ namespace Server
             if (System.IO.File.Exists(filePath))
             {
                 // Creating file info
-                Files files = new Files
+                SendFiles files = new SendFiles
                 {
                     FileCount = 1,
                     FileList = new List<Protocol.File>
@@ -284,7 +308,7 @@ namespace Server
             else
             {
                 Console.WriteLine($"Requested file not found: {fileName} from {client.Client.RemoteEndPoint}");
-                Files payload = new Files
+                SendFiles payload = new SendFiles
                 {
                     FileCount = 0,
                     FileList = new List<Protocol.File>
@@ -315,7 +339,7 @@ namespace Server
         /// <param name="wrapper"></param>
         private static void HandleFiles(TcpClient client, NetworkStream ns, Wrapper wrapper)
         {
-            Protocol.Files files = JsonSerializer.Deserialize<Protocol.Files>(wrapper.Payload);
+            Protocol.SendFiles files = JsonSerializer.Deserialize<Protocol.SendFiles>(wrapper.Payload);
             if (files != null)
             {
                 Console.WriteLine($"Received: {files.FileCount} file(s) from {client.Client.RemoteEndPoint}");
@@ -328,7 +352,14 @@ namespace Server
                     foreach (var file in files.FileList)
                     {
                         Console.WriteLine($"Preparing to receive file: {file.FileName} ({file.FileSize} bytes)");
-                        var savedPath = Path.Combine(Guid.NewGuid().ToString("N"), Path.GetFileName(file.FileName));
+                        string savedPath;
+                        if (files.MangleFileNames)
+                        {
+                            savedPath = Path.Combine(Guid.NewGuid().ToString("N"), Path.GetFileName(file.FileName));
+                        } else
+                        {
+                            savedPath = file.FileName;
+                        }
                         var fullPath = Path.Combine("Received Files", savedPath);
                         // Ensure the directory exists
                         string directoryPath = Path.GetDirectoryName(fullPath);
