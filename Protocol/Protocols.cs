@@ -31,6 +31,8 @@ namespace Protocol
         SendMessages, 
         SendFiles,
         GetFile,
+        CheckFileExists,
+        CheckFileExistsResponse,
         FileConfirmation,
         UpdateReaction,
         ConnectedUsers,
@@ -197,10 +199,17 @@ namespace Protocol
         }
     }
 
-    public class Files
+    public class SendFiles
     {
         public long FileCount { get; set; }
         public List<File> FileList { get; set; }
+        public bool MangleFileNames { get; set; } = true;
+    }
+
+    public class CheckFileExistsResponse
+    {
+        public string FileName { get; set; }
+        public bool Exists { get; set; }
     }
 
     public class File
