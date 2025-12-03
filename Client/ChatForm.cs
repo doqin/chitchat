@@ -451,6 +451,34 @@ namespace Client
             Wrapper.SendJson(stream, finalJson);
         }
 
+        private void SendMessage()
+        {
+            Attachment[] attachments = Array.Empty<Attachment>();
+            if (flwLytPnlAttachments.Controls.Count > 0)
+            {
+                string[] files = flwLytPnlAttachments.Controls.Cast<SelectedFileControl>().ToArray().Select(f => f.FilePath).ToArray();
+                var paths = SendFiles(files);
+                if (paths.Length > 0)
+                {
+                    attachments = paths;
+                }
+                else
+                {
+                    MessageBox.Show("All selected files were rejected by the server.", "File Upload Rejected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+                flwLytPnlAttachments.Invoke(() =>
+                {
+                    flwLytPnlAttachments.Controls.Clear();
+                });
+            }
+            if (!string.IsNullOrWhiteSpace(txtbxMessage.Text) || attachments.Length != 0)
+            {
+                SendMessage(DateTime.Now, username, txtbxMessage.Text.Trim(), attachments);
+                txtbxMessage.Clear();
+            }
+        }
+
         private void ChatForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             tcpClient.Close();
@@ -460,30 +488,7 @@ namespace Client
         {
             if (e.KeyCode == Keys.Enter)
             {
-                Attachment[] attachments = Array.Empty<Attachment>();
-                if (flwLytPnlAttachments.Controls.Count > 0)
-                {
-                    string[] files = flwLytPnlAttachments.Controls.Cast<SelectedFileControl>().ToArray().Select(f => f.FilePath).ToArray();
-                    var paths = SendFiles(files);
-                    if (paths.Length > 0)
-                    {
-                        attachments = paths;
-                    }
-                    else
-                    {
-                        MessageBox.Show("All selected files were rejected by the server.", "File Upload Rejected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                        return;
-                    }
-                    flwLytPnlAttachments.Invoke(() =>
-                    {
-                        flwLytPnlAttachments.Controls.Clear();
-                    });
-                }
-                if (!string.IsNullOrWhiteSpace(txtbxMessage.Text) || attachments.Length != 0)
-                {
-                    SendMessage(DateTime.Now, username, txtbxMessage.Text.Trim(), attachments);
-                    txtbxMessage.Clear();
-                }
+                SendMessage();
                 e.Handled = true;
                 e.SuppressKeyPress = true;
             }
@@ -576,39 +581,7 @@ namespace Client
 
         private void btn_send_Click(object sender, EventArgs e)
         {
-            // Lấy attachment nếu có
-            Attachment[] attachments = Array.Empty<Attachment>();
-            if (flwLytPnlAttachments.Controls.Count > 0)
-            {
-                string[] files = flwLytPnlAttachments.Controls
-                    .OfType<SelectedFileControl>()
-                    .Select(f => f.FilePath)
-                    .ToArray();
-
-                var paths = SendFiles(files);
-                if (paths.Length > 0)
-                {
-                    attachments = paths;
-                }
-                else
-                {
-                    MessageBox.Show("All selected files were rejected by the server.", "File Upload Rejected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                // Clear attachment panel
-                flwLytPnlAttachments.Invoke(() =>
-                {
-                    flwLytPnlAttachments.Controls.Clear();
-                });
-            }
-
-            // Lấy text và gửi message nếu không rỗng
-            if (!string.IsNullOrWhiteSpace(txtbxMessage.Text) || attachments.Length != 0)
-            {
-                SendMessage(DateTime.Now, username, txtbxMessage.Text.Trim(), attachments);
-                txtbxMessage.Clear();
-            }
+            SendMessage();
         }
     }
 }
