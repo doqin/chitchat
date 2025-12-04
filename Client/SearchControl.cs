@@ -10,11 +10,8 @@ using System.Windows.Forms;
 
 namespace Client
 {
-    public partial class SearchControl : UserControl
+    public partial class SearchControl : RoundControl
     {
-
-        public Color BackgroundColor { get => roundControl1.BackgroundColor; set { roundControl1.BackgroundColor = value; textBox1.BackColor = value; } }
-        public Color BorderColor { get => roundControl1.BorderColor; set => roundControl1.BorderColor = value; }
         public Color ActiveBorderColor { get; set; } = Color.FromKnownColor(KnownColor.ActiveBorder);
         public Color ActiveBackgroundColor { get; set; } = Color.FromKnownColor(KnownColor.ButtonHighlight);
 
@@ -39,22 +36,24 @@ namespace Client
             InitializeComponent();
         }
 
-        private void roundControl1_Load(object sender, EventArgs e)
-        {
-            borderColor = roundControl1.BorderColor;
-            backgroundColor = roundControl1.BackgroundColor;
-        }
-
         private void textBox1_Enter(object sender, EventArgs e)
         {
-            roundControl1.BorderColor = ActiveBorderColor;
+            BorderColor = ActiveBorderColor;
             BackgroundColor = ActiveBackgroundColor;
+            textBox1.BackColor = BackgroundColor;
         }
 
         private void textBox1_Leave(object sender, EventArgs e)
         {
-            roundControl1.BorderColor = borderColor;
+            BorderColor = borderColor;
             BackgroundColor = backgroundColor;
+            textBox1.BackColor = BackgroundColor;
+        }
+
+        private void SearchControl_Load(object sender, EventArgs e)
+        {
+            borderColor = BorderColor;
+            backgroundColor = BackgroundColor;
         }
     }
 }
