@@ -115,7 +115,7 @@
             roundButtonControl1.Margin = new Padding(1);
             roundButtonControl1.MouseOverBackColor = SystemColors.ButtonHighlight;
             roundButtonControl1.Name = "roundButtonControl1";
-            roundButtonControl1.Radius = 10;
+            roundButtonControl1.Radius = 999;
             roundButtonControl1.Size = new Size(42, 41);
             roundButtonControl1.TabIndex = 0;
             roundButtonControl1.UseMouseOverBackColor = true;
