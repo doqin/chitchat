@@ -15,26 +15,41 @@ namespace Client
         public string Username;
         public int ServerPort;
         public string file = "";
+        public EventHandler? eventHandler;
 
         public LoginForm()
         {
             InitializeComponent();
             this.StartPosition = FormStartPosition.CenterParent;
+            txtUsername.Text = ConfigManager.Current!.Username;
+            if (string.IsNullOrEmpty(ConfigManager.Current!.ProfileImagePath))
+            {
+                picAvatar.Image = null;
+            }
+            else
+            {
+                try
+                {
+                    picAvatar.Image = Image.FromFile(ConfigManager.Current!.ProfileImagePath);
+                }
+                catch
+                {
+                    picAvatar.Image = null;
+                }
+            }
         }
 
         private void btnSubmit_Click(object sender, EventArgs e)
         {
             Username = string.IsNullOrWhiteSpace(txtUsername?.Text) ? "username" : txtUsername.Text.Trim();
-            ServerPort = int.TryParse(txtPort?.Text, out var p) ? p : 0;
             DialogResult = DialogResult.OK;
             ConfigManager.Current!.Username = Username;
-            ConfigManager.Current!.UdpPort = txtPort?.Text ?? "9999";
             if (!string.IsNullOrEmpty(file))
             {
                 ConfigManager.Current!.ProfileImagePath = file;
             }
             ConfigManager.Save();
-            ActiveForm?.Close();
+            eventHandler?.Invoke(this, e);
         }
 
         private void EnterPressed(object sender, KeyEventArgs e)
@@ -51,7 +66,7 @@ namespace Client
             if (result == DialogResult.OK)
             {
                 file = openFileDialog1.FileName;
-                circularPictureBox1.Image = Image.FromFile(file);
+                picAvatar.Image = Image.FromFile(file);
             }
         }
     }

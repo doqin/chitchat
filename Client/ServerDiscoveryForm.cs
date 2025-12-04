@@ -133,7 +133,7 @@ namespace Client
             }
             if (!string.IsNullOrEmpty(ConfigManager.Current!.ProfileImagePath) && Path.Exists(Path.Combine("Cached", ConfigManager.Current!.ProfileImagePath)))
             {
-                circularPictureBox1.Image = Image.FromFile(Path.Combine("Cached", ConfigManager.Current!.ProfileImagePath));
+                picAvatar.Image = Image.FromFile(Path.Combine("Cached", ConfigManager.Current!.ProfileImagePath));
             }
         }
 
@@ -201,6 +201,21 @@ namespace Client
                 // Draw a line at the right edge of pnlLeft
                 e.Graphics.DrawLine(pen, pnlLeft.Width - 1, 0, pnlLeft.Width - 1, splitContainerMain.Height);
             }
+        }
+
+        private void updateSettings(object? sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(ConfigManager.Current!.ProfileImagePath) && Path.Exists(Path.Combine("Cached", ConfigManager.Current!.ProfileImagePath)))
+            {
+                picAvatar.Image = Image.FromFile(Path.Combine("Cached", ConfigManager.Current!.ProfileImagePath));
+            }
+        }
+
+        private void roundButtonControl2_Click(object sender, EventArgs e)
+        {
+            Form settingsForm = new SettingsForm(updateSettings);
+            settingsForm.StartPosition = FormStartPosition.CenterParent;
+            DialogResult result = settingsForm.ShowDialog();
         }
     }
 }

@@ -39,7 +39,7 @@
             panel2 = new Panel();
             roundButtonControl2 = new RoundButtonControl();
             panel1 = new Panel();
-            circularPictureBox1 = new CircularPictureBox();
+            picAvatar = new CircularPictureBox();
             lblProceed = new Label();
             lblWelcome = new Label();
             label2 = new Label();
@@ -52,7 +52,7 @@
             pnlLeft.SuspendLayout();
             panel2.SuspendLayout();
             panel1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)circularPictureBox1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)picAvatar).BeginInit();
             SuspendLayout();
             // 
             // splitContainerMain
@@ -221,7 +221,7 @@
             // 
             // panel1
             // 
-            panel1.Controls.Add(circularPictureBox1);
+            panel1.Controls.Add(picAvatar);
             panel1.Dock = DockStyle.Bottom;
             panel1.Location = new Point(0, 578);
             panel1.Name = "panel1";
@@ -229,17 +229,17 @@
             panel1.Size = new Size(62, 61);
             panel1.TabIndex = 2;
             // 
-            // circularPictureBox1
+            // picAvatar
             // 
-            circularPictureBox1.Dock = DockStyle.Fill;
-            circularPictureBox1.DrawOutline = false;
-            circularPictureBox1.Location = new Point(10, 10);
-            circularPictureBox1.Name = "circularPictureBox1";
-            circularPictureBox1.OutlineColor = Color.White;
-            circularPictureBox1.OutlineWidth = 2F;
-            circularPictureBox1.Size = new Size(41, 41);
-            circularPictureBox1.TabIndex = 0;
-            circularPictureBox1.TabStop = false;
+            picAvatar.Dock = DockStyle.Fill;
+            picAvatar.DrawOutline = false;
+            picAvatar.Location = new Point(10, 10);
+            picAvatar.Name = "picAvatar";
+            picAvatar.OutlineColor = Color.White;
+            picAvatar.OutlineWidth = 2F;
+            picAvatar.Size = new Size(41, 41);
+            picAvatar.TabIndex = 0;
+            picAvatar.TabStop = false;
             // 
             // lblProceed
             // 
@@ -297,7 +297,7 @@
             pnlLeft.ResumeLayout(false);
             panel2.ResumeLayout(false);
             panel1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)circularPictureBox1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)picAvatar).EndInit();
             ResumeLayout(false);
         }
 
@@ -319,14 +319,14 @@
         private RoundButtonControl roundButtonControl1;
         private FlowLayoutPanel flwLytPnlServers;
         private SearchControl searchControl3;
-        private RoundButtonControl roundButtonControl2;
+        private RoundButtonControl btnSettings;
         private ProfileControl profileControl1;
         private Panel pnlServers;
         private Panel pnlLeft;
         private Label label1;
         private Label lblWelcome;
         private Label lblProceed;
-        private CircularPictureBox circularPictureBox1;
+        private CircularPictureBox picAvatar;
         private Panel panel1;
         private Panel panel2;
     }

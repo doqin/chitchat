@@ -84,6 +84,7 @@ namespace Client
                 BackgroundColor = MouseOverBackColor;
                 BorderColor = ActiveBorderColor;
             }
+            Cursor = Cursors.Hand;
         }
 
         public void btnRoundButton_MouseLeave(object sender, EventArgs e)
@@ -93,6 +94,7 @@ namespace Client
                 BackgroundColor = backgroundColor;
                 BorderColor = borderColor;
             }
+            Cursor = Cursors.Default;
         }
 
         private void RoundButton_MouseEnter(object sender, EventArgs e) => btnRoundButton_MouseEnter((object)sender, e);
