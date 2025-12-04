@@ -74,7 +74,7 @@
             textBox1.Anchor = AnchorStyles.Left;
             textBox1.BackColor = SystemColors.Control;
             textBox1.BorderStyle = BorderStyle.None;
-            textBox1.ForeColor = SystemColors.Window;
+            textBox1.ForeColor = Color.Black;
             textBox1.Location = new Point(2, 8);
             textBox1.Margin = new Padding(2);
             textBox1.Name = "textBox1";

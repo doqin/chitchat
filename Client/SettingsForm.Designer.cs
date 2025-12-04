@@ -29,11 +29,11 @@
         private void InitializeComponent()
         {
             splctnSettings = new SplitContainer();
+            button1 = new Button();
             btnOther = new Button();
             btnUser = new Button();
             panel1 = new Panel();
             label1 = new Label();
-            button1 = new Button();
             ((System.ComponentModel.ISupportInitialize)splctnSettings).BeginInit();
             splctnSettings.Panel1.SuspendLayout();
             splctnSettings.SuspendLayout();
@@ -42,7 +42,9 @@
             // 
             // splctnSettings
             // 
+            splctnSettings.BackColor = Color.White;
             splctnSettings.Dock = DockStyle.Fill;
+            splctnSettings.FixedPanel = FixedPanel.Panel1;
             splctnSettings.Location = new Point(0, 0);
             splctnSettings.Name = "splctnSettings";
             // 
@@ -57,9 +59,27 @@
             // splctnSettings.Panel2
             // 
             splctnSettings.Panel2.BackColor = Color.Gainsboro;
-            splctnSettings.Size = new Size(811, 542);
+            splctnSettings.Size = new Size(968, 542);
             splctnSettings.SplitterDistance = 246;
             splctnSettings.TabIndex = 0;
+            // 
+            // button1
+            // 
+            button1.Dock = DockStyle.Top;
+            button1.FlatAppearance.BorderSize = 0;
+            button1.FlatStyle = FlatStyle.Flat;
+            button1.Font = new Font("Arial", 8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            button1.Image = Properties.Resources.about;
+            button1.ImageAlign = ContentAlignment.MiddleLeft;
+            button1.Location = new Point(0, 167);
+            button1.Name = "button1";
+            button1.Padding = new Padding(20, 0, 0, 0);
+            button1.Size = new Size(246, 51);
+            button1.TabIndex = 4;
+            button1.Text = "  About";
+            button1.TextAlign = ContentAlignment.MiddleRight;
+            button1.TextImageRelation = TextImageRelation.ImageBeforeText;
+            button1.UseVisualStyleBackColor = false;
             // 
             // btnOther
             // 
@@ -114,41 +134,23 @@
             label1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label1.AutoSize = true;
             label1.Font = new Font("Arial", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label1.Location = new Point(87, 21);
+            label1.Location = new Point(24, 20);
             label1.Name = "label1";
             label1.Size = new Size(62, 19);
             label1.TabIndex = 0;
             label1.Text = "Cài đặt";
             label1.TextAlign = ContentAlignment.BottomLeft;
             // 
-            // button1
-            // 
-            button1.Dock = DockStyle.Top;
-            button1.FlatAppearance.BorderSize = 0;
-            button1.FlatStyle = FlatStyle.Flat;
-            button1.Font = new Font("Arial", 8F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            button1.Image = Properties.Resources.about;
-            button1.ImageAlign = ContentAlignment.MiddleLeft;
-            button1.Location = new Point(0, 167);
-            button1.Name = "button1";
-            button1.Padding = new Padding(20, 0, 0, 0);
-            button1.Size = new Size(246, 51);
-            button1.TabIndex = 4;
-            button1.Text = "  About";
-            button1.TextAlign = ContentAlignment.MiddleRight;
-            button1.TextImageRelation = TextImageRelation.ImageBeforeText;
-            button1.UseVisualStyleBackColor = false;
-            // 
             // SettingsForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(247, 245, 243);
-            ClientSize = new Size(811, 542);
+            ClientSize = new Size(968, 542);
             Controls.Add(splctnSettings);
             Margin = new Padding(2);
             Name = "SettingsForm";
-            Text = "SettingsForm";
+            Text = "Cài đặt";
             Load += SettingsForm_Load;
             splctnSettings.Panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splctnSettings).EndInit();

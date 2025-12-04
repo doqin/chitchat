@@ -46,7 +46,7 @@ namespace Client
 
         public bool UseMouseOverBackColor { get; set; } = true;
 
-        public Color MouseOverBackColor { get; set; } = Color.FromKnownColor(KnownColor.ControlDark);
+        public Color MouseOverBackColor { get; set; } = Color.FromKnownColor(KnownColor.Control);
 
         public Color ActiveBorderColor { get; set; } = Color.FromKnownColor(KnownColor.ActiveBorder);
 

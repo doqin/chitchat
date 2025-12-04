@@ -15,6 +15,7 @@ namespace Client
         public OtherForm()
         {
             InitializeComponent();
+            txtbxPort.Text = ConfigManager.Current!.UdpPort;
         }
     }
 }

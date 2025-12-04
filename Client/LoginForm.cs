@@ -21,27 +21,27 @@ namespace Client
         {
             InitializeComponent();
             this.StartPosition = FormStartPosition.CenterParent;
-            txtUsername.Text = ConfigManager.Current!.Username;
-            if (string.IsNullOrEmpty(ConfigManager.Current!.ProfileImagePath))
+            rndTxtBxCtrlUsername.Text = ConfigManager.Current!.Username;
+            SetPreviewMessages(ConfigManager.Current!.ProfileImagePath);
+        }
+
+        private void SetPreviewMessages(string profileImagePath)
+        {
+            try
             {
-                picAvatar.Image = null;
+                chatMessageControl1.SetPreview(profileImagePath, ConfigManager.Current!.Username, "Xin chào", DateTime.Now);
+                chatMessageControl2.SetPreview(profileImagePath, ConfigManager.Current!.Username, "Đây là một preview", DateTime.Now);
+                chatMessageControl3.SetPreview(profileImagePath, ConfigManager.Current!.Username, "Thay Avatar để cập nhật preview!", DateTime.Now);
             }
-            else
+            catch
             {
-                try
-                {
-                    picAvatar.Image = Image.FromFile(ConfigManager.Current!.ProfileImagePath);
-                }
-                catch
-                {
-                    picAvatar.Image = null;
-                }
+                System.Diagnostics.Debug.WriteLine("Failed to set preview message");
             }
         }
 
         private void btnSubmit_Click(object sender, EventArgs e)
         {
-            Username = string.IsNullOrWhiteSpace(txtUsername?.Text) ? "username" : txtUsername.Text.Trim();
+            Username = string.IsNullOrWhiteSpace(rndTxtBxCtrlUsername?.Text) ? "username" : rndTxtBxCtrlUsername.Text.Trim();
             DialogResult = DialogResult.OK;
             ConfigManager.Current!.Username = Username;
             if (!string.IsNullOrEmpty(file))
@@ -56,18 +56,24 @@ namespace Client
         {
             if (e.KeyCode == Keys.Enter)
             {
-                btnSubmit.PerformClick();
+                btnSubmit_Click(sender, e);
             }
         }
 
-        private void circularPictureBox1_Click(object sender, EventArgs e)
+        private void rndBtnCtrlChangeAvatar_Click(object sender, EventArgs e)
         {
             var result = openFileDialog1.ShowDialog();
             if (result == DialogResult.OK)
             {
                 file = openFileDialog1.FileName;
-                picAvatar.Image = Image.FromFile(file);
+                SetPreviewMessages(file);
             }
+        }
+
+        private void rndBtnCtrlRemoveAvatar_Click(object sender, EventArgs e)
+        {
+            file = "";
+            SetPreviewMessages(file);
         }
     }
 }

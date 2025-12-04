@@ -125,8 +125,10 @@ namespace Server
         private static void HandleCheckFileExists(TcpClient client, Wrapper wrapper)
         {
             var payload = wrapper.Payload;
+            Console.WriteLine($"Request to check if {payload} exists");
             var filePath = Path.Combine("Received Files", payload);
             bool exists = System.IO.File.Exists(filePath);
+            Console.WriteLine($"File {payload} exists: {exists}");
             CheckFileExistsResponse response = new CheckFileExistsResponse
             {
                 FileName = payload,
@@ -234,7 +236,7 @@ namespace Server
             GetMessages payload = JsonSerializer.Deserialize<GetMessages>(wrapper.Payload);
             if (payload != null)
             {
-                Console.WriteLine($"Client {client.Client.RemoteEndPoint} requested {payload.Count} messages since {payload.Before}");
+                Console.WriteLine($"Client {client.Client.RemoteEndPoint} requested {payload.Count} messages before {payload.Before}");
                 ChatMessage[] messages = MessageDatabase.GetMessagesSince(payload.Count, payload.Before);
                 if (messages.Length == 0)
                 {
