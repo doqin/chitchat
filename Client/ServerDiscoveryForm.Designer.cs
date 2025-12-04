@@ -37,7 +37,7 @@
             label1 = new Label();
             pnlLeft = new Panel();
             panel2 = new Panel();
-            roundButtonControl2 = new RoundButtonControl();
+            btnSettings = new RoundButtonControl();
             panel1 = new Panel();
             picAvatar = new CircularPictureBox();
             lblProceed = new Label();
@@ -189,7 +189,7 @@
             // 
             // panel2
             // 
-            panel2.Controls.Add(roundButtonControl2);
+            panel2.Controls.Add(btnSettings);
             panel2.Dock = DockStyle.Bottom;
             panel2.Location = new Point(0, 516);
             panel2.Name = "panel2";
@@ -197,27 +197,28 @@
             panel2.Size = new Size(62, 62);
             panel2.TabIndex = 2;
             // 
-            // roundButtonControl2
+            // btnSettings
             // 
-            roundButtonControl2.ActiveBorderColor = SystemColors.ActiveBorder;
-            roundButtonControl2.BackColor = Color.Transparent;
-            roundButtonControl2.BackgroundColor = Color.FromArgb(247, 245, 243);
-            roundButtonControl2.BorderColor = Color.FromArgb(247, 245, 243);
-            roundButtonControl2.BorderWidth = 1F;
-            roundButtonControl2.ButtonBackgroundImage = Properties.Resources.settings;
-            roundButtonControl2.ButtonBackgroundImageLayout = ImageLayout.Zoom;
-            roundButtonControl2.ButtonPadding = new Padding(10);
-            roundButtonControl2.ButtonText = "";
-            roundButtonControl2.ButtonTextColor = SystemColors.ActiveBorder;
-            roundButtonControl2.Dock = DockStyle.Fill;
-            roundButtonControl2.Location = new Point(5, 5);
-            roundButtonControl2.Margin = new Padding(1);
-            roundButtonControl2.MouseOverBackColor = SystemColors.ButtonHighlight;
-            roundButtonControl2.Name = "roundButtonControl2";
-            roundButtonControl2.Radius = 999;
-            roundButtonControl2.Size = new Size(52, 52);
-            roundButtonControl2.TabIndex = 1;
-            roundButtonControl2.UseMouseOverBackColor = true;
+            btnSettings.ActiveBorderColor = SystemColors.ActiveBorder;
+            btnSettings.BackColor = Color.Transparent;
+            btnSettings.BackgroundColor = Color.FromArgb(247, 245, 243);
+            btnSettings.BorderColor = Color.FromArgb(247, 245, 243);
+            btnSettings.BorderWidth = 1F;
+            btnSettings.ButtonBackgroundImage = Properties.Resources.settings;
+            btnSettings.ButtonBackgroundImageLayout = ImageLayout.Zoom;
+            btnSettings.ButtonPadding = new Padding(10);
+            btnSettings.ButtonText = "";
+            btnSettings.ButtonTextColor = SystemColors.ActiveBorder;
+            btnSettings.Dock = DockStyle.Fill;
+            btnSettings.Location = new Point(5, 5);
+            btnSettings.Margin = new Padding(1);
+            btnSettings.MouseOverBackColor = SystemColors.ButtonHighlight;
+            btnSettings.Name = "btnSettings";
+            btnSettings.Radius = 999;
+            btnSettings.Size = new Size(52, 52);
+            btnSettings.TabIndex = 1;
+            btnSettings.UseMouseOverBackColor = true;
+            btnSettings.Click += btnSettings_Click;
             // 
             // panel1
             // 
@@ -246,7 +247,7 @@
             lblProceed.Anchor = AnchorStyles.None;
             lblProceed.AutoSize = true;
             lblProceed.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblProceed.Location = new Point(260, 316);
+            lblProceed.Location = new Point(264, 316);
             lblProceed.Name = "lblProceed";
             lblProceed.Size = new Size(318, 17);
             lblProceed.TabIndex = 1;
@@ -257,7 +258,7 @@
             lblWelcome.Anchor = AnchorStyles.None;
             lblWelcome.AutoSize = true;
             lblWelcome.Font = new Font("Segoe UI", 18F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblWelcome.Location = new Point(231, 284);
+            lblWelcome.Location = new Point(235, 284);
             lblWelcome.Name = "lblWelcome";
             lblWelcome.Size = new Size(379, 32);
             lblWelcome.TabIndex = 0;

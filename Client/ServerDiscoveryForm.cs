@@ -135,6 +135,11 @@ namespace Client
             {
                 picAvatar.Image = Image.FromFile(Path.Combine("Cached", ConfigManager.Current!.ProfileImagePath));
             }
+            else
+            {
+                picAvatar.OutlineWidth = 2;
+                picAvatar.OutlineColor = Color.FromArgb(222, 220, 218);
+            }
         }
 
         private void splitContainerMain_Paint(object sender, PaintEventArgs e)
@@ -211,7 +216,7 @@ namespace Client
             }
         }
 
-        private void roundButtonControl2_Click(object sender, EventArgs e)
+        private void btnSettings_Click(object sender, EventArgs e)
         {
             Form settingsForm = new SettingsForm(updateSettings);
             settingsForm.StartPosition = FormStartPosition.CenterParent;
