@@ -115,7 +115,7 @@
             roundButtonControl1.Margin = new Padding(1);
             roundButtonControl1.MouseOverBackColor = SystemColors.ButtonHighlight;
             roundButtonControl1.Name = "roundButtonControl1";
-            roundButtonControl1.Radius = 10;
+            roundButtonControl1.Radius = 999;
             roundButtonControl1.Size = new Size(42, 41);
             roundButtonControl1.TabIndex = 0;
             roundButtonControl1.UseMouseOverBackColor = true;
@@ -138,10 +138,10 @@
             smthFlwLytPnlMessages.BackColor = Color.Transparent;
             smthFlwLytPnlMessages.Dock = DockStyle.Fill;
             smthFlwLytPnlMessages.FlowDirection = FlowDirection.TopDown;
-            smthFlwLytPnlMessages.Location = new Point(0, 0);
+            smthFlwLytPnlMessages.Location = new Point(0, 47);
             smthFlwLytPnlMessages.Name = "smthFlwLytPnlMessages";
             smthFlwLytPnlMessages.ScrollSpeed = 10;
-            smthFlwLytPnlMessages.Size = new Size(803, 418);
+            smthFlwLytPnlMessages.Size = new Size(803, 371);
             smthFlwLytPnlMessages.TabIndex = 10;
             smthFlwLytPnlMessages.WrapContents = false;
             smthFlwLytPnlMessages.SizeChanged += smthFlwLytPnlMessages_SizeChanged;
@@ -172,8 +172,8 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(246, 245, 244);
             ClientSize = new Size(803, 479);
-            Controls.Add(pnlTop);
             Controls.Add(smthFlwLytPnlMessages);
+            Controls.Add(pnlTop);
             Controls.Add(flwLytPnlAttachments);
             Controls.Add(pnlChatPanel);
             Name = "ChatForm";
