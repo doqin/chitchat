@@ -35,14 +35,32 @@ namespace Server
             string serverName = config["ServerSettings:Name"];
             int tcpPort = int.Parse(config["ServerSettings:TCPPort"]);
             int udpPort = int.Parse(config["ServerSettings:UDPPort"]);
+            string ipAddress = config["ServerSettings:IPAddress"];
 
             MessageDatabase.CreateIfNotExist();
-
-            listener = new TcpListener(IPAddress.Any, tcpPort);
+            IPAddress ip;
+            if (string.IsNullOrEmpty(ipAddress))
+            {
+                ip = IPAddress.Any;
+            }
+            else
+            {
+                try
+                {
+                    ip = IPAddress.Parse(ipAddress);
+                }
+                catch
+                {
+                    Console.WriteLine("Invalid IP address in configuration. Falling back to IPAddress.Any.");
+                    ip = IPAddress.Any;
+                }
+            }
+            Console.WriteLine($"{ip.ToString()} : {ipAddress}");
+            listener = new TcpListener(ip, tcpPort);
 
             listener.Start();
             Console.WriteLine($"Server started on port {tcpPort}.");
-            Broadcaster broadcaster = new Broadcaster(serverName, tcpPort, udpPort);
+            Broadcaster broadcaster = new Broadcaster(serverName, ip, tcpPort, udpPort);
             broadcaster.Start();
             Console.WriteLine("Broadcasting server presence...");
 
