@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading;
@@ -69,7 +70,8 @@ namespace Client
             _isRight = isRight;
             _chatMessage = chatMessage;
             _client = client;
-            currentUserId = client.Client.LocalEndPoint.ToString();
+            var endpoint = client.Client.LocalEndPoint as IPEndPoint;
+            currentUserId = endpoint.Address.ToString();
             messageId = chatMessage.Id;
 
             InitializeComponent();

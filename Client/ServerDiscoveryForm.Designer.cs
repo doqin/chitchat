@@ -247,7 +247,7 @@
             lblProceed.Anchor = AnchorStyles.None;
             lblProceed.AutoSize = true;
             lblProceed.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblProceed.Location = new Point(295, 316);
+            lblProceed.Location = new Point(296, 316);
             lblProceed.Name = "lblProceed";
             lblProceed.Size = new Size(318, 17);
             lblProceed.TabIndex = 1;
@@ -258,7 +258,7 @@
             lblWelcome.Anchor = AnchorStyles.None;
             lblWelcome.AutoSize = true;
             lblWelcome.Font = new Font("Segoe UI", 18F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblWelcome.Location = new Point(266, 284);
+            lblWelcome.Location = new Point(267, 284);
             lblWelcome.Name = "lblWelcome";
             lblWelcome.Size = new Size(379, 32);
             lblWelcome.TabIndex = 0;
