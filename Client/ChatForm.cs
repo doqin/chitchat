@@ -175,7 +175,7 @@ namespace Client
                                 System.Diagnostics.Debug.WriteLine($"ChatForm | Received: {chatMessage?.Message} from {chatMessage?.Username} at {chatMessage?.TimeSent}");
 
                                 string msgId = Guid.NewGuid().ToString();
-                                var localEndPoint = tcpClient.Client.RemoteEndPoint.ToString();
+                                var localEndPoint = tcpClient.Client.LocalEndPoint.ToString();
                                 if (chatMessage.Address == localEndPoint)
                                 {
                                     var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, true);
@@ -274,7 +274,7 @@ namespace Client
                 foreach (var chatMessage in sendMessage?.Messages ?? [])
                 {
                     System.Diagnostics.Debug.WriteLine($"ChatForm | Received: {chatMessage?.Message} from {chatMessage?.Username} at {chatMessage?.TimeSent}");
-                    var localEndPoint = tcpClient.Client.RemoteEndPoint.ToString();
+                    var localEndPoint = tcpClient.Client.LocalEndPoint.ToString();
                     if (chatMessage.Address == localEndPoint)
                     {
                         var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, true);
@@ -389,9 +389,9 @@ namespace Client
         /// </summary>
         private void SendMessage(DateTime timeSent, string username, string message, Attachment[] attachments)
         {
-            var endPoint = tcpClient.Client.RemoteEndPoint.ToString();
+            var endPoint = tcpClient.Client.LocalEndPoint.ToString();
             ChatMessage chatMessage = new()
-            {
+            {   
                 Id = Guid.NewGuid().ToString(),
                 TimeSent = timeSent,
                 Username = username,

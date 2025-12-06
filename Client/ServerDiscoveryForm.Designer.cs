@@ -247,7 +247,7 @@
             lblProceed.Anchor = AnchorStyles.None;
             lblProceed.AutoSize = true;
             lblProceed.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblProceed.Location = new Point(288, 316);
+            lblProceed.Location = new Point(294, 316);
             lblProceed.Name = "lblProceed";
             lblProceed.Size = new Size(318, 17);
             lblProceed.TabIndex = 1;
@@ -258,7 +258,7 @@
             lblWelcome.Anchor = AnchorStyles.None;
             lblWelcome.AutoSize = true;
             lblWelcome.Font = new Font("Segoe UI", 18F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblWelcome.Location = new Point(259, 284);
+            lblWelcome.Location = new Point(265, 284);
             lblWelcome.Name = "lblWelcome";
             lblWelcome.Size = new Size(379, 32);
             lblWelcome.TabIndex = 0;
@@ -266,7 +266,7 @@
             // 
             // label2
             // 
-            label2.Font = new Font("Sans Serif Collection", 14F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            label2.Font = new Font("Microsoft Sans Serif", 14F, FontStyle.Regular, GraphicsUnit.Point, 0);
             label2.ForeColor = Color.Gainsboro;
             label2.Location = new Point(2, 0);
             label2.Margin = new Padding(2, 0, 2, 0);

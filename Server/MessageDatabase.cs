@@ -127,7 +127,7 @@ namespace Server
                                 Username = reader.GetString(1),
                                 Message = reader.GetString(2),
                                 Address = reader.GetString(3),
-                                ProfileImagePath = reader.IsDBNull(4) ? null : reader.GetString(5),
+                                ProfileImagePath = reader.IsDBNull(4) ? null : reader.GetString(4),
                                 TimeSent = reader.GetDateTime(5),
                                 Attachments = new Protocol.Attachment[] { }
                             };
