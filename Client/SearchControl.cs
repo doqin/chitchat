@@ -15,6 +15,18 @@ namespace Client
         public Color ActiveBorderColor { get; set; } = Color.FromKnownColor(KnownColor.ActiveBorder);
         public Color ActiveBackgroundColor { get; set; } = Color.FromKnownColor(KnownColor.ButtonHighlight);
 
+        public string Text
+        {
+            get { return textBox1.Text; }
+            set { textBox1.Text = value; }
+        }
+
+        public event EventHandler? TextChanged
+        {
+            add { textBox1.TextChanged += value; }
+            remove { textBox1.TextChanged -= value; }
+        }
+
         private Color borderColor;
 
         private Color backgroundColor;
@@ -54,6 +66,11 @@ namespace Client
         {
             borderColor = BorderColor;
             backgroundColor = BackgroundColor;
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
