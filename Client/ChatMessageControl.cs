@@ -69,7 +69,7 @@ namespace Client
             _isRight = isRight;
             _chatMessage = chatMessage;
             _client = client;
-            currentUserId = chatMessage.Address;
+            currentUserId = client.Client.RemoteEndPoint.ToString();
             messageId = chatMessage.Id;
 
             InitializeComponent();

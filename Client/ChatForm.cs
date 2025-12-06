@@ -175,8 +175,8 @@ namespace Client
                                 System.Diagnostics.Debug.WriteLine($"ChatForm | Received: {chatMessage?.Message} from {chatMessage?.Username} at {chatMessage?.TimeSent}");
 
                                 string msgId = Guid.NewGuid().ToString();
-                                var localEndPoint = tcpClient.Client.LocalEndPoint as IPEndPoint;
-                                if (chatMessage.Address == localEndPoint.Address.ToString())
+                                var localEndPoint = tcpClient.Client.RemoteEndPoint.ToString();
+                                if (chatMessage.Address == localEndPoint)
                                 {
                                     var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, true);
                                     smthFlwLytPnlMessages.Invoke(() =>
@@ -274,8 +274,8 @@ namespace Client
                 foreach (var chatMessage in sendMessage?.Messages ?? [])
                 {
                     System.Diagnostics.Debug.WriteLine($"ChatForm | Received: {chatMessage?.Message} from {chatMessage?.Username} at {chatMessage?.TimeSent}");
-                    var localEndPoint = tcpClient.Client.LocalEndPoint as IPEndPoint;
-                    if (chatMessage.Address == localEndPoint.Address.ToString())
+                    var localEndPoint = tcpClient.Client.RemoteEndPoint.ToString();
+                    if (chatMessage.Address == localEndPoint)
                     {
                         var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, true);
                         smthFlwLytPnlMessages.Controls.Add(item);
@@ -389,7 +389,7 @@ namespace Client
         /// </summary>
         private void SendMessage(DateTime timeSent, string username, string message, Attachment[] attachments)
         {
-            var endPoint = tcpClient.Client.LocalEndPoint as IPEndPoint;
+            var endPoint = tcpClient.Client.RemoteEndPoint.ToString();
             ChatMessage chatMessage = new()
             {
                 Id = Guid.NewGuid().ToString(),
@@ -397,9 +397,8 @@ namespace Client
                 Username = username,
                 Message = message,
                 Attachments = attachments,
-                Address = endPoint?.Address.ToString(),
+                Address = endPoint,
                 ProfileImagePath = profilePictureAttachment,
-                Port = endPoint?.Port.ToString()
             };
             string payload = JsonSerializer.Serialize(chatMessage);
             Wrapper wrapper = new Wrapper
