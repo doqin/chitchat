@@ -49,7 +49,7 @@ namespace Server
         private void BroadcastLoop()
         {
             var localEndPoint = new IPEndPoint(ip, udpPort);
-            using (UdpClient udp = new UdpClient(localEndPoint))
+            using (UdpClient udp = ip == IPAddress.Any ? new UdpClient() : new UdpClient(localEndPoint))
             {
                 udp.EnableBroadcast = true;
 
@@ -60,6 +60,7 @@ namespace Server
                 byte[] data = Encoding.UTF8.GetBytes(finalJson);
 
                 IPEndPoint endPoint = new IPEndPoint(IPAddress.Broadcast, udpPort);
+                Console.WriteLine($"Broadcast started on {udp.Client.LocalEndPoint}");
                 while (running)
                 {
                     udp.Send(data, data.Length, endPoint);

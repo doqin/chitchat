@@ -55,11 +55,10 @@ namespace Server
                     ip = IPAddress.Any;
                 }
             }
-            Console.WriteLine($"{ip.ToString()} : {ipAddress}");
             listener = new TcpListener(ip, tcpPort);
 
             listener.Start();
-            Console.WriteLine($"Server started on port {tcpPort}.");
+            Console.WriteLine($"Server started on {listener.LocalEndpoint}.");
             Broadcaster broadcaster = new Broadcaster(serverName, ip, tcpPort, udpPort);
             broadcaster.Start();
             Console.WriteLine("Broadcasting server presence...");
