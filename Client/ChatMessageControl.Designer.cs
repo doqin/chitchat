@@ -130,12 +130,12 @@
             // 
             // crclrPicBoxProfilePicture
             // 
-            crclrPicBoxProfilePicture.DrawOutline = false;
+            crclrPicBoxProfilePicture.DrawOutline = true;
             crclrPicBoxProfilePicture.Location = new Point(3, 2);
             crclrPicBoxProfilePicture.Margin = new Padding(3, 2, 3, 2);
             crclrPicBoxProfilePicture.Name = "crclrPicBoxProfilePicture";
             crclrPicBoxProfilePicture.OutlineColor = Color.White;
-            crclrPicBoxProfilePicture.OutlineWidth = 2F;
+            crclrPicBoxProfilePicture.OutlineWidth = 1F;
             crclrPicBoxProfilePicture.Size = new Size(45, 45);
             crclrPicBoxProfilePicture.TabIndex = 6;
             crclrPicBoxProfilePicture.TabStop = false;

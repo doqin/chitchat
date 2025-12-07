@@ -15,44 +15,65 @@ namespace Client
         public string Username;
         public int ServerPort;
         public string file = "";
+        public EventHandler? eventHandler;
 
         public LoginForm()
         {
             InitializeComponent();
             this.StartPosition = FormStartPosition.CenterParent;
+            rndTxtBxCtrlUsername.Text = ConfigManager.Current!.Username;
+            SetPreviewMessages(ConfigManager.Current!.ProfileImagePath);
+        }
+
+        private void SetPreviewMessages(string profileImagePath)
+        {
+            try
+            {
+                chatMessageControl1.SetPreview(profileImagePath, ConfigManager.Current!.Username, "Xin chào", DateTime.Now);
+                chatMessageControl2.SetPreview(profileImagePath, ConfigManager.Current!.Username, "Đây là một preview", DateTime.Now);
+                chatMessageControl3.SetPreview(profileImagePath, ConfigManager.Current!.Username, "Thay Avatar để cập nhật preview!", DateTime.Now);
+            }
+            catch
+            {
+                System.Diagnostics.Debug.WriteLine("Failed to set preview message");
+            }
         }
 
         private void btnSubmit_Click(object sender, EventArgs e)
         {
-            Username = string.IsNullOrWhiteSpace(txtUsername?.Text) ? "username" : txtUsername.Text.Trim();
-            ServerPort = int.TryParse(txtPort?.Text, out var p) ? p : 0;
+            Username = string.IsNullOrWhiteSpace(rndTxtBxCtrlUsername?.Text) ? "username" : rndTxtBxCtrlUsername.Text.Trim();
             DialogResult = DialogResult.OK;
             ConfigManager.Current!.Username = Username;
-            ConfigManager.Current!.UdpPort = txtPort?.Text ?? "9999";
             if (!string.IsNullOrEmpty(file))
             {
                 ConfigManager.Current!.ProfileImagePath = file;
             }
             ConfigManager.Save();
-            ActiveForm?.Close();
+            eventHandler?.Invoke(this, e);
         }
 
         private void EnterPressed(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
-                btnSubmit.PerformClick();
+                btnSubmit_Click(sender, e);
             }
         }
 
-        private void circularPictureBox1_Click(object sender, EventArgs e)
+        private void rndBtnCtrlChangeAvatar_Click(object sender, EventArgs e)
         {
             var result = openFileDialog1.ShowDialog();
             if (result == DialogResult.OK)
             {
                 file = openFileDialog1.FileName;
-                circularPictureBox1.Image = Image.FromFile(file);
+                SetPreviewMessages(file);
             }
+        }
+
+        private void rndBtnCtrlRemoveAvatar_Click(object sender, EventArgs e)
+        {
+            file = "";
+            SetPreviewMessages(file);
         }
     }
 }

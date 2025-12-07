@@ -83,5 +83,10 @@ namespace Client
 
         private void drawBackground(Graphics g) =>
             g.FillRoundedRectangle(_backgroundBrush, 1, 1, Width - 2, Height - 2, _radius);
+
+        private void RoundControl_Resize(object sender, EventArgs e)
+        {
+            Invalidate();
+        }
     }
 }

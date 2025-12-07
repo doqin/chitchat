@@ -31,8 +31,13 @@ namespace Protocol
         SendMessages, 
         SendFiles,
         GetFile,
+        CheckFileExists,
+        CheckFileExistsResponse,
         FileConfirmation,
         UpdateReaction,
+        ConnectedUsers,
+        UserConnected,
+        UserDisconnected,
     }
 
     public class Wrapper
@@ -104,6 +109,27 @@ namespace Protocol
         }
     }
 
+    public class User
+    {
+        public string Username { get; set; }
+        public TcpClient Client { get; set; }
+    }
+
+    public class ConnectedUsers
+    {
+        public List<string> Usernames { get; set; }
+    }
+
+    public class UserConnected
+    {
+        public string Username { get; set; }
+    }
+
+    public class UserDisconnected
+    {
+        public string Username { get; set; }
+    }
+
     public class UpdateReaction
     {
         public string MessageId { get; set; }
@@ -129,7 +155,6 @@ namespace Protocol
         public string Username { get; set; }
         public string Message { get; set; }
         public string Address { get; set; }
-        public string Port { get; set; }
         public string ProfileImagePath { get; set; }
         public Attachment[] Attachments { get; set; }
         public ReactionState ReactionState { get; set; }
@@ -173,10 +198,17 @@ namespace Protocol
         }
     }
 
-    public class Files
+    public class SendFiles
     {
         public long FileCount { get; set; }
         public List<File> FileList { get; set; }
+        public bool MangleFileNames { get; set; } = true;
+    }
+
+    public class CheckFileExistsResponse
+    {
+        public string FileName { get; set; }
+        public bool Exists { get; set; }
     }
 
     public class File

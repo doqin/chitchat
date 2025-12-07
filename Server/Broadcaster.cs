@@ -13,6 +13,7 @@ namespace Server
 {
     internal class Broadcaster
     {
+        private readonly IPAddress ip;
         private readonly string serverName;
         private readonly int tcpPort;
         private readonly int udpPort;
@@ -25,12 +26,13 @@ namespace Server
         /// <param name="tcpPort">Port TCP</param>
         /// <param name="udpPort">Port UDP</param>
         /// <param name="intervalMs">Tần số phát thông tin máy chủ</param>
-        public Broadcaster(string serverName, int tcpPort, int udpPort = 9999, int intervalMs = 2000)
+        public Broadcaster(string serverName, IPAddress ip, int tcpPort, int udpPort = 9999, int intervalMs = 2000)
         {
             this.serverName = serverName;
             this.tcpPort = tcpPort;
             this.udpPort = udpPort;
             this.intervalMs = intervalMs;
+            this.ip = ip;
         }
 
         /// <summary>
@@ -46,7 +48,8 @@ namespace Server
         /// </summary>
         private void BroadcastLoop()
         {
-            using (UdpClient udp = new UdpClient())
+            var localEndPoint = new IPEndPoint(ip, udpPort);
+            using (UdpClient udp = ip == IPAddress.Any ? new UdpClient() : new UdpClient(localEndPoint))
             {
                 udp.EnableBroadcast = true;
 
@@ -57,6 +60,7 @@ namespace Server
                 byte[] data = Encoding.UTF8.GetBytes(finalJson);
 
                 IPEndPoint endPoint = new IPEndPoint(IPAddress.Broadcast, udpPort);
+                Console.WriteLine($"Broadcast started on {udp.Client.LocalEndPoint}");
                 while (running)
                 {
                     udp.Send(data, data.Length, endPoint);

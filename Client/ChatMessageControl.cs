@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Text.Json;
 using System.Threading;
@@ -19,6 +20,7 @@ namespace Client
         private Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingFetches;
         private bool _isRight;
         private static readonly SemaphoreSlim _readCache = new SemaphoreSlim(1, 1);
+        private bool _isPreviewMode = false;
 
         private string messageId;
         private ReactionManager reactionManager;
@@ -44,6 +46,17 @@ namespace Client
             }
         }
 
+        public ChatMessageControl()
+        {
+            _isPreviewMode = true;
+            InitializeComponent();
+            Anchor = AnchorStyles.Right;
+            flowPanelLayout.FlowDirection = FlowDirection.RightToLeft;
+            rndCtrlChatBubble.Anchor = AnchorStyles.Right;
+            lblTimestamp.Anchor = AnchorStyles.Right;
+            pnlReaction.Visible = false;
+        }
+
         public ChatMessageControl(
             Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingAttachmentFetches,
             ReactionManager manager,
@@ -57,7 +70,8 @@ namespace Client
             _isRight = isRight;
             _chatMessage = chatMessage;
             _client = client;
-            currentUserId = chatMessage.Address;
+            var endpoint = client.Client.LocalEndPoint as IPEndPoint;
+            currentUserId = endpoint.Address.ToString();
             messageId = chatMessage.Id;
 
             InitializeComponent();
@@ -132,9 +146,28 @@ namespace Client
             return image;
         }
 
+        public void SetPreview(string profilePicPath, string username, string message, DateTime timeSent)
+        {
+            if (!_isPreviewMode) return;
+            if (!string.IsNullOrEmpty(profilePicPath) && System.IO.File.Exists(Path.Combine("Cached", profilePicPath)))
+            {
+                Image profileImage = Image.FromFile(Path.Combine("Cached", profilePicPath));
+                profileImage = CorrectImageOrientation(profileImage);
+                crclrPicBoxProfilePicture.Image = profileImage;
+                crclrPicBoxProfilePicture.DrawOutline = false;
+            } else {
+                // Set a default image or leave it blank
+                crclrPicBoxProfilePicture.Image = null;
+                crclrPicBoxProfilePicture.DrawOutline = true;
+            }
+            lblMessage.Text = username;
+            lblMessage.Text = message;
+            lblTimestamp.Text = DateTime.Now.Subtract(timeSent).Days > 0 ? timeSent.ToString("g") : timeSent.ToString("t");
+        }
+
         private void ChatMessageControl_Load(object sender, EventArgs e)
         {
-            //lblUsername.Text = _chatMessage.Username;
+            if (_isPreviewMode) return;
             lblMessage.Text = _chatMessage.Message;
             lblTimestamp.Text = DateTime.Now.Subtract(_chatMessage.TimeSent).Days > 0 ? _chatMessage.TimeSent.ToString("g") : _chatMessage.TimeSent.ToString("t");
             foreach (Control c in pnlReaction.Controls)
@@ -167,6 +200,7 @@ namespace Client
                             crclrPicBoxProfilePicture.Invoke((MethodInvoker)(() =>
                             {
                                 crclrPicBoxProfilePicture.Image = profileImage;
+                                crclrPicBoxProfilePicture.DrawOutline = false;
                             }));
                         }
                         else
@@ -192,6 +226,7 @@ namespace Client
                                 crclrPicBoxProfilePicture.Invoke((MethodInvoker)(() =>
                                 {
                                     crclrPicBoxProfilePicture.Image = profileImage;
+                                    crclrPicBoxProfilePicture.DrawOutline = false;
                                 }));
                                 System.Diagnostics.Debug.WriteLine($"Profile image fetched and set: {_chatMessage.ProfileImagePath}");
                             }

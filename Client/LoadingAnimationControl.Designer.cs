@@ -1,6 +1,6 @@
 ﻿namespace Client
 {
-    partial class RoundControl
+    partial class LoadingAnimationControl
     {
         /// <summary> 
         /// Required designer variable.
@@ -28,22 +28,29 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
+            timer1 = new System.Windows.Forms.Timer(components);
             SuspendLayout();
             // 
-            // RoundControl
+            // timer1
+            // 
+            timer1.Enabled = true;
+            timer1.Interval = 20;
+            timer1.Tick += timer1_Tick;
+            // 
+            // LoadingAnimationControl
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Transparent;
             DoubleBuffered = true;
-            Margin = new Padding(1);
-            Name = "RoundControl";
-            Size = new Size(66, 73);
-            Resize += RoundControl_Resize;
+            Name = "LoadingAnimationControl";
+            Size = new Size(300, 300);
             ResumeLayout(false);
-
         }
 
         #endregion
+
+        private System.Windows.Forms.Timer timer1;
     }
 }

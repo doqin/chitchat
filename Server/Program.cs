@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -17,7 +18,7 @@ namespace Server
 {
     internal class Program
     {
-        static readonly List<TcpClient> clients = new List<TcpClient>();
+        static readonly List<User> users = new List<User>();
         static readonly object clientsLock = new object();
         static TcpListener listener;
 
@@ -34,14 +35,31 @@ namespace Server
             string serverName = config["ServerSettings:Name"];
             int tcpPort = int.Parse(config["ServerSettings:TCPPort"]);
             int udpPort = int.Parse(config["ServerSettings:UDPPort"]);
+            string ipAddress = config["ServerSettings:IPAddress"];
 
             MessageDatabase.CreateIfNotExist();
-
-            listener = new TcpListener(IPAddress.Any, tcpPort);
+            IPAddress ip;
+            if (string.IsNullOrEmpty(ipAddress))
+            {
+                ip = IPAddress.Any;
+            }
+            else
+            {
+                try
+                {
+                    ip = IPAddress.Parse(ipAddress);
+                }
+                catch
+                {
+                    Console.WriteLine("Invalid IP address in configuration. Falling back to IPAddress.Any.");
+                    ip = IPAddress.Any;
+                }
+            }
+            listener = new TcpListener(ip, tcpPort);
 
             listener.Start();
-            Console.WriteLine($"Server started on port {tcpPort}.");
-            Broadcaster broadcaster = new Broadcaster(serverName, tcpPort, udpPort);
+            Console.WriteLine($"Server started on {listener.LocalEndpoint}.");
+            Broadcaster broadcaster = new Broadcaster(serverName, ip, tcpPort, udpPort);
             broadcaster.Start();
             Console.WriteLine("Broadcasting server presence...");
 
@@ -50,7 +68,7 @@ namespace Server
                 TcpClient client = listener.AcceptTcpClient();
                 lock (clientsLock)
                 {
-                    clients.Add(client);
+                    users.Add(new User { Client = client });
                 }
                 Console.WriteLine($"Client connected: {client.Client.RemoteEndPoint}");
                 Task.Run(() => HandleClient(client));
@@ -97,6 +115,12 @@ namespace Server
                                 case Types.UpdateReaction:
                                     HandleUpdateReaction(client, wrapper);
                                     break;
+                                case Types.UserConnected:
+                                    HandleUserConnected(client, wrapper);
+                                    break;
+                                case Types.CheckFileExists:
+                                    HandleCheckFileExists(client, wrapper);
+                                    break;
                                 default:
                                     Console.WriteLine("Unknown message type received.");
                                     continue;
@@ -110,9 +134,81 @@ namespace Server
                 }
                 finally
                 {
-                    lock (clientsLock) clients.Remove(client);
-                    Console.WriteLine($"Client disconnected: {client.Client.RemoteEndPoint}");
-                    client.Close();
+                    HandleClientDisconnect(client);
+                }
+            }
+        }
+
+        private static void HandleCheckFileExists(TcpClient client, Wrapper wrapper)
+        {
+            var payload = wrapper.Payload;
+            Console.WriteLine($"Request to check if {payload} exists");
+            var filePath = Path.Combine("Received Files", payload);
+            bool exists = System.IO.File.Exists(filePath);
+            Console.WriteLine($"File {payload} exists: {exists}");
+            CheckFileExistsResponse response = new CheckFileExistsResponse
+            {
+                FileName = payload,
+                Exists = exists
+            };
+            string responsePayload = JsonSerializer.Serialize(response);
+            Wrapper responseWrapper = new Wrapper
+            {
+                Type = Types.CheckFileExistsResponse,
+                Payload = responsePayload
+            };
+            string finalJson = JsonSerializer.Serialize(responseWrapper);
+            NetworkStream stream = client.GetStream();
+            Wrapper.SendJson(stream, finalJson);
+        }
+
+        private static void HandleUserConnected(TcpClient client, Wrapper wrapper)
+        {
+            UserConnected payload = JsonSerializer.Deserialize<UserConnected>(wrapper.Payload);
+            if (payload != null)
+            {
+                Console.WriteLine($"Client {client.Client.RemoteEndPoint} identified as user: {payload.Username}");
+                lock (clientsLock)
+                {
+                    User user = users.FirstOrDefault(u => u.Client == client);
+                    if (user != null)
+                    {
+                        user.Username = payload.Username;
+                    }
+                }
+                foreach (var u in users)
+                {
+                    if (u.Client != client)
+                    {
+                        try
+                        {
+                            NetworkStream stream = u.Client.GetStream();
+                            Wrapper.SendJson(stream, JsonSerializer.Serialize(wrapper));
+                            Console.WriteLine($"Notified {u.Client.Client.RemoteEndPoint} of new user: {payload.Username}");
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine($"Error notifying client: {e.Message}");
+                            // Ignore dead clients
+                        }
+                    }
+                    else
+                    {
+                        List<string> existingUsers = users.Select(user => user.Username).Where(name => name != null).ToList();
+                        ConnectedUsers connectedUsers = new ConnectedUsers
+                        {
+                            Usernames = existingUsers
+                        };
+                        string responsePayload = JsonSerializer.Serialize(connectedUsers);
+                        Wrapper responseWrapper = new Wrapper
+                        {
+                            Type = Types.ConnectedUsers,
+                            Payload = responsePayload
+                        };
+                        string finalJson = JsonSerializer.Serialize(responseWrapper);
+                        NetworkStream stream = u.Client.GetStream();
+                        Wrapper.SendJson(stream, finalJson);
+                    }
                 }
             }
         }
@@ -134,13 +230,13 @@ namespace Server
                 string finalJson = JsonSerializer.Serialize(responseWrapper);
                 lock (clientsLock)
                 {
-                    foreach (var c in clients)
+                    foreach (var u in users)
                     {
                         try
                         {
-                            NetworkStream stream = c.GetStream();
+                            NetworkStream stream = u.Client.GetStream();
                             Wrapper.SendJson(stream, finalJson);
-                            Console.WriteLine($"Sent reaction update to {c.Client.RemoteEndPoint}");
+                            Console.WriteLine($"Sent reaction update to {u.Client.Client.RemoteEndPoint}");
                         }
                         catch (Exception e)
                         {
@@ -157,7 +253,7 @@ namespace Server
             GetMessages payload = JsonSerializer.Deserialize<GetMessages>(wrapper.Payload);
             if (payload != null)
             {
-                Console.WriteLine($"Client {client.Client.RemoteEndPoint} requested {payload.Count} messages since {payload.Before}");
+                Console.WriteLine($"Client {client.Client.RemoteEndPoint} requested {payload.Count} messages before {payload.Before}");
                 ChatMessage[] messages = MessageDatabase.GetMessagesSince(payload.Count, payload.Before);
                 if (messages.Length == 0)
                 {
@@ -194,7 +290,7 @@ namespace Server
             if (System.IO.File.Exists(filePath))
             {
                 // Creating file info
-                Files files = new Files
+                SendFiles files = new SendFiles
                 {
                     FileCount = 1,
                     FileList = new List<Protocol.File>
@@ -231,7 +327,7 @@ namespace Server
             else
             {
                 Console.WriteLine($"Requested file not found: {fileName} from {client.Client.RemoteEndPoint}");
-                Files payload = new Files
+                SendFiles payload = new SendFiles
                 {
                     FileCount = 0,
                     FileList = new List<Protocol.File>
@@ -262,7 +358,7 @@ namespace Server
         /// <param name="wrapper"></param>
         private static void HandleFiles(TcpClient client, NetworkStream ns, Wrapper wrapper)
         {
-            Protocol.Files files = JsonSerializer.Deserialize<Protocol.Files>(wrapper.Payload);
+            Protocol.SendFiles files = JsonSerializer.Deserialize<Protocol.SendFiles>(wrapper.Payload);
             if (files != null)
             {
                 Console.WriteLine($"Received: {files.FileCount} file(s) from {client.Client.RemoteEndPoint}");
@@ -275,7 +371,14 @@ namespace Server
                     foreach (var file in files.FileList)
                     {
                         Console.WriteLine($"Preparing to receive file: {file.FileName} ({file.FileSize} bytes)");
-                        var savedPath = Path.Combine(Guid.NewGuid().ToString("N"), Path.GetFileName(file.FileName));
+                        string savedPath;
+                        if (files.MangleFileNames)
+                        {
+                            savedPath = Path.Combine(Guid.NewGuid().ToString("N"), Path.GetFileName(file.FileName));
+                        } else
+                        {
+                            savedPath = file.FileName;
+                        }
                         var fullPath = Path.Combine("Received Files", savedPath);
                         // Ensure the directory exists
                         string directoryPath = Path.GetDirectoryName(fullPath);
@@ -383,13 +486,13 @@ namespace Server
             string finalJson = JsonSerializer.Serialize(wrapper);
             lock (clientsLock)
             {
-                foreach (var c in clients)
+                foreach (var u in users)
                 {
                     try
                     {
-                        NetworkStream stream = c.GetStream();
+                        NetworkStream stream = u.Client.GetStream();
                         Wrapper.SendJson(stream, finalJson);
-                        Console.WriteLine($"Sent to {c.Client.RemoteEndPoint}");
+                        Console.WriteLine($"Sent to {u.Client.Client.RemoteEndPoint}");
                     }
                     catch (Exception e)
                     {
@@ -398,6 +501,40 @@ namespace Server
                     }
                 }
             }
+        }
+
+        static void HandleClientDisconnect(TcpClient client)
+        {
+            lock (clientsLock)
+            {
+                User user = users.FirstOrDefault(u => u.Client == client);
+                if (user != null)
+                {
+                    users.Remove(user);
+                    Console.WriteLine($"Client disconnected: {client.Client.RemoteEndPoint}");
+                    Wrapper wrapper = new Wrapper
+                    {
+                        Type = Types.UserDisconnected,
+                        Payload = JsonSerializer.Serialize(new UserDisconnected { Username = user.Username })
+                    };
+                    string finalJson = JsonSerializer.Serialize(wrapper);
+                    foreach (var u in users)
+                    {
+                        try
+                        {
+                            NetworkStream stream = u.Client.GetStream();
+                            Wrapper.SendJson(stream, finalJson);
+                            Console.WriteLine($"Notified {u.Client.Client.RemoteEndPoint} of user disconnection: {user.Username}");
+                        }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine($"Error notifying client: {e.Message}");
+                            // Ignore dead clients
+                        }
+                    }
+                }    
+            }
+            client.Close();
         }
     }
 }

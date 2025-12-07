@@ -34,6 +34,8 @@ namespace Client
         private Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingAttachmentFetches = new();
         private readonly SemaphoreSlim streamReadLock = new(1, 1);
 
+        private ConnectedUsers connectedUsers = new();
+
         public ChatForm(string username, string serverName, string ip, int port, string profilePicturePath)
         {
             this.username = username;
@@ -42,10 +44,58 @@ namespace Client
             serverPort = port;
             reactionManager = new ReactionManager();
             tcpClient = new TcpClient();
+
+            bool needToUploadProfilePicture = false;
             try
             {
                 tcpClient.Connect(serverIp, serverPort);
                 System.Diagnostics.Debug.WriteLine($"Connected to {serverName}");
+                Wrapper wrapper = new Wrapper
+                {
+                    Type = Types.UserConnected,
+                    Payload = JsonSerializer.Serialize(new UserConnected
+                    {
+                        Username = username,
+                    })
+                };
+                string json = JsonSerializer.Serialize(wrapper);
+                NetworkStream stream = tcpClient.GetStream();
+                Wrapper.SendJson(stream, json);
+                // Get connected users information
+                json = Wrapper.ReadJson(stream);
+                wrapper = JsonSerializer.Deserialize<Wrapper>(json);
+                if (wrapper.Type == Types.ConnectedUsers)
+                {
+                    connectedUsers = JsonSerializer.Deserialize<ConnectedUsers>(wrapper.Payload);
+                    System.Diagnostics.Debug.WriteLine($"Connected users: {string.Join(", ", connectedUsers.Usernames)}");
+                }
+                // Check if profile picture needs to be uploaded to this server
+                if (!string.IsNullOrEmpty(profilePicturePath) && !Path.IsPathRooted(profilePicturePath))
+                {
+                    Wrapper pfpPicWrapper = new Wrapper
+                    {
+                        Type = Types.CheckFileExists,
+                        Payload = ConfigManager.Current!.ProfileImagePath
+                    };
+                    string pfpPicJson = JsonSerializer.Serialize(pfpPicWrapper);
+                    Wrapper.SendJson(stream, pfpPicJson);
+                    string pfpPicResponseJson = Wrapper.ReadJson(stream);
+                    Wrapper pfpPicResponseWrapper = JsonSerializer.Deserialize<Wrapper>(pfpPicResponseJson);
+                    if (pfpPicResponseWrapper.Type == Types.CheckFileExistsResponse)
+                    {
+                        CheckFileExistsResponse response = JsonSerializer.Deserialize<CheckFileExistsResponse>(pfpPicResponseWrapper.Payload);
+                        if (response.Exists)
+                        {
+                            System.Diagnostics.Debug.WriteLine("Profile picture already exists on server: " + profilePicturePath);
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.WriteLine("Profile picture does not exist on server, will upload: " + profilePicturePath);
+                            needToUploadProfilePicture = true;
+                        }
+                    }
+                }
+
                 Task.Run(async () => await HandleResponse(tcpClient));
             }
             catch (Exception)
@@ -54,7 +104,18 @@ namespace Client
                 this.DialogResult = DialogResult.Abort;
                 this.Close();
             }
-            if (!string.IsNullOrEmpty(profilePicturePath) && Path.IsPathRooted(profilePicturePath)) // If is absolute path, it's a local file that needs to be uploaded
+            // Handle profile picture upload if server doesn't have it
+            if (needToUploadProfilePicture)
+            {
+                Attachment[] attachment = SendFiles([profilePicturePath], true, false);
+                if (attachment.Length > 0)
+                {
+                    profilePictureAttachment = attachment[0].FileName;
+                    System.Diagnostics.Debug.WriteLine("Profile picture uploaded: " + profilePictureAttachment);
+                }
+            }
+            // If is absolute path, it's a local file that needs to be uploaded
+            else if (!string.IsNullOrEmpty(profilePicturePath) && Path.IsPathRooted(profilePicturePath))
             {
                 System.Diagnostics.Debug.WriteLine("Uploading profile picture to server...");
                 Attachment[] attachment = SendFiles([profilePicturePath]);
@@ -72,6 +133,7 @@ namespace Client
                 profilePictureAttachment = profilePicturePath;
             }
             InitializeComponent();
+            lblUserInfo.Text = $"Connected Users: {string.Join(", ", connectedUsers.Usernames)}";
             smthFlwLytPnlMessages.MouseWheel += FlwLytPnlMessages_MouseWheel;
             Text = $"{serverName} - {username} @ {serverName} | {serverIp}:{serverPort}";
             this.DoubleBuffered = true;
@@ -159,6 +221,24 @@ namespace Client
                             case Types.UpdateReaction:
                                 HandleUpdateReaction(client, wrapper);
                                 break;
+                            case Types.UserConnected:
+                                UserConnected userConnected = JsonSerializer.Deserialize<UserConnected>(wrapper.Payload);
+                                connectedUsers.Usernames.Add(userConnected.Username);
+                                System.Diagnostics.Debug.WriteLine($"ChatForm | User connected: {userConnected.Username}");
+                                lblUserInfo.Invoke(() =>
+                                {
+                                    lblUserInfo.Text = $"Connected Users: {string.Join(", ", connectedUsers.Usernames)}";
+                                });
+                                break;
+                            case Types.UserDisconnected:
+                                UserConnected userDisconnected = JsonSerializer.Deserialize<UserConnected>(wrapper.Payload);
+                                connectedUsers.Usernames.Remove(userDisconnected.Username);
+                                System.Diagnostics.Debug.WriteLine($"ChatForm | User disconnected: {userDisconnected.Username}");
+                                lblUserInfo.Invoke(() =>
+                                {
+                                    lblUserInfo.Text = $"Connected Users: {string.Join(", ", connectedUsers.Usernames)}";
+                                });
+                                break;
                             default:
                                 System.Diagnostics.Debug.WriteLine($"ChatForm | Unknown message type: {wrapper.Type}");
                                 break;
@@ -231,7 +311,7 @@ namespace Client
             streamReadLock.Wait();
             try
             {
-                Files files = JsonSerializer.Deserialize<Files>(wrapper.Payload);
+                SendFiles files = JsonSerializer.Deserialize<SendFiles>(wrapper.Payload);
                 if (files?.FileCount == 0)
                 {
                     var fileName = files.FileList[0].FileName;
@@ -311,15 +391,14 @@ namespace Client
         {
             var endPoint = tcpClient.Client.LocalEndPoint as IPEndPoint;
             ChatMessage chatMessage = new()
-            {
+            {   
                 Id = Guid.NewGuid().ToString(),
                 TimeSent = timeSent,
                 Username = username,
                 Message = message,
                 Attachments = attachments,
-                Address = endPoint?.Address.ToString(),
+                Address = endPoint.Address.ToString(),
                 ProfileImagePath = profilePictureAttachment,
-                Port = endPoint?.Port.ToString()
             };
             string payload = JsonSerializer.Serialize(chatMessage);
             Wrapper wrapper = new Wrapper
@@ -336,20 +415,22 @@ namespace Client
         /// Send files to the server
         /// </summary>
         /// <param name="filePaths">Array of file paths</param>
-        private Attachment[] SendFiles(string[] filePaths)
+        private Attachment[] SendFiles(string[] filePaths, bool usingCached = false, bool mangleFileNames = true)
         {
-            Files files = new()
+            SendFiles files = new()
             {
                 FileCount = filePaths.Length,
                 FileList = filePaths.Select(file =>
                 {
-                    System.IO.FileInfo fi = new System.IO.FileInfo(file);
+                    System.IO.FileInfo fi = new System.IO.FileInfo(usingCached ? Path.Combine("Cached", file) : file);
+                    string fileName = usingCached ? file : fi.Name;
                     return new Protocol.File
                     {
-                        FileName = fi.Name,
+                        FileName = fileName,
                         FileSize = fi.Length
                     };
-                }).ToList()
+                }).ToList(),
+                MangleFileNames = mangleFileNames
             };
             string payload = JsonSerializer.Serialize(files);
             Wrapper wrapper = new()
@@ -365,7 +446,12 @@ namespace Client
                 foreach (var filePath in filePaths)
                 {
                     System.Diagnostics.Debug.WriteLine($"ChatForm | Preparing to send file: {filePath}");
-                    using (FileStream fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                    using (FileStream fs = new FileStream(
+                            usingCached ? Path.Combine("Cached", filePath) : filePath, 
+                            FileMode.Open, 
+                            FileAccess.Read
+                            )
+                        )
                     {
                         byte[] fileBuffer = new byte[8192];
                         int fileBytesRead;

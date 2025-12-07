@@ -23,7 +23,6 @@ namespace Server
                     Username TEXT NOT NULL,
                     Message TEXT,
                     Address TEXT NOT NULL,
-                    Port TEXT NOT NULL,
                     ProfileImagePath TEXT,
                     TimeSent DATETIME DEFAULT CURRENT_TIMESTAMP
                 );
@@ -61,8 +60,8 @@ namespace Server
                     using (var transaction = connection.BeginTransaction())
                     {
                         string insertMessageSql = @"
-                        INSERT INTO Messages (Id, Username, Message, Address, Port, ProfileImagePath, TimeSent)
-                        VALUES (@Id, @Username, @Message, @Address, @Port, @ProfileImagePath, @TimeSent);
+                        INSERT INTO Messages (Id, Username, Message, Address, ProfileImagePath, TimeSent)
+                        VALUES (@Id, @Username, @Message, @Address, @ProfileImagePath, @TimeSent);
                         SELECT last_insert_rowid();
                         ";
                         long messageId;
@@ -72,7 +71,6 @@ namespace Server
                             command.Parameters.AddWithValue("@Username", chatMessage.Username);
                             command.Parameters.AddWithValue("@Message", chatMessage.Message);
                             command.Parameters.AddWithValue("@Address", chatMessage.Address);
-                            command.Parameters.AddWithValue("@Port", chatMessage.Port);
                             command.Parameters.AddWithValue("@ProfileImagePath", chatMessage.ProfileImagePath);
                             command.Parameters.AddWithValue("@TimeSent", chatMessage.TimeSent);
                             messageId = (long)command.ExecuteScalar();
@@ -109,7 +107,7 @@ namespace Server
             {
                 connection.Open();
                 string selectMessagesSql = @"
-                SELECT Id, Username, Message, Address, Port, ProfileImagePath, TimeSent
+                SELECT Id, Username, Message, Address, ProfileImagePath, TimeSent
                 FROM Messages
                 WHERE TimeSent < @Before
                 ORDER BY TimeSent DESC
@@ -129,9 +127,8 @@ namespace Server
                                 Username = reader.GetString(1),
                                 Message = reader.GetString(2),
                                 Address = reader.GetString(3),
-                                Port = reader.GetString(4),
-                                ProfileImagePath = reader.IsDBNull(5) ? null : reader.GetString(5),
-                                TimeSent = reader.GetDateTime(6),
+                                ProfileImagePath = reader.IsDBNull(4) ? null : reader.GetString(4),
+                                TimeSent = reader.GetDateTime(5),
                                 Attachments = new Protocol.Attachment[] { }
                             };
                             // Fetch attachments
