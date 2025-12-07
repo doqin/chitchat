@@ -42,11 +42,11 @@
             // lblPort
             // 
             lblPort.AutoSize = true;
-            lblPort.Font = new Font("Microsoft YaHei UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            lblPort.Font = new Font("Segoe UI Semibold", 11F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblPort.ForeColor = SystemColors.ControlText;
             lblPort.Location = new Point(70, 129);
             lblPort.Name = "lblPort";
-            lblPort.Size = new Size(46, 21);
+            lblPort.Size = new Size(41, 20);
             lblPort.TabIndex = 1;
             lblPort.Text = "Port:";
             // 
@@ -54,12 +54,13 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.Gainsboro;
+            BackColor = Color.FromArgb(247, 245, 243);
             ClientSize = new Size(657, 573);
             Controls.Add(lblPort);
             Controls.Add(txtbxPort);
             Name = "OtherForm";
             Text = "Khác";
+            Load += OtherForm_Load;
             ResumeLayout(false);
             PerformLayout();
         }
