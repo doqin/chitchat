@@ -391,7 +391,7 @@ namespace Client
         {
             var endPoint = tcpClient.Client.LocalEndPoint as IPEndPoint;
             ChatMessage chatMessage = new()
-            {   
+            {
                 Id = Guid.NewGuid().ToString(),
                 TimeSent = timeSent,
                 Username = username,
@@ -447,8 +447,8 @@ namespace Client
                 {
                     System.Diagnostics.Debug.WriteLine($"ChatForm | Preparing to send file: {filePath}");
                     using (FileStream fs = new FileStream(
-                            usingCached ? Path.Combine("Cached", filePath) : filePath, 
-                            FileMode.Open, 
+                            usingCached ? Path.Combine("Cached", filePath) : filePath,
+                            FileMode.Open,
                             FileAccess.Read
                             )
                         )
@@ -561,6 +561,7 @@ namespace Client
                 smthFlwLytPnlMessages.Controls.Add(dummy);
             });
             GetMessages(50, DateTime.Now);
+            AddMouseDownToLoseFocus(this);
         }
 
         private void FlwLytPnlMessages_MouseWheel(object? sender, MouseEventArgs e)
@@ -606,5 +607,60 @@ namespace Client
         private void ChatForm_Paint(object sender, PaintEventArgs e)
         {
         }
+
+        private void sendbutton_Click(object sender, EventArgs e)
+        {
+            // Lấy attachment nếu có
+            Attachment[] attachments = Array.Empty<Attachment>();
+            if (flwLytPnlAttachments.Controls.Count > 0)
+            {
+                string[] files = flwLytPnlAttachments.Controls
+                    .OfType<SelectedFileControl>()
+                    .Select(f => f.FilePath)
+                    .ToArray();
+
+                var paths = SendFiles(files);
+                if (paths.Length > 0)
+                {
+                    attachments = paths;
+                }
+                else
+                {
+                    MessageBox.Show("All selected files were rejected by the server.", "File Upload Rejected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                // Clear attachment panel
+                flwLytPnlAttachments.Invoke(() =>
+                {
+                    flwLytPnlAttachments.Controls.Clear();
+                });
+            }
+
+            // Lấy text và gửi message nếu không rỗng
+            if (!string.IsNullOrWhiteSpace(txtbxMessage.Text) || attachments.Length != 0)
+            {
+                SendMessage(DateTime.Now, username, txtbxMessage.Text.Trim(), attachments);
+                txtbxMessage.Clear();
+            }
+        }
+
+        private void AddMouseDownToLoseFocus(Control parent)
+        {
+            if (!(parent is Button) && !(parent is TextBox))
+            {
+                parent.MouseDown += (s, e) =>
+                {
+                    this.ActiveControl = null; // mất focus textbox
+                };
+            }
+
+            foreach (Control c in parent.Controls)
+            {
+                AddMouseDownToLoseFocus(c);
+            }
+        }
+
     }
 }
+

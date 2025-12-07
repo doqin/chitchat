@@ -20,6 +20,7 @@ namespace Client
             this.KeyPreview = true;
             serverList.ListChanged += ServerList_ListChanged;
             searchControl1.TextChanged += searchControl1_TextChanged;
+
             // create shared controls once and reuse
         }
 
@@ -102,6 +103,9 @@ namespace Client
                 chatForm.TopLevel = false;
                 chatForm.FormBorderStyle = FormBorderStyle.None;
                 chatForm.Dock = DockStyle.Fill;
+                AddMouseDownToLoseFocusExternal(this, chatForm);
+                AddMouseDownToLoseFocus(this);
+                AddMouseDownToLoseFocusExterna(chatForm);
 
                 // Ensure the split container exists in the designer; adjust name if necessary
                 if (splitContainerMain == null)
@@ -241,5 +245,59 @@ namespace Client
                 }
             }
         }
+
+        private void AddMouseDownToLoseFocus(Control parent)
+        {
+            // Loại trừ các control nhập liệu
+            if (!(parent is TextBox) && !(parent is ComboBox) && !(parent is RichTextBox))
+            {
+                parent.MouseDown += (s, e) =>
+                {
+                    this.ActiveControl = null; // bỏ focus
+                };
+            }
+
+            foreach (Control c in parent.Controls)
+            {
+                AddMouseDownToLoseFocus(c);
+            }
+        }
+
+
+        private void AddMouseDownToLoseFocusExternal(Control parent, ChatForm chatForm)
+        {
+            // Đăng ký MouseDown cho control hiện tại
+            parent.MouseDown += (s, e) =>
+            {
+                chatForm.ActiveControl = null;
+            };
+
+            // Đệ quy cho tất cả control con
+            foreach (Control c in parent.Controls)
+            {
+                AddMouseDownToLoseFocusExternal(c, chatForm);
+            }
+        }
+
+        private void AddMouseDownToLoseFocusExterna(Control ctrl)
+        {
+            // Nếu ctrl KHÔNG phải là input → add sự kiện mất focus
+            if (!(ctrl is TextBox) &&
+                !(ctrl is ComboBox) &&
+                !(ctrl is RichTextBox))
+            {
+                ctrl.MouseDown += (s, e) => { this.ActiveControl = null; };
+            }
+            // Duyệt đệ quy toàn bộ control con
+            foreach (Control child in ctrl.Controls)
+            {
+                AddMouseDownToLoseFocusExterna(child);
+            }
+        }
+
+
+
+
+
     }
 }

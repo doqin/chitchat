@@ -80,8 +80,8 @@
             splitContainerMain.Panel2.BackColor = Color.FromArgb(247, 245, 243);
             splitContainerMain.Panel2.Controls.Add(lblProceed);
             splitContainerMain.Panel2.Controls.Add(lblWelcome);
-            splitContainerMain.Size = new Size(1207, 639);
-            splitContainerMain.SplitterDistance = 389;
+            splitContainerMain.Size = new Size(1509, 799);
+            splitContainerMain.SplitterDistance = 486;
             splitContainerMain.SplitterWidth = 2;
             splitContainerMain.TabIndex = 5;
             splitContainerMain.Paint += splitContainerMain_Paint;
@@ -90,10 +90,11 @@
             // 
             pnlServers.Controls.Add(flwLytPnlServers);
             pnlServers.Dock = DockStyle.Fill;
-            pnlServers.Location = new Point(62, 92);
+            pnlServers.Location = new Point(78, 113);
+            pnlServers.Margin = new Padding(4);
             pnlServers.Name = "pnlServers";
-            pnlServers.Padding = new Padding(5);
-            pnlServers.Size = new Size(327, 547);
+            pnlServers.Padding = new Padding(6);
+            pnlServers.Size = new Size(408, 686);
             pnlServers.TabIndex = 4;
             // 
             // flwLytPnlServers
@@ -102,9 +103,10 @@
             flwLytPnlServers.BackColor = Color.Transparent;
             flwLytPnlServers.Dock = DockStyle.Fill;
             flwLytPnlServers.FlowDirection = FlowDirection.TopDown;
-            flwLytPnlServers.Location = new Point(5, 5);
+            flwLytPnlServers.Location = new Point(6, 6);
+            flwLytPnlServers.Margin = new Padding(4);
             flwLytPnlServers.Name = "flwLytPnlServers";
-            flwLytPnlServers.Size = new Size(317, 537);
+            flwLytPnlServers.Size = new Size(396, 674);
             flwLytPnlServers.TabIndex = 0;
             flwLytPnlServers.WrapContents = false;
             // 
@@ -113,10 +115,11 @@
             pnlTop.Controls.Add(searchControl1);
             pnlTop.Controls.Add(roundButtonControl1);
             pnlTop.Dock = DockStyle.Top;
-            pnlTop.Location = new Point(62, 46);
+            pnlTop.Location = new Point(78, 55);
+            pnlTop.Margin = new Padding(4);
             pnlTop.Name = "pnlTop";
-            pnlTop.Padding = new Padding(5);
-            pnlTop.Size = new Size(327, 46);
+            pnlTop.Padding = new Padding(6);
+            pnlTop.Size = new Size(408, 58);
             pnlTop.TabIndex = 3;
             // 
             // searchControl1
@@ -131,11 +134,11 @@
             searchControl1.Dock = DockStyle.Fill;
             searchControl1.IconPadding = new Padding(7);
             searchControl1.IconWidth = 40;
-            searchControl1.Location = new Point(5, 5);
+            searchControl1.Location = new Point(6, 6);
             searchControl1.Margin = new Padding(1);
             searchControl1.Name = "searchControl1";
             searchControl1.Radius = 10;
-            searchControl1.Size = new Size(277, 36);
+            searchControl1.Size = new Size(346, 46);
             searchControl1.TabIndex = 0;
             // 
             // roundButtonControl1
@@ -151,12 +154,12 @@
             roundButtonControl1.ButtonText = "";
             roundButtonControl1.ButtonTextColor = Color.Black;
             roundButtonControl1.Dock = DockStyle.Right;
-            roundButtonControl1.Location = new Point(282, 5);
+            roundButtonControl1.Location = new Point(352, 6);
             roundButtonControl1.Margin = new Padding(1);
             roundButtonControl1.MouseOverBackColor = SystemColors.ButtonHighlight;
             roundButtonControl1.Name = "roundButtonControl1";
             roundButtonControl1.Radius = 10;
-            roundButtonControl1.Size = new Size(40, 36);
+            roundButtonControl1.Size = new Size(50, 46);
             roundButtonControl1.TabIndex = 1;
             roundButtonControl1.UseMouseOverBackColor = true;
             roundButtonControl1.Click += roundButtonControl1_Click;
@@ -167,10 +170,11 @@
             label1.Dock = DockStyle.Top;
             label1.Font = new Font("Microsoft YaHei UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label1.ForeColor = Color.FromArgb(113, 96, 232);
-            label1.Location = new Point(62, 0);
+            label1.Location = new Point(78, 0);
+            label1.Margin = new Padding(4, 0, 4, 0);
             label1.Name = "label1";
-            label1.Padding = new Padding(10);
-            label1.Size = new Size(115, 46);
+            label1.Padding = new Padding(12);
+            label1.Size = new Size(143, 55);
             label1.TabIndex = 1;
             label1.Text = "ChitChat";
             // 
@@ -182,8 +186,9 @@
             pnlLeft.Dock = DockStyle.Left;
             pnlLeft.ForeColor = SystemColors.ActiveBorder;
             pnlLeft.Location = new Point(0, 0);
+            pnlLeft.Margin = new Padding(4);
             pnlLeft.Name = "pnlLeft";
-            pnlLeft.Size = new Size(62, 639);
+            pnlLeft.Size = new Size(78, 799);
             pnlLeft.TabIndex = 1;
             pnlLeft.Paint += pnlLeft_Paint;
             // 
@@ -191,10 +196,11 @@
             // 
             panel2.Controls.Add(btnSettings);
             panel2.Dock = DockStyle.Bottom;
-            panel2.Location = new Point(0, 516);
+            panel2.Location = new Point(0, 645);
+            panel2.Margin = new Padding(4);
             panel2.Name = "panel2";
-            panel2.Padding = new Padding(5);
-            panel2.Size = new Size(62, 62);
+            panel2.Padding = new Padding(6);
+            panel2.Size = new Size(78, 78);
             panel2.TabIndex = 2;
             // 
             // btnSettings
@@ -210,12 +216,12 @@
             btnSettings.ButtonText = "";
             btnSettings.ButtonTextColor = SystemColors.ActiveBorder;
             btnSettings.Dock = DockStyle.Fill;
-            btnSettings.Location = new Point(5, 5);
+            btnSettings.Location = new Point(6, 6);
             btnSettings.Margin = new Padding(1);
             btnSettings.MouseOverBackColor = SystemColors.ButtonHighlight;
             btnSettings.Name = "btnSettings";
             btnSettings.Radius = 999;
-            btnSettings.Size = new Size(52, 52);
+            btnSettings.Size = new Size(66, 66);
             btnSettings.TabIndex = 1;
             btnSettings.UseMouseOverBackColor = true;
             btnSettings.Click += btnSettings_Click;
@@ -224,21 +230,23 @@
             // 
             panel1.Controls.Add(picAvatar);
             panel1.Dock = DockStyle.Bottom;
-            panel1.Location = new Point(0, 578);
+            panel1.Location = new Point(0, 723);
+            panel1.Margin = new Padding(4);
             panel1.Name = "panel1";
-            panel1.Padding = new Padding(10);
-            panel1.Size = new Size(62, 61);
+            panel1.Padding = new Padding(12);
+            panel1.Size = new Size(78, 76);
             panel1.TabIndex = 2;
             // 
             // picAvatar
             // 
             picAvatar.Dock = DockStyle.Fill;
             picAvatar.DrawOutline = false;
-            picAvatar.Location = new Point(10, 10);
+            picAvatar.Location = new Point(12, 12);
+            picAvatar.Margin = new Padding(4);
             picAvatar.Name = "picAvatar";
             picAvatar.OutlineColor = Color.White;
             picAvatar.OutlineWidth = 2F;
-            picAvatar.Size = new Size(41, 41);
+            picAvatar.Size = new Size(52, 52);
             picAvatar.TabIndex = 0;
             picAvatar.TabStop = false;
             // 
@@ -247,9 +255,10 @@
             lblProceed.Anchor = AnchorStyles.None;
             lblProceed.AutoSize = true;
             lblProceed.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblProceed.Location = new Point(306, 316);
+            lblProceed.Location = new Point(388, 395);
+            lblProceed.Margin = new Padding(4, 0, 4, 0);
             lblProceed.Name = "lblProceed";
-            lblProceed.Size = new Size(318, 17);
+            lblProceed.Size = new Size(420, 23);
             lblProceed.TabIndex = 1;
             lblProceed.Text = "Kết nối đến một máy chủ LAN để bắt đầu trò chuyện.";
             // 
@@ -258,9 +267,10 @@
             lblWelcome.Anchor = AnchorStyles.None;
             lblWelcome.AutoSize = true;
             lblWelcome.Font = new Font("Segoe UI", 18F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblWelcome.Location = new Point(277, 284);
+            lblWelcome.Location = new Point(352, 355);
+            lblWelcome.Margin = new Padding(4, 0, 4, 0);
             lblWelcome.Name = "lblWelcome";
-            lblWelcome.Size = new Size(379, 32);
+            lblWelcome.Size = new Size(469, 41);
             lblWelcome.TabIndex = 0;
             lblWelcome.Text = "Chào mừng bạn đến với ChitChat!";
             // 
@@ -277,11 +287,12 @@
             // 
             // ServerDiscoveryForm
             // 
-            AutoScaleDimensions = new SizeF(96F, 96F);
+            AutoScaleDimensions = new SizeF(120F, 120F);
             AutoScaleMode = AutoScaleMode.Dpi;
-            ClientSize = new Size(1207, 639);
+            ClientSize = new Size(1509, 799);
             Controls.Add(splitContainerMain);
             ForeColor = Color.Black;
+            Margin = new Padding(4);
             Name = "ServerDiscoveryForm";
             Text = "ChitChat";
             FormClosed += ServerDiscoveryForm_FormClosed;
