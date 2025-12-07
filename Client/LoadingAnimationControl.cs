@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -17,12 +18,14 @@ namespace Client
             InitializeComponent();
         }
 
-        private const int dotWidth = 20, dotHeight = 20;
+        private const double dotWidthRate = 15, dotHeightRate = 15;
         private const double tickRate = 0.0000004;
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
             Graphics graphics = e.Graphics;
+            int dotWidth = (int)(Width / dotWidthRate), dotHeight = (int)(Height * dotHeightRate);
+
             int xDot1 = 0, xDot2 = Width / 2 - dotWidth / 2, xDot3 = Width - dotWidth,
                 yDot1 = (int)(((Height - dotHeight) * Math.Sin(DateTime.Now.Ticks * tickRate) + Height - dotHeight) / 2),
                 yDot2 = (int)(((Height - dotHeight) * Math.Sin(DateTime.Now.Ticks * tickRate + Math.PI / 3) + Height - dotHeight) / 2),
