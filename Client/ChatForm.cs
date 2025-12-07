@@ -20,6 +20,8 @@ namespace Client
 {
     public partial class ChatForm : Form
     {
+        private bool close = false;
+
         private readonly string username;
         private readonly string serverName;
         public string serverIp { get; }
@@ -151,6 +153,7 @@ namespace Client
             {
                 try
                 {
+                    if (close) break;
                     await streamReadLock.WaitAsync();
                     System.Diagnostics.Debug.WriteLine("ChatForm | Listening for messages");
 
@@ -500,6 +503,7 @@ namespace Client
 
         private void ChatForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            close = true;
             tcpClient.Close();
         }
 
