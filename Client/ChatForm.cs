@@ -273,7 +273,8 @@ namespace Client
                 smthFlwLytPnlMessages.SuspendLayout();
                 foreach (var chatMessage in sendMessage?.Messages ?? [])
                 {
-                    System.Diagnostics.Debug.WriteLine($"ChatForm | Received: {chatMessage?.Message} from {chatMessage?.Username} at {chatMessage?.TimeSent}");
+                    var isImageInfo = chatMessage.Attachments.Length == 1 ? ("and is" + (!chatMessage.Attachments[0].IsImage ? " not " : "") + "image") : "";
+                    System.Diagnostics.Debug.WriteLine($"ChatForm | Received: {chatMessage?.Message} from {chatMessage?.Username} at {chatMessage?.TimeSent} with {chatMessage.Attachments.Length} attachments {isImageInfo}");
                     var localEndPoint = tcpClient.Client.LocalEndPoint as IPEndPoint;
                     if (chatMessage.Address == localEndPoint.Address.ToString())
                     {

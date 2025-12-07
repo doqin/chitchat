@@ -62,9 +62,7 @@ namespace Server
                         string insertMessageSql = @"
                         INSERT INTO Messages (Id, Username, Message, Address, ProfileImagePath, TimeSent)
                         VALUES (@Id, @Username, @Message, @Address, @ProfileImagePath, @TimeSent);
-                        SELECT last_insert_rowid();
                         ";
-                        long messageId;
                         using (var command = new SQLiteCommand(insertMessageSql, connection))
                         {
                             command.Parameters.AddWithValue("@Id", chatMessage.Id);
@@ -73,7 +71,7 @@ namespace Server
                             command.Parameters.AddWithValue("@Address", chatMessage.Address);
                             command.Parameters.AddWithValue("@ProfileImagePath", chatMessage.ProfileImagePath);
                             command.Parameters.AddWithValue("@TimeSent", chatMessage.TimeSent);
-                            messageId = (long)command.ExecuteScalar();
+                            command.ExecuteNonQuery();
                         }
                         string insertAttachmentSql = @"
                         INSERT INTO Attachments (MessageId, FileName, IsImage)
@@ -83,7 +81,7 @@ namespace Server
                         {
                             using (var command = new SQLiteCommand(insertAttachmentSql, connection))
                             {
-                                command.Parameters.AddWithValue("@MessageId", messageId);
+                                command.Parameters.AddWithValue("@MessageId", chatMessage.Id);
                                 command.Parameters.AddWithValue("@FileName", attachment.FileName);
                                 command.Parameters.AddWithValue("@IsImage", attachment.IsImage);
                                 command.ExecuteNonQuery();
