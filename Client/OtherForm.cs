@@ -17,5 +17,10 @@ namespace Client
             InitializeComponent();
             txtbxPort.Text = ConfigManager.Current!.UdpPort;
         }
+
+        private void OtherForm_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

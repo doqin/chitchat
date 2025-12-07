@@ -24,8 +24,30 @@ namespace Client
         {
         }
 
+        private void ActivateButton(object btnSender)
+        {
+            if (btnSender != null && btnSender is Button)
+            {
+                DisableButtons();
+                Button button = (Button)btnSender;
+                button.BackColor = Color.Gainsboro;
+            }
+        }
+
+        private void DisableButtons()
+        {
+            foreach (Control previousBtn in splctnSettings.Panel1.Controls)
+            {
+                if (previousBtn.GetType() == typeof(Button))
+                {
+                    previousBtn.BackColor = Color.Transparent;
+                }
+            }
+        }
+
         private void btnUser_Click(object sender, EventArgs e)
         {
+            ActivateButton(sender);
             splctnSettings.Panel2.Controls.Clear();
             loginForm = new LoginForm();
             loginForm.TopLevel = false;
@@ -44,6 +66,7 @@ namespace Client
 
         private void btnOther_Click(object sender, EventArgs e)
         {
+            ActivateButton(sender);
             splctnSettings.Panel2.Controls.Clear();
             OtherForm otherForm = new OtherForm();
             otherForm.TopLevel = false;
