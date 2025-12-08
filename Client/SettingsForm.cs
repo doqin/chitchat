@@ -75,5 +75,17 @@ namespace Client
             splctnSettings.Panel2.Controls.Add(otherForm);
             otherForm.Show();
         }
+
+        private void btnAbout_Click(object sender, EventArgs e)
+        {
+            ActivateButton(sender);
+            splctnSettings.Panel2.Controls.Clear();
+            AboutForm aboutForm = new AboutForm();
+            aboutForm.TopLevel = false;
+            aboutForm.FormBorderStyle = FormBorderStyle.None;
+            aboutForm.Dock = DockStyle.Fill;
+            splctnSettings.Panel2.Controls.Add(aboutForm);
+            aboutForm.Show();
+        }
     }
 }
