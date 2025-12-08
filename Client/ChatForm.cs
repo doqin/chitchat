@@ -1,4 +1,5 @@
-﻿using Protocol;
+﻿using Client.Extensions;
+using Protocol;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -38,6 +39,8 @@ namespace Client
 
         private ConnectedUsers connectedUsers = new();
 
+        private bool isLoading = false;
+
         public ChatForm(string username, string serverName, string ip, int port, string profilePicturePath)
         {
             this.username = username;
@@ -69,7 +72,7 @@ namespace Client
                 if (wrapper.Type == Types.ConnectedUsers)
                 {
                     connectedUsers = JsonSerializer.Deserialize<ConnectedUsers>(wrapper.Payload);
-                    System.Diagnostics.Debug.WriteLine($"Connected users: {string.Join(", ", connectedUsers.Usernames)}");
+                    System.Diagnostics.Debug.WriteLine($"Những người kết nối: {string.Join(", ", connectedUsers.Usernames)}");
                 }
                 // Check if profile picture needs to be uploaded to this server
                 if (!string.IsNullOrEmpty(profilePicturePath) && !Path.IsPathRooted(profilePicturePath))
@@ -135,11 +138,78 @@ namespace Client
                 profilePictureAttachment = profilePicturePath;
             }
             InitializeComponent();
-            lblUserInfo.Text = $"Connected Users: {string.Join(", ", connectedUsers.Usernames)}";
-            smthFlwLytPnlMessages.MouseWheel += FlwLytPnlMessages_MouseWheel;
+            loadingAnimationControl1.Visible = false;
+            lblUserInfo.Text = $"Những người kết nối: {string.Join(", ", connectedUsers.Usernames)}";
+            smthFlwLytPnlMessages.MouseWheel += SmthFlwLytPnlMessages_MouseWheel;
+            smthFlwLytPnlMessages.Scroll += SmthFlwLytPnlMessages_Scroll;
             Text = $"{serverName} - {username} @ {serverName} | {serverIp}:{serverPort}";
+            lblServer.Text = $"{serverName} @ {serverIp}:{serverPort}";
             this.DoubleBuffered = true;
 
+        }
+
+        private void SmthFlwLytPnlMessages_MouseWheel(object? sender, MouseEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"ChatForm | Mouse wheel scrolled: Delta={e.Delta}, ScrollValue={smthFlwLytPnlMessages.VerticalScroll.Value}");
+            if (smthFlwLytPnlMessages.VerticalScroll.Value == smthFlwLytPnlMessages.VerticalScroll.Minimum)
+            {
+                System.Diagnostics.Debug.WriteLine("ChatForm | Scrolled to top, loading more messages...");
+                // Load more messages when scrolled to top
+                if (smthFlwLytPnlMessages.Controls.Count > 1)
+                {
+                    var firstMessageControl = smthFlwLytPnlMessages.Controls
+                        .OfType<ChatMessageControl>()
+                        .OrderBy(c => c.TimeSent)
+                        .FirstOrDefault();
+                    if (firstMessageControl != null)
+                    {
+                        GetMessages(50, firstMessageControl.TimeSent);
+                    }
+                }
+            }
+        }
+
+        private void SmthFlwLytPnlMessages_Scroll(object? sender, ScrollEventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine($"ChatForm | Mouse wheel scrolled: Delta={e.NewValue - e.OldValue}, ScrollValue={smthFlwLytPnlMessages.VerticalScroll.Value}");
+            if (smthFlwLytPnlMessages.VerticalScroll.Value == smthFlwLytPnlMessages.VerticalScroll.Minimum)
+            {
+                System.Diagnostics.Debug.WriteLine("ChatForm | Scrolled to top, loading more messages...");
+                // Load more messages when scrolled to top
+                if (smthFlwLytPnlMessages.Controls.Count > 1)
+                {
+                    var firstMessageControl = smthFlwLytPnlMessages.Controls
+                        .OfType<ChatMessageControl>()
+                        .OrderBy(c => c.TimeSent)
+                        .FirstOrDefault();
+                    if (firstMessageControl != null)
+                    {
+                        GetMessages(50, firstMessageControl.TimeSent);
+                    }
+                }
+            }
+        }
+
+        private void SetLoading(bool loading)
+        {
+            isLoading = loading;
+            if (loadingAnimationControl1 != null)
+            {
+                smthFlwLytPnlMessages.Invoke(() =>
+                {
+                    smthFlwLytPnlMessages.Visible = !isLoading;
+                });
+                loadingAnimationControl1.Invoke(() =>
+                {
+                    loadingAnimationControl1.Visible = isLoading;
+                    /*
+                    if (isLoading)
+                    {
+                        loadingAnimationControl1.BringToFront();
+                    }
+                    */
+                });
+            }
         }
 
         /// <summary>
@@ -175,27 +245,7 @@ namespace Client
                             // If the message is a chat message, display it
                             case Types.ChatMessage:
                                 ChatMessage chatMessage = JsonSerializer.Deserialize<ChatMessage>(wrapper.Payload);
-                                System.Diagnostics.Debug.WriteLine($"ChatForm | Received: {chatMessage?.Message} from {chatMessage?.Username} at {chatMessage?.TimeSent}");
-
-                                string msgId = Guid.NewGuid().ToString();
-                                var localEndPoint = tcpClient.Client.LocalEndPoint as IPEndPoint;
-                                if (chatMessage.Address == localEndPoint.Address.ToString())
-                                {
-                                    var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, true);
-                                    smthFlwLytPnlMessages.Invoke(() =>
-                                    {
-                                        smthFlwLytPnlMessages.Controls.Add(item);
-                                    });
-                                }
-                                else
-                                {
-                                    var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, false);
-                                    smthFlwLytPnlMessages.Invoke(() =>
-                                    {
-                                        smthFlwLytPnlMessages.Controls.Add(item);
-                                    });
-                                }
-
+                                AddMessage(client, chatMessage);
                                 break;
 
                             // If the message is a file confirmation, set result to the pending TaskCompletionSource
@@ -230,7 +280,7 @@ namespace Client
                                 System.Diagnostics.Debug.WriteLine($"ChatForm | User connected: {userConnected.Username}");
                                 lblUserInfo.Invoke(() =>
                                 {
-                                    lblUserInfo.Text = $"Connected Users: {string.Join(", ", connectedUsers.Usernames)}";
+                                    lblUserInfo.Text = $"Những người kết nối: {string.Join(", ", connectedUsers.Usernames)}";
                                 });
                                 break;
                             case Types.UserDisconnected:
@@ -239,7 +289,7 @@ namespace Client
                                 System.Diagnostics.Debug.WriteLine($"ChatForm | User disconnected: {userDisconnected.Username}");
                                 lblUserInfo.Invoke(() =>
                                 {
-                                    lblUserInfo.Text = $"Connected Users: {string.Join(", ", connectedUsers.Usernames)}";
+                                    lblUserInfo.Text = $"Những người kết nối: {string.Join(", ", connectedUsers.Usernames)}";
                                 });
                                 break;
                             default:
@@ -267,42 +317,103 @@ namespace Client
             reactionManager.ToggleReaction(reaction.MessageId, reaction.Emoji, reaction.UserId);
         }
 
-        private void HandleSendMessages(TcpClient client, Wrapper wrapper)
+        private async void HandleSendMessages(TcpClient client, Wrapper wrapper)
         {
-            SendMessages sendMessage = JsonSerializer.Deserialize<SendMessages>(wrapper.Payload);
-            System.Diagnostics.Debug.WriteLine($"ChatForm | Received {sendMessage?.Messages.Length} messages from server.");
-            smthFlwLytPnlMessages.Invoke(() =>
+            await Task.Run(() =>
             {
-                smthFlwLytPnlMessages.SuspendLayout();
+                SetLoading(true);
+                System.Diagnostics.Debug.WriteLine("ChatForm | Handling SendMessages...");
+                smthFlwLytPnlMessages.Invoke(() =>
+                {
+                    smthFlwLytPnlMessages.Controls.SetChildIndex(dummy, 0);
+                    smthFlwLytPnlMessages.SuspendLayout();
+                    SuspendPainting.SuspendPaintingControl(smthFlwLytPnlMessages);
+                });
+                SendMessages sendMessage = JsonSerializer.Deserialize<SendMessages>(wrapper.Payload);
+                System.Diagnostics.Debug.WriteLine($"ChatForm | Received {sendMessage?.Messages.Length} messages from server.");
+                //smthFlwLytPnlMessages.SuspendLayout();
                 foreach (var chatMessage in sendMessage?.Messages ?? [])
                 {
-                    var isImageInfo = chatMessage.Attachments.Length == 1 ? ("and is" + (!chatMessage.Attachments[0].IsImage ? " not " : "") + "image") : "";
-                    System.Diagnostics.Debug.WriteLine($"ChatForm | Received: {chatMessage?.Message} from {chatMessage?.Username} at {chatMessage?.TimeSent} with {chatMessage.Attachments.Length} attachments {isImageInfo}");
-                    var localEndPoint = tcpClient.Client.LocalEndPoint as IPEndPoint;
-                    if (chatMessage.Address == localEndPoint.Address.ToString())
-                    {
-                        var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, true);
-                        smthFlwLytPnlMessages.Controls.Add(item);
-                        smthFlwLytPnlMessages.Controls.SetChildIndex(item, 0);
-                    }
-                    else
-                    {
-                        var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, false);
-                        smthFlwLytPnlMessages.Controls.Add(item);
-                        smthFlwLytPnlMessages.Controls.SetChildIndex(item, 0);
-                    }
-                    if (chatMessage.ReactionState != null)
-                    {
-                        reactionManager.SetReactionState(chatMessage.Id, chatMessage.ReactionState);
-                    }
+                    AddMessage(client, chatMessage, true);
                 }
-                smthFlwLytPnlMessages.ResumeLayout(true);
-                if (dummy != null)
+                smthFlwLytPnlMessages.Invoke(() =>
                 {
-                    smthFlwLytPnlMessages.ScrollControlIntoView(dummy);
-                    smthFlwLytPnlMessages.Controls.SetChildIndex(dummy, 0);
-                }
+                    smthFlwLytPnlMessages.ResumeLayout(true);
+                    if (dummy != null)
+                    {
+                        smthFlwLytPnlMessages.ScrollControlIntoView(dummy);
+                    }
+                });
+                smthFlwLytPnlMessages.Invoke(() =>
+                {
+                    SuspendPainting.ResumePaintingControl(smthFlwLytPnlMessages);
+                });
+                // Hide loading after messages rendered
+                SetLoading(false);
             });
+        }
+
+        private void AddMessage(TcpClient client, ChatMessage? chatMessage, bool sendToBack = false)
+        {
+            var isImageInfo = chatMessage.Attachments.Length == 1 ? ("and is" + (!chatMessage.Attachments[0].IsImage ? " not " : "") + "image") : "";
+            System.Diagnostics.Debug.WriteLine($"ChatForm | Received: {chatMessage?.Message} from {chatMessage?.Username} at {chatMessage?.TimeSent} with {chatMessage.Attachments.Length} attachments {isImageInfo}");
+            var localEndPoint = tcpClient.Client.LocalEndPoint as IPEndPoint;
+            if (chatMessage.Address == localEndPoint.Address.ToString())
+            {
+                var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, true);
+                item.AttachmentCompleted += (s, e) =>
+                {
+                    // Scroll to bottom when attachment is loaded
+                    smthFlwLytPnlMessages.Invoke(() =>
+                    {
+                        if (dummy != null)
+                        {
+                            smthFlwLytPnlMessages.ScrollControlIntoView(dummy);
+                        }
+                    });
+                };
+                smthFlwLytPnlMessages.Invoke(() =>
+                {
+                    smthFlwLytPnlMessages.Controls.Add(item);
+                });
+                if (sendToBack)
+                {
+                    smthFlwLytPnlMessages.Invoke(() =>
+                    {
+                        smthFlwLytPnlMessages.Controls.SetChildIndex(item, 0);
+                    });
+                }
+            }
+            else
+            {
+                var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, false);
+                item.AttachmentCompleted += (s, e) =>
+                {
+                    // Scroll to bottom when attachment is loaded
+                    smthFlwLytPnlMessages.Invoke(() =>
+                    {
+                        if (dummy != null)
+                        {
+                            smthFlwLytPnlMessages.ScrollControlIntoView(dummy);
+                        }
+                    });
+                };
+                smthFlwLytPnlMessages.Invoke(() =>
+                {
+                    smthFlwLytPnlMessages.Controls.Add(item);
+                });
+                if (sendToBack)
+                {
+                    smthFlwLytPnlMessages.Invoke(() =>
+                    {
+                        smthFlwLytPnlMessages.Controls.SetChildIndex(item, 0);
+                    });
+                }
+            }
+            if (chatMessage.ReactionState != null)
+            {
+                reactionManager.SetReactionState(chatMessage.Id, chatMessage.ReactionState);
+            }
         }
 
         /// <summary>
@@ -421,6 +532,8 @@ namespace Client
         /// <param name="filePaths">Array of file paths</param>
         private Attachment[] SendFiles(string[] filePaths, bool usingCached = false, bool mangleFileNames = true)
         {
+            SetLoading(true);
+            Invalidate();
             SendFiles files = new()
             {
                 FileCount = filePaths.Length,
@@ -480,11 +593,17 @@ namespace Client
                 System.Diagnostics.Debug.WriteLine($"ChatForm | Error sending file data: {e.Message}");
                 MessageBox.Show("An error has occurred", "Error sending files to server. Please try again", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            finally
+            {
+                SetLoading(false);
+            }
             return Array.Empty<Attachment>();
         }
 
         private void GetMessages(int n, DateTime before)
         {
+            // Show loading while requesting messages
+
             GetMessages getMessages = new GetMessages
             {
                 Count = n,
@@ -507,37 +626,53 @@ namespace Client
             tcpClient.Close();
         }
 
-        private void txtbxMessage_KeyDown(object sender, KeyEventArgs e)
+        private async void txtbxMessage_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
             {
-                Attachment[] attachments = Array.Empty<Attachment>();
-                if (flwLytPnlAttachments.Controls.Count > 0)
+                await Task.Run(() =>
                 {
-                    string[] files = flwLytPnlAttachments.Controls.Cast<SelectedFileControl>().ToArray().Select(f => f.FilePath).ToArray();
-                    var paths = SendFiles(files);
-                    if (paths.Length > 0)
+                    bool flowControl = Send();
+                    if (!flowControl)
                     {
-                        attachments = paths;
-                    }
-                    else
-                    {
-                        MessageBox.Show("All selected files were rejected by the server.", "File Upload Rejected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         return;
                     }
-                    flwLytPnlAttachments.Invoke(() =>
-                    {
-                        flwLytPnlAttachments.Controls.Clear();
-                    });
-                }
-                if (!string.IsNullOrWhiteSpace(txtbxMessage.Text) || attachments.Length != 0)
-                {
-                    SendMessage(DateTime.Now, username, txtbxMessage.Text.Trim(), attachments);
-                    txtbxMessage.Clear();
-                }
-                e.Handled = true;
-                e.SuppressKeyPress = true;
+                    e.Handled = true;
+                    e.SuppressKeyPress = true;
+                });
             }
+        }
+
+        private bool Send()
+        {
+            Attachment[] attachments = Array.Empty<Attachment>();
+            if (flwLytPnlAttachments.Controls.Count > 0)
+            {
+                string[] files = flwLytPnlAttachments.Controls.Cast<SelectedFileControl>().ToArray().Select(f => f.FilePath).ToArray();
+                var paths = SendFiles(files);
+                if (paths.Length > 0)
+                {
+                    attachments = paths;
+                }
+                else
+                {
+                    MessageBox.Show("All selected files were rejected by the server.", "File Upload Rejected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return false;
+                }
+                flwLytPnlAttachments.Invoke(() =>
+                {
+                    flwLytPnlAttachments.Controls.Clear();
+                });
+            }
+            if (!string.IsNullOrWhiteSpace(txtbxMessage.Text) || attachments.Length != 0)
+            {
+                SendMessage(DateTime.Now, username, txtbxMessage.Text.Trim(), attachments);
+                txtbxMessage.Invoke(() =>
+                {
+                    txtbxMessage.Clear();
+                });
+            }
+            return true;
         }
 
         // csharp
@@ -549,7 +684,8 @@ namespace Client
 
         private void smthFlwLytPnlMessages_ControlAdded(object sender, ControlEventArgs e)
         {
-            smthFlwLytPnlMessages.ScrollControlIntoView(e.Control);
+            if (!isLoading)
+                smthFlwLytPnlMessages.ScrollControlIntoView(e.Control);
         }
 
 
@@ -567,25 +703,6 @@ namespace Client
             });
             GetMessages(50, DateTime.Now);
             AddMouseDownToLoseFocus(this);
-        }
-
-        private void FlwLytPnlMessages_MouseWheel(object? sender, MouseEventArgs e)
-        {
-            if (smthFlwLytPnlMessages.VerticalScroll.Value == smthFlwLytPnlMessages.VerticalScroll.Minimum)
-            {
-                // Load more messages when scrolled to top
-                if (smthFlwLytPnlMessages.Controls.Count > 1)
-                {
-                    var firstMessageControl = smthFlwLytPnlMessages.Controls
-                        .OfType<ChatMessageControl>()
-                        .OrderBy(c => c.TimeSent)
-                        .FirstOrDefault();
-                    if (firstMessageControl != null)
-                    {
-                        GetMessages(50, firstMessageControl.TimeSent);
-                    }
-                }
-            }
         }
 
         private void txtbxMessage_Click(object sender, EventArgs e)
@@ -613,41 +730,9 @@ namespace Client
         {
         }
 
-        private void sendbutton_Click(object sender, EventArgs e)
+        private async void sendbutton_Click(object sender, EventArgs e)
         {
-            // Lấy attachment nếu có
-            Attachment[] attachments = Array.Empty<Attachment>();
-            if (flwLytPnlAttachments.Controls.Count > 0)
-            {
-                string[] files = flwLytPnlAttachments.Controls
-                    .OfType<SelectedFileControl>()
-                    .Select(f => f.FilePath)
-                    .ToArray();
-
-                var paths = SendFiles(files);
-                if (paths.Length > 0)
-                {
-                    attachments = paths;
-                }
-                else
-                {
-                    MessageBox.Show("All selected files were rejected by the server.", "File Upload Rejected", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
-
-                // Clear attachment panel
-                flwLytPnlAttachments.Invoke(() =>
-                {
-                    flwLytPnlAttachments.Controls.Clear();
-                });
-            }
-
-            // Lấy text và gửi message nếu không rỗng
-            if (!string.IsNullOrWhiteSpace(txtbxMessage.Text) || attachments.Length != 0)
-            {
-                SendMessage(DateTime.Now, username, txtbxMessage.Text.Trim(), attachments);
-                txtbxMessage.Clear();
-            }
+            await Task.Run(() => Send());
         }
 
         private void AddMouseDownToLoseFocus(Control parent)
@@ -666,6 +751,64 @@ namespace Client
             }
         }
 
+        private void txtbxMessage_TextChanged(object sender, EventArgs e)
+        {
+            if (txtbxMessage.Text.Length > 0)
+            {
+                send_roundbutton.BackgroundColor = Color.FromArgb(113, 96, 232);
+                send_roundbutton.backgroundColor = Color.FromArgb(113, 96, 232);
+                send_roundbutton.MouseOverBackColor = Color.FromArgb(100, 81, 199);
+                send_roundbutton.ButtonBackgroundImage = Properties.Resources.send_white;
+            }
+            else
+            {
+                send_roundbutton.BackgroundColor = Color.FromKnownColor(KnownColor.Control);
+                send_roundbutton.backgroundColor = Color.FromKnownColor(KnownColor.Control);
+                send_roundbutton.MouseOverBackColor = Color.FromKnownColor(KnownColor.ButtonHighlight);
+                send_roundbutton.ButtonBackgroundImage = Properties.Resources.send_gray;
+            }
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void rndBtnCtrlClose_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                this.Close();
+            }
+            catch
+            {
+                // Ignore errors on close
+            }
+        }
+
+        private void ChatForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            try
+            {
+                Dispose();
+            }
+            catch { }
+        }
+
+        private void rndCtrlChatbox_Click(object sender, EventArgs e)
+        {
+            txtbxMessage.Focus();
+        }
+
+        private void rndCtrlChatbox_MouseEnter(object sender, EventArgs e)
+        {
+            Cursor = Cursors.IBeam;
+        }
+
+        private void rndCtrlChatbox_MouseLeave(object sender, EventArgs e)
+        {
+            Cursor = Cursors.Default;
+        }
     }
 }
 

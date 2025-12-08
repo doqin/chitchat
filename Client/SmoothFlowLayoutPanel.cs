@@ -35,6 +35,7 @@ namespace Client
                 HorizontalScroll.Value = newValue;
                 PerformLayout();
             }
+            base.OnMouseWheel(e);
         }
     }
 }

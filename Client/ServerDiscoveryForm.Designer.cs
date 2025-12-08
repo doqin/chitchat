@@ -142,6 +142,7 @@
             // 
             roundButtonControl1.ActiveBorderColor = SystemColors.ActiveBorder;
             roundButtonControl1.BackColor = Color.Transparent;
+            roundButtonControl1.backgroundColor = SystemColors.Control;
             roundButtonControl1.BackgroundColor = SystemColors.Control;
             roundButtonControl1.BorderColor = SystemColors.InactiveBorder;
             roundButtonControl1.BorderWidth = 1F;
@@ -201,6 +202,7 @@
             // 
             btnSettings.ActiveBorderColor = SystemColors.ActiveBorder;
             btnSettings.BackColor = Color.Transparent;
+            btnSettings.backgroundColor = Color.FromArgb(247, 245, 243);
             btnSettings.BackgroundColor = Color.FromArgb(247, 245, 243);
             btnSettings.BorderColor = Color.FromArgb(247, 245, 243);
             btnSettings.BorderWidth = 1F;
@@ -233,10 +235,10 @@
             // picAvatar
             // 
             picAvatar.Dock = DockStyle.Fill;
-            picAvatar.DrawOutline = false;
+            picAvatar.DrawOutline = true;
             picAvatar.Location = new Point(10, 10);
             picAvatar.Name = "picAvatar";
-            picAvatar.OutlineColor = Color.White;
+            picAvatar.OutlineColor = Color.Gray;
             picAvatar.OutlineWidth = 2F;
             picAvatar.Size = new Size(41, 41);
             picAvatar.TabIndex = 0;
@@ -247,7 +249,7 @@
             lblProceed.Anchor = AnchorStyles.None;
             lblProceed.AutoSize = true;
             lblProceed.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblProceed.Location = new Point(317, 316);
+            lblProceed.Location = new Point(269, 313);
             lblProceed.Name = "lblProceed";
             lblProceed.Size = new Size(318, 17);
             lblProceed.TabIndex = 1;
@@ -258,7 +260,7 @@
             lblWelcome.Anchor = AnchorStyles.None;
             lblWelcome.AutoSize = true;
             lblWelcome.Font = new Font("Segoe UI", 18F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblWelcome.Location = new Point(288, 284);
+            lblWelcome.Location = new Point(239, 281);
             lblWelcome.Name = "lblWelcome";
             lblWelcome.Size = new Size(379, 32);
             lblWelcome.TabIndex = 0;

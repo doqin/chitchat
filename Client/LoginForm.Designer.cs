@@ -226,6 +226,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(247, 245, 243);
             ClientSize = new Size(703, 415);
+            ControlBox = false;
             Controls.Add(rndBtnCtrlRemoveAvatar);
             Controls.Add(rndBtnCtrlSave);
             Controls.Add(rndTxtBxCtrlUsername);
@@ -236,6 +237,7 @@
             Controls.Add(lblUsername);
             DoubleBuffered = true;
             Margin = new Padding(2);
+            MaximizeBox = false;
             Name = "LoginForm";
             Text = "Đăng nhập";
             roundControl1.ResumeLayout(false);

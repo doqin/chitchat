@@ -11,6 +11,7 @@ namespace Client
         private BindingList<Server> serverList = new BindingList<Server>();
 
         private ChatForm? hostedChatForm;
+        private Server selectedServer;
 
         // keep these as fields so other methods can access them
 
@@ -64,9 +65,9 @@ namespace Client
                 serverControl.backgroundColor = Color.FromArgb(246, 245, 244);
 
                 // Dispose any previously hosted chat
-                if (hostedChatForm != null)
+                if (selectedServer != null)
                 {
-                    if (hostedChatForm.serverIp == server.IPAddress && hostedChatForm.serverPort == server.Port)
+                    if (selectedServer?.IPAddress == server?.IPAddress && selectedServer?.Port == server?.Port)
                     {
                         // Already hosting this chat, do nothing
                         return;
@@ -84,7 +85,7 @@ namespace Client
                     hostedChatForm = null;
                 }
 
-                Server selectedServer = server;
+                selectedServer = server;
 
                 // Create ChatForm and embed into the right panel of the SplitContainer.
                 // NOTE: your designer's SplitContainer name may be `splitContainer1` (used below)
@@ -100,6 +101,7 @@ namespace Client
                     return;
                 }
 
+                chatForm.FormClosed += ChatForm_FormClosed;
                 chatForm.TopLevel = false;
                 chatForm.FormBorderStyle = FormBorderStyle.None;
                 chatForm.Dock = DockStyle.Fill;
@@ -123,6 +125,12 @@ namespace Client
                 hostedChatForm = chatForm;
             };
             flwLytPnlServers.Controls.Add(serverControl);
+        }
+
+        private void ChatForm_FormClosed(object? sender, FormClosedEventArgs e)
+        {
+            hostedChatForm = null;
+            selectedServer = null;
         }
 
         private void ServerDiscoveryForm_Load(object sender, EventArgs e)
@@ -184,11 +192,6 @@ namespace Client
                 try
                 {
                     hostedChatForm.Close();
-                }
-                catch { }
-                try
-                {
-                    hostedChatForm.Dispose();
                 }
                 catch { }
                 hostedChatForm = null;
@@ -278,8 +281,5 @@ namespace Client
                 AddMouseDownToLoseFocusExternal(c, chatForm);
             }
         }
-
-
-
     }
 }

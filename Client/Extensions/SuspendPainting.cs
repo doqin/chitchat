@@ -22,6 +22,7 @@ namespace Client.Extensions
         public static void ResumePaintingControl(Control control)
         {
             SendMessage(control.Handle, WM_SETREDRAW, new IntPtr(1), IntPtr.Zero);
+            control.Refresh();
         }
     }
 }

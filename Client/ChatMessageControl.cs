@@ -26,6 +26,8 @@ namespace Client
         private ReactionManager reactionManager;
         private string currentUserId;
 
+        public event EventHandler? AttachmentCompleted;
+
         public string Username
         {
             get { return _chatMessage.Username; }
@@ -169,6 +171,10 @@ namespace Client
         {
             if (_isPreviewMode) return;
             lblMessage.Text = _chatMessage.Message;
+            if (string.IsNullOrEmpty(_chatMessage.Message))
+            {
+                rndCtrlChatBubble.Visible = false;
+            }
             lblTimestamp.Text = DateTime.Now.Subtract(_chatMessage.TimeSent).Days > 0 ? _chatMessage.TimeSent.ToString("g") : _chatMessage.TimeSent.ToString("t");
             foreach (Control c in pnlReaction.Controls)
             {
@@ -262,6 +268,7 @@ namespace Client
                                 SizeMode = PictureBoxSizeMode.Zoom,
                                 Padding = new Padding(5),
                                 Size = new Size(400, image.Height * 400 / image.Width),
+                                BorderStyle = BorderStyle.FixedSingle
                             };
                             if (_isRight)
                             {
@@ -300,6 +307,7 @@ namespace Client
                                 SizeMode = PictureBoxSizeMode.Zoom,
                                 Padding = new Padding(5),
                                 Size = new Size(400, image.Height * 400 / image.Width),
+                                BorderStyle = BorderStyle.FixedSingle
                             };
                             if (_isRight)
                             {
@@ -326,6 +334,10 @@ namespace Client
                             flowPanelAttachments.Controls.Add(attachmentControl);
                         }));
                     }
+                }
+                if (_chatMessage.Attachments.Length > 0)
+                {
+                    AttachmentCompleted?.Invoke(this, EventArgs.Empty);
                 }
             });
         }

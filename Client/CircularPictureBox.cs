@@ -13,7 +13,7 @@ namespace Client
 {
     public partial class CircularPictureBox : PictureBox
     {
-        public Color OutlineColor { get; set; } = Color.White;
+        public Color OutlineColor { get; set; } = Color.Gray;
         public float OutlineWidth { get; set; } = 2.0f;
 
         public bool DrawOutline { get; set; } = false;
@@ -32,7 +32,6 @@ namespace Client
 
         protected override void OnPaint(PaintEventArgs pe)
         {
-            pe.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
             this.Region = null; // Allow painting outside the region
 
             using (var path = new GraphicsPath())
@@ -65,7 +64,7 @@ namespace Client
                         // Apply the transformation
                         brush.ScaleTransform(scale, scale);
                         brush.TranslateTransform(dx / scale, dy / scale);
-
+                        pe.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
                         pe.Graphics.FillPath(brush, path);
                     }
                 }
@@ -80,6 +79,7 @@ namespace Client
                     {
                         // Adjust for pen width to draw inside the circle
                         float halfPenWidth = pen.Width / 2;
+                        pe.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
                         pe.Graphics.DrawEllipse(pen, halfPenWidth, halfPenWidth, this.Width - pen.Width, this.Height - pen.Width);
                     }
                 }
