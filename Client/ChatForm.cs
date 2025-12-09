@@ -24,7 +24,6 @@ namespace Client
         private bool close = false;
 
         private readonly string username;
-        private readonly string serverName;
         public string serverIp { get; }
         public int serverPort { get; }
         private readonly string profilePictureAttachment;
@@ -44,7 +43,6 @@ namespace Client
         public ChatForm(string username, string serverName, string ip, int port, string profilePicturePath)
         {
             this.username = username;
-            this.serverName = serverName;
             serverIp = ip;
             serverPort = port;
             reactionManager = new ReactionManager();
@@ -139,7 +137,7 @@ namespace Client
             }
             InitializeComponent();
             loadingAnimationControl1.Visible = false;
-            lblUserInfo.Text = $"Những người kết nối: {string.Join(", ", connectedUsers.Usernames)}";
+            lblUserInfo.Text = $"Những người kết nối: {string.Join(", ", connectedUsers?.Usernames ?? [])}";
             smthFlwLytPnlMessages.MouseWheel += SmthFlwLytPnlMessages_MouseWheel;
             smthFlwLytPnlMessages.Scroll += SmthFlwLytPnlMessages_Scroll;
             Text = $"{serverName} - {username} @ {serverName} | {serverIp}:{serverPort}";
@@ -762,9 +760,9 @@ namespace Client
             }
             else
             {
-                send_roundbutton.BackgroundColor = Color.FromKnownColor(KnownColor.Control);
-                send_roundbutton.backgroundColor = Color.FromKnownColor(KnownColor.Control);
-                send_roundbutton.MouseOverBackColor = Color.FromKnownColor(KnownColor.ButtonHighlight);
+                send_roundbutton.BackgroundColor = Color.White;
+                send_roundbutton.backgroundColor = Color.White;
+                send_roundbutton.MouseOverBackColor = Color.White;
                 send_roundbutton.ButtonBackgroundImage = Properties.Resources.send_gray;
             }
         }

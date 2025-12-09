@@ -151,10 +151,10 @@
             // 
             send_roundbutton.ActiveBorderColor = SystemColors.ActiveBorder;
             send_roundbutton.BackColor = Color.Transparent;
-            send_roundbutton.backgroundColor = SystemColors.Control;
-            send_roundbutton.BackgroundColor = SystemColors.Control;
+            send_roundbutton.backgroundColor = Color.White;
+            send_roundbutton.BackgroundColor = Color.White;
             send_roundbutton.BackgroundImageLayout = ImageLayout.Zoom;
-            send_roundbutton.BorderColor = SystemColors.ActiveBorder;
+            send_roundbutton.BorderColor = Color.White;
             send_roundbutton.BorderWidth = 1F;
             send_roundbutton.ButtonBackgroundImage = Properties.Resources.send_gray;
             send_roundbutton.ButtonBackgroundImageLayout = ImageLayout.Zoom;
@@ -164,7 +164,7 @@
             send_roundbutton.Dock = DockStyle.Fill;
             send_roundbutton.Location = new Point(5, 0);
             send_roundbutton.Margin = new Padding(1);
-            send_roundbutton.MouseOverBackColor = SystemColors.ButtonHighlight;
+            send_roundbutton.MouseOverBackColor = Color.White;
             send_roundbutton.Name = "send_roundbutton";
             send_roundbutton.Radius = 9999;
             send_roundbutton.Size = new Size(51, 51);
@@ -280,6 +280,7 @@
             loadingAnimationControl1.BackColor = Color.Transparent;
             loadingAnimationControl1.BrushColor = Color.Gray;
             loadingAnimationControl1.DotHeight = 5;
+            loadingAnimationControl1.DotPadding = 5;
             loadingAnimationControl1.DotWidth = 5;
             loadingAnimationControl1.Location = new Point(391, 212);
             loadingAnimationControl1.Name = "loadingAnimationControl1";
@@ -291,7 +292,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.FromArgb(241, 235, 227);
+            BackColor = SystemColors.Control;
             BackgroundImageLayout = ImageLayout.Center;
             ClientSize = new Size(803, 479);
             Controls.Add(loadingAnimationControl1);
