@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -726,6 +727,15 @@ namespace Client
 
         private void ChatForm_Paint(object sender, PaintEventArgs e)
         {
+            /*
+            var width = 60;
+            for (int i = 0; i < Width; i += width)
+            {
+                e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(231, 236, 239)), new Rectangle(i, 0, width / 2, Height));
+                e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(218, 65, 103)), new Rectangle(i + width / 2, 0, width / 2, Height));
+                // e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(239, 62, 54)), new Rectangle(i + width * 2 / 3, 0, width / 3, Height));
+            }
+            */
         }
 
         private async void sendbutton_Click(object sender, EventArgs e)

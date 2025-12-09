@@ -105,7 +105,7 @@
             lblTimestamp.Anchor = AnchorStyles.Bottom | AnchorStyles.Left;
             lblTimestamp.AutoSize = true;
             lblTimestamp.Font = new Font("Segoe UI", 7F);
-            lblTimestamp.ForeColor = SystemColors.GrayText;
+            lblTimestamp.ForeColor = Color.Gray;
             lblTimestamp.Location = new Point(3, 67);
             lblTimestamp.Name = "lblTimestamp";
             lblTimestamp.Padding = new Padding(0, 2, 0, 0);

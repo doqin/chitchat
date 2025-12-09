@@ -177,7 +177,7 @@
             flwLytPnlAttachments.AutoSize = true;
             flwLytPnlAttachments.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             flwLytPnlAttachments.Dock = DockStyle.Bottom;
-            flwLytPnlAttachments.Location = new Point(0, 408);
+            flwLytPnlAttachments.Location = new Point(0, 479);
             flwLytPnlAttachments.Name = "flwLytPnlAttachments";
             flwLytPnlAttachments.Size = new Size(803, 0);
             flwLytPnlAttachments.TabIndex = 9;
@@ -297,9 +297,9 @@
             ClientSize = new Size(803, 479);
             Controls.Add(loadingAnimationControl1);
             Controls.Add(smthFlwLytPnlMessages);
+            Controls.Add(pnlChatPanel);
             Controls.Add(pnlTop);
             Controls.Add(flwLytPnlAttachments);
-            Controls.Add(pnlChatPanel);
             Name = "ChatForm";
             Text = "ChatForm";
             FormClosing += ChatForm_FormClosing;
