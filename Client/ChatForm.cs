@@ -52,7 +52,17 @@ namespace Client
             bool needToUploadProfilePicture = false;
             try
             {
-                tcpClient.Connect(serverIp, serverPort);
+                System.Diagnostics.Debug.WriteLine($"Connecting to {serverName} at {serverIp}:{serverPort}...");
+                // Use async connect with timeout to avoid freezing when server is unavailable
+                var connectResult = tcpClient.BeginConnect(serverIp, serverPort, null, null);
+                bool connectedInTime = connectResult.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(5));
+                if (!connectedInTime)
+                {
+                    System.Diagnostics.Debug.WriteLine("ChatForm | Connect timed out");
+                    tcpClient.Close();
+                    throw new TimeoutException("Connection timed out");
+                }
+                tcpClient.EndConnect(connectResult);
                 System.Diagnostics.Debug.WriteLine($"Connected to {serverName}");
                 Wrapper wrapper = new Wrapper
                 {
@@ -104,7 +114,8 @@ namespace Client
             }
             catch (Exception)
             {
-                MessageBox.Show("Cannot connect to server! Try again.");
+                System.Diagnostics.Debug.WriteLine("ChatForm | Cannot connect to server!");
+                MessageBox.Show("Cannot connect to server! Server is either unavailable or connection timed out.");
                 this.DialogResult = DialogResult.Abort;
                 this.Close();
             }
