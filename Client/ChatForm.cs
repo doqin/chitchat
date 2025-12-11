@@ -17,6 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Net.Mime.MediaTypeNames;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Client
 {
@@ -702,6 +703,7 @@ namespace Client
         private void ChatForm_Load(object sender, EventArgs e)
         {
             smthFlwLytPnlMessages.VerticalScroll.Visible = true;
+            pnlChatPanel.Height = txtbxMessage.Height + pnlChatPanel.Padding.Top + pnlChatPanel.Padding.Bottom + txtbxMessage.Location.Y * 2;
             dummy = new Panel
             {
                 Width = smthFlwLytPnlMessages.Width - SystemInformation.VerticalScrollBarWidth,
@@ -756,7 +758,7 @@ namespace Client
 
         private void AddMouseDownToLoseFocus(Control parent)
         {
-            if (!(parent is Button) && !(parent is TextBox))
+            if (!(parent is System.Windows.Forms.Button) && !(parent is System.Windows.Forms.TextBox))
             {
                 parent.MouseDown += (s, e) =>
                 {
@@ -785,6 +787,38 @@ namespace Client
                 send_roundbutton.backgroundColor = Color.White;
                 send_roundbutton.MouseOverBackColor = Color.White;
                 send_roundbutton.ButtonBackgroundImage = Properties.Resources.send_gray;
+            }
+            var g = CreateGraphics();
+            var size = g.MeasureString(txtbxMessage.Text, txtbxMessage.Font);
+            if (size.Width > txtbxMessage.Width)
+            {
+                txtbxMessage.Multiline = true;
+                bool continueProcess = true;
+                int i = 1; //Zero Based So Start from 1
+                int j = 0;
+                int lines = 0;
+                while (continueProcess)
+                {
+                    var index = txtbxMessage.GetFirstCharIndexFromLine(i);
+                    if (index != -1)
+                    {
+                        lines++;
+                        j = index;
+                        i++;
+                    }
+                    else
+                    {
+                        lines++;
+                        continueProcess = false;
+                    }
+                }
+                System.Diagnostics.Debug.WriteLine($"Lines: {lines}");
+                txtbxMessage.Height = txtbxMessage.Font.Height * lines;
+                pnlChatPanel.Height = txtbxMessage.Height + pnlChatPanel.Padding.Top + pnlChatPanel.Padding.Bottom + txtbxMessage.Location.Y * 2;
+            } else
+            {
+                txtbxMessage.Multiline = false;
+                pnlChatPanel.Height = txtbxMessage.Height + pnlChatPanel.Padding.Top + pnlChatPanel.Padding.Bottom + txtbxMessage.Location.Y * 2;
             }
         }
 

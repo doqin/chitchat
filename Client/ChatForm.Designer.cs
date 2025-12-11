@@ -66,7 +66,7 @@
             txtbxMessage.Location = new Point(66, 19);
             txtbxMessage.Name = "txtbxMessage";
             txtbxMessage.PlaceholderText = "Gửi tin nhắn";
-            txtbxMessage.Size = new Size(660, 16);
+            txtbxMessage.Size = new Size(639, 16);
             txtbxMessage.TabIndex = 1;
             txtbxMessage.Click += txtbxMessage_Click;
             txtbxMessage.TextChanged += txtbxMessage_TextChanged;
@@ -110,7 +110,7 @@
             pnlAddButton.Location = new Point(0, 0);
             pnlAddButton.Name = "pnlAddButton";
             pnlAddButton.Padding = new Padding(5);
-            pnlAddButton.Size = new Size(52, 51);
+            pnlAddButton.Size = new Size(51, 51);
             pnlAddButton.TabIndex = 1;
             // 
             // addfile_roundbutton
@@ -122,8 +122,8 @@
             addfile_roundbutton.BorderColor = SystemColors.InactiveBorder;
             addfile_roundbutton.BorderWidth = 1F;
             addfile_roundbutton.ButtonBackgroundImage = Properties.Resources.plus;
-            addfile_roundbutton.ButtonBackgroundImageLayout = ImageLayout.None;
-            addfile_roundbutton.ButtonPadding = new Padding(10);
+            addfile_roundbutton.ButtonBackgroundImageLayout = ImageLayout.Zoom;
+            addfile_roundbutton.ButtonPadding = new Padding(7);
             addfile_roundbutton.ButtonText = "";
             addfile_roundbutton.ButtonTextColor = SystemColors.ControlText;
             addfile_roundbutton.Dock = DockStyle.Fill;
@@ -132,7 +132,7 @@
             addfile_roundbutton.MouseOverBackColor = SystemColors.ButtonHighlight;
             addfile_roundbutton.Name = "addfile_roundbutton";
             addfile_roundbutton.Radius = 999;
-            addfile_roundbutton.Size = new Size(42, 41);
+            addfile_roundbutton.Size = new Size(41, 41);
             addfile_roundbutton.TabIndex = 0;
             addfile_roundbutton.UseMouseOverBackColor = true;
             addfile_roundbutton.Click += roundButtonControl1_Click;
@@ -300,6 +300,7 @@
             Controls.Add(pnlChatPanel);
             Controls.Add(pnlTop);
             Controls.Add(flwLytPnlAttachments);
+            DoubleBuffered = true;
             Name = "ChatForm";
             Text = "ChatForm";
             FormClosing += ChatForm_FormClosing;
