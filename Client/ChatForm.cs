@@ -8,6 +8,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
+using System.Media;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
@@ -32,6 +33,8 @@ namespace Client
         private TcpClient tcpClient;
         private ReactionManager reactionManager;
 
+        private SoundPlayer receivedMessageSound;
+
         private Panel dummy;
 
         private TaskCompletionSource<Attachment[]>? fileConfirmationTcs;
@@ -49,6 +52,7 @@ namespace Client
             serverPort = port;
             reactionManager = new ReactionManager();
             tcpClient = new TcpClient();
+            receivedMessageSound = new SoundPlayer(Properties.Resources.received_message);
 
             bool needToUploadProfilePicture = false;
             try
@@ -257,6 +261,7 @@ namespace Client
                             case Types.ChatMessage:
                                 ChatMessage chatMessage = JsonSerializer.Deserialize<ChatMessage>(wrapper.Payload);
                                 AddMessage(client, chatMessage);
+                                receivedMessageSound.Play();
                                 break;
 
                             // If the message is a file confirmation, set result to the pending TaskCompletionSource
