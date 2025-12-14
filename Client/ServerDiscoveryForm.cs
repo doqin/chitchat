@@ -12,6 +12,7 @@ namespace Client
 
         private ChatForm? hostedChatForm;
         private Server selectedServer;
+        private AlertForm alertForm;
 
         // keep these as fields so other methods can access them
 

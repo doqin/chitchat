@@ -30,6 +30,7 @@ namespace Client
         private readonly string profilePictureAttachment;
         private TcpClient tcpClient;
         private ReactionManager reactionManager;
+        private AlertForm alertForm;
 
         private Panel dummy;
 
@@ -54,6 +55,7 @@ namespace Client
             try
             {
                 tcpClient.Connect(serverIp, serverPort);
+                quickAlert($"Đã kết nối tới {serverName}!", AlertForm.enmAlertType.Success);
                 System.Diagnostics.Debug.WriteLine($"Connected to {serverName}");
                 Wrapper wrapper = new Wrapper
                 {
@@ -400,6 +402,8 @@ namespace Client
                 };
                 smthFlwLytPnlMessages.Invoke(() =>
                 {
+                    if (!sendToBack)
+                        quickAlert($"Tin nhắn mới từ {chatMessage.Username}!", AlertForm.enmAlertType.Info);
                     smthFlwLytPnlMessages.Controls.Add(item);
                 });
                 if (sendToBack)
@@ -769,6 +773,11 @@ namespace Client
             }
         }
 
+        private void quickAlert(string msg, AlertForm.enmAlertType type)
+        {
+            alertForm = new AlertForm();
+            alertForm.showAlert(msg, type);
+        }
         private void label1_Click(object sender, EventArgs e)
         {
 
@@ -809,6 +818,7 @@ namespace Client
         {
             Cursor = Cursors.Default;
         }
+
     }
 }
 
