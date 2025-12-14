@@ -24,13 +24,6 @@ namespace Client
             pictureBox.MouseMove += PictureBox_MouseMove;
             pictureBox.MouseUp += PictureBox_MouseUp;
 
-            // Bật bộ đệm kép (Double Buffered) để chống nháy khi vẽ Overlay
-            typeof(Panel).InvokeMember("DoubleBuffered",
-                System.Reflection.BindingFlags.SetProperty |
-                System.Reflection.BindingFlags.Instance |
-                System.Reflection.BindingFlags.NonPublic,
-                null, panel1, new object[] { true });
-
             if (pictureBox.Image != null)
             {
                 originalImage = pictureBox.Image;
@@ -162,4 +155,6 @@ namespace Client
         }
 
     }
+
+
 }
