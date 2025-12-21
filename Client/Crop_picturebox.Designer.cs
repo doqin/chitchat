@@ -53,18 +53,18 @@
             // 
             panel1.BorderStyle = BorderStyle.Fixed3D;
             panel1.Controls.Add(pictureBox);
-            panel1.Location = new Point(122, 40);
+            panel1.Location = new Point(251, 12);
             panel1.Name = "panel1";
-            panel1.Size = new Size(570, 273);
+            panel1.Size = new Size(310, 310);
             panel1.TabIndex = 2;
             // 
             // pictureBox
             // 
             pictureBox.Cursor = Cursors.SizeAll;
             pictureBox.Image = (Image)resources.GetObject("pictureBox.Image");
-            pictureBox.Location = new Point(14, 3);
+            pictureBox.Location = new Point(3, -2);
             pictureBox.Name = "pictureBox";
-            pictureBox.Size = new Size(534, 253);
+            pictureBox.Size = new Size(300, 300);
             pictureBox.SizeMode = PictureBoxSizeMode.StretchImage;
             pictureBox.TabIndex = 0;
             pictureBox.TabStop = false;

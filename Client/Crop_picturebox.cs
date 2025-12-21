@@ -179,17 +179,17 @@ namespace Client
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
-            int diameter = Math.Min(panel1.Width, panel1.Height) - 20;
+            int diameter = panel1.Width - 20;
+
             int x = (panel1.Width - diameter) / 2;
             int y = (panel1.Height - diameter) / 2;
 
             Region overlay = new Region(panel1.ClientRectangle);
-
             GraphicsPath hole = new GraphicsPath();
             hole.AddEllipse(x, y, diameter, diameter);
             overlay.Exclude(hole);
 
-            using (SolidBrush brush = new SolidBrush(Color.FromArgb(150, 0, 0, 0)))
+            using (SolidBrush brush = new SolidBrush(Color.FromArgb(150, 0, 0, 0))) // Màu đen mờ
             {
                 e.Graphics.FillRegion(brush, overlay);
             }
@@ -204,20 +204,18 @@ namespace Client
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
-            int diameter = Math.Min(panel1.Width, panel1.Height) - 20;
-
+            int diameter = panel1.Width - 20;
             int holeX_Panel = (panel1.Width - diameter) / 2;
             int holeY_Panel = (panel1.Height - diameter) / 2;
 
             int drawX = holeX_Panel - pictureBox.Left;
             int drawY = holeY_Panel - pictureBox.Top;
 
-
             Region overlay = new Region(pictureBox.ClientRectangle);
-
             GraphicsPath hole = new GraphicsPath();
             hole.AddEllipse(drawX, drawY, diameter, diameter);
             overlay.Exclude(hole);
+
 
             using (SolidBrush brush = new SolidBrush(Color.FromArgb(150, 0, 0, 0)))
             {
