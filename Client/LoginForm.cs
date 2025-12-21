@@ -138,7 +138,7 @@ namespace Client
                         string newFileName = $"avatar_cropped_{Guid.NewGuid()}.png";
                         string savePath = Path.Combine(Application.StartupPath, "Cropped", newFileName);
                         if (!Path.Exists(Path.GetDirectoryName(savePath))) {
-                            Directory.CreateDirectory(savePath);
+                            Directory.CreateDirectory(Path.GetDirectoryName(savePath));
                         }
 
                         newAvatar.Save(savePath, System.Drawing.Imaging.ImageFormat.Png);
