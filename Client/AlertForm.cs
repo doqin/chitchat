@@ -37,39 +37,51 @@ namespace Client
             Close
         }
 
-        public void showAlert(string msg, enmAlertType type)
+        public void showAlert(string msg, enmAlertType type, string avtPath = "")
         {
+            this.Opacity = 0.0;
             this.StartPosition = FormStartPosition.Manual;
-            this.padding = (int)(0.01 * Screen.PrimaryScreen!.WorkingArea.Height);
+            string fname;
 
-            this.x = Screen.PrimaryScreen.WorkingArea.Width - this.Width - padding;
-            this.y = Screen.PrimaryScreen.WorkingArea.Height - this.Height - padding;
+            for (int i = 1; i < 10; i++)
+            {
+                fname = "alert" + i.ToString();
+                AlertForm frm = (AlertForm)Application.OpenForms[fname];
 
-            System.Diagnostics.Debug.WriteLine($"x = {x}, y = {y}");
-            this.Location = new Point(this.x, this.y);
+                if (frm == null)
+                {
+                    this.Name = fname;
+                    this.x = Screen.PrimaryScreen.WorkingArea.Width - this.Width + 15;
+                    this.y = Screen.PrimaryScreen.WorkingArea.Height - this.Height * i - 5 * i;
+                    this.Location = new Point(this.x, this.y);
+                    break;
+
+                }
+
+            }
+            this.x = Screen.PrimaryScreen.WorkingArea.Width - base.Width - 5;
+
             switch (type)
             {
-                case (enmAlertType.Info):
-                    this.BackColor = Color.DodgerBlue;
-                    this.ptrbxAlertType.Image = Resources.info_button;
-                    break;
-                case (enmAlertType.Warning):
-                    this.BackColor = Color.LightYellow;
-                    this.ptrbxAlertType.Image = Resources.warning_button;
-                    break;
-                case (enmAlertType.Error):
-                    this.BackColor = Color.Red;
-                    this.ptrbxAlertType.Image = Resources.error_button;
-                    break;
-                case (enmAlertType.Success):
-                    this.BackColor = Color.Green;
+                case enmAlertType.Success:
                     this.ptrbxAlertType.Image = Resources.success_button;
+                    this.BackColor = Color.SeaGreen;
                     break;
-                default:
+                case enmAlertType.Error:
+                    this.ptrbxAlertType.Image = Resources.error_button;
+                    this.BackColor = Color.DarkRed;
+                    break;
+                case enmAlertType.Info:
+                    this.ptrbxAlertType.Image = string.IsNullOrEmpty(avtPath) ? Resources.info_button : Image.FromFile(avtPath);
+                    break;
+                case enmAlertType.Warning:
+                    this.ptrbxAlertType.Image = Resources.warning_button;
+                    this.BackColor = Color.DarkOrange;
                     break;
             }
 
-            this.label1.Text = msg != "" ? msg : "nothing here";
+
+            this.label1.Text = msg;
 
             this.Show();
             this.action = enmAlertAction.Start;
@@ -77,23 +89,38 @@ namespace Client
             this.timer1.Start();
         }
 
-        public void timer1_Tick(object sender, EventArgs e)
+        private void timer1_Tick(object sender, EventArgs e)
         {
             switch (this.action)
             {
-                case (enmAlertAction.Wait):
+                case enmAlertAction.Wait:
                     timer1.Interval = 5000;
-                    this.action = enmAlertAction.Close;
+                    action = enmAlertAction.Close;
                     break;
-                case (enmAlertAction.Start):
+                case AlertForm.enmAlertAction.Start:
+                    this.timer1.Interval = 1;
+                    this.Opacity += 0.1;
+                    if (this.x < this.Location.X)
+                    {
+                        this.Left--;
+                    }
+                    else
+                    {
+                        if (this.Opacity == 1.0)
+                        {
+                            action = AlertForm.enmAlertAction.Wait;
+                        }
+                    }
+                    break;
+                case enmAlertAction.Close:
                     timer1.Interval = 1;
-                    this.action = enmAlertAction.Wait;
-                    break;
-                case (enmAlertAction.Close):
-                    timer1.Interval = 1;
-                    base.Close();
-                    break;
-                default:
+                    this.Opacity -= 0.1;
+
+                    this.Left -= 3;
+                    if (base.Opacity == 0.0)
+                    {
+                        base.Close();
+                    }
                     break;
             }
         }
@@ -108,12 +135,12 @@ namespace Client
 
         }
 
-        private void pictureBox1_Click(object sender, EventArgs e)
+        private void ptrbxAlertType_Click(object sender, EventArgs e)
         {
             base.Close();
         }
 
-        private void pictureBox1_MouseHover(object sender, EventArgs e)
+        private void ptrbxAlertType_MouseHover(object sender, EventArgs e)
         {
             Cursor.Current = Cursors.Hand;
         }
@@ -128,22 +155,16 @@ namespace Client
             Cursor.Current = Cursors.Default;
             base.Close();
         }
-
-        private void panel2_MouseHover(object sender, EventArgs e)
+        private void ptrbxCloseButton_MouseMove(object sender, EventArgs e)
         {
             Cursor.Current = Cursors.Hand;
         }
 
-        private void pictureBox1_MouseEnter(object sender, EventArgs e)
+        private void ptrbxCloseButton_MouseClick(object sender, EventArgs e)
         {
-            Cursor.Current = Cursors.Hand;
+            Cursor.Current = Cursors.Default;
+            base.Close();
         }
-
-        private void panel2_MouseEnter(object sender, EventArgs e)
-        {
-            Cursor.Current = Cursors.Hand;
-        }
-
         private void panel2_MouseMove(object sender, MouseEventArgs e)
         {
             Cursor.Current = Cursors.Hand;
@@ -152,11 +173,6 @@ namespace Client
         private void panel2_MouseLeave(object sender, EventArgs e)
         {
             Cursor.Current = Cursors.Default;
-        }
-
-        private void pictureBox1_MouseMove(object sender, MouseEventArgs e)
-        {
-            Cursor.Current = Cursors.Hand;
         }
     }
 }

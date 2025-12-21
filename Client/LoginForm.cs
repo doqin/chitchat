@@ -16,6 +16,7 @@ namespace Client
         public int ServerPort;
         public string file = "";
         public EventHandler? eventHandler;
+        private AlertForm alertForm;
 
         public LoginForm()
         {
@@ -48,7 +49,9 @@ namespace Client
             {
                 ConfigManager.Current!.ProfileImagePath = file;
             }
-            ConfigManager.Save();
+            else
+                quickAlert("Bạn chưa chọn avatar!", AlertForm.enmAlertType.Warning);
+                ConfigManager.Save();
             eventHandler?.Invoke(this, e);
         }
 
@@ -74,6 +77,12 @@ namespace Client
         {
             file = "";
             SetPreviewMessages(file);
+        }
+
+        void quickAlert(string msg, AlertForm.enmAlertType type)
+        {
+            alertForm = new AlertForm();
+            alertForm.showAlert(msg, type);
         }
     }
 }

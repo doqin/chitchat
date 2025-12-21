@@ -34,11 +34,11 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(228, 207);
+            label1.Location = new Point(198, 199);
             label1.Name = "label1";
-            label1.Size = new Size(252, 60);
+            label1.Size = new Size(291, 90);
             label1.TabIndex = 0;
-            label1.Text = "Proudly made by 3 members from IT008.Q12.1\r\nNguyễn Tuấn Khang\r\nNguyễn Lê Đức Huy\r\nTrần Hữu Quốc Hướng";
+            label1.Text = "Proudly made by 3 members from IT008.Q12.1\r\nNguyễn Tuấn Khang\r\nNguyễn Lê Đức Huy\r\nTrần Hữu Quốc Hướng\r\nAnd a special thanks to Copilot, ChatGPT and Gemini \r\nfor helping reviewing the codes.";
             // 
             // AboutForm
             // 

@@ -22,9 +22,11 @@ namespace Client
         private static readonly SemaphoreSlim _readCache = new SemaphoreSlim(1, 1);
         private bool _isPreviewMode = false;
 
+        private AlertForm alertForm;
         private string messageId;
         private ReactionManager reactionManager;
         private string currentUserId;
+        private bool isSendAlert = false;
 
         public event EventHandler? AttachmentCompleted;
 
@@ -64,7 +66,8 @@ namespace Client
             ReactionManager manager,
             TcpClient client,
             ChatMessage chatMessage,
-            bool isRight
+            bool isRight,
+            bool isSendAlert = false
         )
         {
             reactionManager = manager ?? throw new ArgumentNullException(nameof(manager));
@@ -75,6 +78,7 @@ namespace Client
             var endpoint = client.Client.LocalEndPoint as IPEndPoint;
             currentUserId = endpoint.Address.ToString();
             messageId = chatMessage.Id;
+            this.isSendAlert = isSendAlert;
 
             InitializeComponent();
             if (_isRight)
@@ -241,6 +245,8 @@ namespace Client
                                 System.Diagnostics.Debug.WriteLine($"Error fetching profile image: {ex.Message}");
                             }
                         }
+                        if (isSendAlert)
+                            this.Invoke((MethodInvoker)(() => quickAlert($"{_chatMessage.Username}: {_chatMessage.Message}", AlertForm.enmAlertType.Info, cachedImagePath)));
                     }
                     finally
                     {
@@ -418,5 +424,12 @@ namespace Client
         }
 
         private void btnMainEmoji_Click_1(object sender, EventArgs e) => btnMainEmoji_Click(sender, e);
+
+        private void quickAlert(string msg, AlertForm.enmAlertType type, string avtPath = "")
+        {
+            alertForm = new AlertForm();
+            System.Diagnostics.Debug.WriteLine("newable");
+            alertForm.showAlert(msg, type, avtPath);
+        }
     }
 }

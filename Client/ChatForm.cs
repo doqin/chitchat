@@ -388,7 +388,7 @@ namespace Client
             }
             else
             {
-                var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, false);
+                var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, false, true);
                 item.AttachmentCompleted += (s, e) =>
                 {
                     // Scroll to bottom when attachment is loaded
@@ -402,8 +402,6 @@ namespace Client
                 };
                 smthFlwLytPnlMessages.Invoke(() =>
                 {
-                    if (!sendToBack)
-                        quickAlert($"Tin nhắn mới từ {chatMessage.Username}!", AlertForm.enmAlertType.Info);
                     smthFlwLytPnlMessages.Controls.Add(item);
                 });
                 if (sendToBack)
@@ -773,10 +771,10 @@ namespace Client
             }
         }
 
-        private void quickAlert(string msg, AlertForm.enmAlertType type)
+        private void quickAlert(string msg, AlertForm.enmAlertType type, string avtPath = "")
         {
             alertForm = new AlertForm();
-            alertForm.showAlert(msg, type);
+            alertForm.showAlert(msg, type, avtPath);
         }
         private void label1_Click(object sender, EventArgs e)
         {

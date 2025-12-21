@@ -33,12 +33,12 @@
             label1 = new Label();
             panel1 = new Panel();
             panel2 = new Panel();
-            pictureBox1 = new PictureBox();
+            ptrbxCloseButton = new PictureBox();
             panel3 = new Panel();
             ptrbxAlertType = new PictureBox();
             panel1.SuspendLayout();
             panel2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)ptrbxCloseButton).BeginInit();
             panel3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)ptrbxAlertType).BeginInit();
             SuspendLayout();
@@ -49,13 +49,13 @@
             // 
             // label1
             // 
-            label1.AutoSize = true;
+            label1.AutoEllipsis = true;
             label1.Font = new Font("Segoe UI Light", 15F, FontStyle.Regular, GraphicsUnit.Point, 0);
             label1.ForeColor = SystemColors.ButtonFace;
             label1.Location = new Point(0, 25);
             label1.MaximumSize = new Size(340, 70);
             label1.Name = "label1";
-            label1.Size = new Size(58, 28);
+            label1.Size = new Size(340, 28);
             label1.TabIndex = 0;
             label1.Text = "label1";
             label1.TextAlign = ContentAlignment.MiddleLeft;
@@ -72,7 +72,7 @@
             // 
             // panel2
             // 
-            panel2.Controls.Add(pictureBox1);
+            panel2.Controls.Add(ptrbxCloseButton);
             panel2.Dock = DockStyle.Right;
             panel2.Location = new Point(420, 0);
             panel2.Name = "panel2";
@@ -83,19 +83,19 @@
             panel2.MouseLeave += panel2_MouseLeave;
             panel2.MouseMove += panel2_MouseMove;
             // 
-            // pictureBox1
+            // ptrbxCloseButton
             // 
-            pictureBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            pictureBox1.Image = Properties.Resources.close_button1;
-            pictureBox1.InitialImage = Properties.Resources.close_button1;
-            pictureBox1.Location = new Point(21, 45);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(30, 30);
-            pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
-            pictureBox1.TabIndex = 0;
-            pictureBox1.TabStop = false;
-            pictureBox1.MouseEnter += pictureBox1_MouseEnter;
-            pictureBox1.MouseMove += pictureBox1_MouseMove;
+            ptrbxCloseButton.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            ptrbxCloseButton.Image = Properties.Resources.close_button1;
+            ptrbxCloseButton.InitialImage = Properties.Resources.close_button1;
+            ptrbxCloseButton.Location = new Point(21, 45);
+            ptrbxCloseButton.Name = "ptrbxCloseButton";
+            ptrbxCloseButton.Size = new Size(30, 30);
+            ptrbxCloseButton.SizeMode = PictureBoxSizeMode.StretchImage;
+            ptrbxCloseButton.TabIndex = 0;
+            ptrbxCloseButton.TabStop = false;
+            ptrbxCloseButton.MouseClick += ptrbxCloseButton_MouseClick;
+            ptrbxCloseButton.MouseMove += panel2_MouseMove;
             // 
             // panel3
             // 
@@ -128,9 +128,8 @@
             Name = "AlertForm";
             Text = "\\";
             panel1.ResumeLayout(false);
-            panel1.PerformLayout();
             panel2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)ptrbxCloseButton).EndInit();
             panel3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)ptrbxAlertType).EndInit();
             ResumeLayout(false);
@@ -143,7 +142,7 @@
         private Panel panel1;
         private Panel panel2;
         private Panel panel3;
-        private PictureBox pictureBox1;
+        private PictureBox ptrbxCloseButton;
         private PictureBox ptrbxAlertType;
     }
 }
