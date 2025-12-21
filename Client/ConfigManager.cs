@@ -12,6 +12,11 @@ namespace Client
 
         public static void Load()
         {
+            if (!System.IO.File.Exists("appconfig.json"))
+            {
+                Current = new AppConfig(); 
+                return;
+            }
             var json = System.IO.File.ReadAllText("appconfig.json");
             Current = System.Text.Json.JsonSerializer.Deserialize<AppConfig>(json) ?? new AppConfig();
         }

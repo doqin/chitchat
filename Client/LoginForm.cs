@@ -22,7 +22,20 @@ namespace Client
         {
             InitializeComponent();
             this.StartPosition = FormStartPosition.CenterParent;
+            if (ConfigManager.Current == null) ConfigManager.Load();
+
             rndTxtBxCtrlUsername.Text = ConfigManager.Current!.Username;
+
+            if (!string.IsNullOrEmpty(ConfigManager.Current.ProfileImagePath))
+            {
+                this.file = ConfigManager.Current.ProfileImagePath;
+            }
+
+            if (!string.IsNullOrEmpty(ConfigManager.Current.OriginalProfileImagePath))
+            {
+                this.originalFilePath = ConfigManager.Current.OriginalProfileImagePath;
+            }
+
             SetPreviewMessages(ConfigManager.Current!.ProfileImagePath);
         }
 
@@ -118,6 +131,11 @@ namespace Client
             {
                 MessageBox.Show("Lỗi khi chỉnh sửa ảnh: " + ex.Message, "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
+
+            ConfigManager.Current.ProfileImagePath = this.file; 
+            ConfigManager.Current.OriginalProfileImagePath = this.originalFilePath; 
+
+            ConfigManager.Save();
         }
     }
 }
