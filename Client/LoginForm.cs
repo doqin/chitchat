@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Client.Properties;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -15,7 +16,8 @@ namespace Client
         public string Username;
         public int ServerPort;
         public string file = "";
-        public EventHandler? eventHandler;
+        public EventHandler<DialogResult>? eventHandler;
+        private AlertForm alertForm;
         private string originalFilePath = "";
 
 
@@ -23,18 +25,16 @@ namespace Client
         {
             InitializeComponent();
             this.StartPosition = FormStartPosition.CenterParent;
-            if (ConfigManager.Current == null) ConfigManager.Load();
-
             rndTxtBxCtrlUsername.Text = ConfigManager.Current!.Username;
 
-            if (!string.IsNullOrEmpty(ConfigManager.Current.ProfileImagePath))
+            if (!string.IsNullOrEmpty(ConfigManager.Current!.ProfileImagePath))
             {
-                this.file = ConfigManager.Current.ProfileImagePath;
+                this.file = ConfigManager.Current!.ProfileImagePath;
             }
 
-            if (!string.IsNullOrEmpty(ConfigManager.Current.OriginalProfileImagePath))
+            if (!string.IsNullOrEmpty(ConfigManager.Current!.OriginalProfileImagePath))
             {
-                this.originalFilePath = ConfigManager.Current.OriginalProfileImagePath;
+                this.originalFilePath = ConfigManager.Current!.OriginalProfileImagePath;
             }
 
             SetPreviewMessages(ConfigManager.Current!.ProfileImagePath);
@@ -57,19 +57,33 @@ namespace Client
         private void btnSubmit_Click(object sender, EventArgs e)
         {
             Username = string.IsNullOrWhiteSpace(rndTxtBxCtrlUsername?.Text) ? "username" : rndTxtBxCtrlUsername.Text.Trim();
-            DialogResult = DialogResult.OK;
+            
             ConfigManager.Current!.Username = Username;
             if (!string.IsNullOrEmpty(file))
             {
                 ConfigManager.Current!.ProfileImagePath = file;
+                quickAlert("Cập nhật thông tin thành công!", AlertForm.enmAlertType.Success);
+                DialogResult = DialogResult.OK;
+            }
+            else
+            {
+                quickAlert("Bạn chưa chọn avatar!", AlertForm.enmAlertType.Warning);
+                DialogResult = DialogResult.Abort;
             }
             if (!string.IsNullOrEmpty(this.originalFilePath))
             {
                 ConfigManager.Current.OriginalProfileImagePath = this.originalFilePath;
             }
             ConfigManager.Save();
-            eventHandler?.Invoke(this, e);
-            MessageBox.Show("Đã cập nhật ảnh đại diện!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            eventHandler?.Invoke(this, DialogResult);
+        }
+
+        private void EnterPressed(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                btnSubmit_Click(sender, e);
+            }
         }
 
         private void rndBtnCtrlChangeAvatar_Click(object sender, EventArgs e)
@@ -121,8 +135,11 @@ namespace Client
 
                         Image newAvatar = cropForm.FinalAvatar;
 
-                        string newFileName = $"avatar_cropped_{DateTime.Now.Ticks}.png";
-                        string savePath = Path.Combine(Application.StartupPath, newFileName);
+                        string newFileName = $"avatar_cropped_{Guid.NewGuid()}.png";
+                        string savePath = Path.Combine(Application.StartupPath, "Cropped", newFileName);
+                        if (!Path.Exists(Path.GetDirectoryName(savePath))) {
+                            Directory.CreateDirectory(savePath);
+                        }
 
                         newAvatar.Save(savePath, System.Drawing.Imaging.ImageFormat.Png);
 
@@ -142,6 +159,12 @@ namespace Client
             //ConfigManager.Current.OriginalProfileImagePath = this.originalFilePath; 
 
             //ConfigManager.Save();
+        }
+
+        void quickAlert(string msg, AlertForm.enmAlertType type)
+        {
+            alertForm = new AlertForm();
+            alertForm.showAlert(msg, type);
         }
     }
 }

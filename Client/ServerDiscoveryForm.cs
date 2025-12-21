@@ -1,4 +1,6 @@
-﻿using Protocol;
+﻿using Client.Extensions;
+using Client.Properties;
+using Protocol;
 using System.ComponentModel;
 using System.Windows.Forms;
 
@@ -12,6 +14,7 @@ namespace Client
 
         private ChatForm? hostedChatForm;
         private Server selectedServer;
+        private AlertForm alertForm;
 
         // keep these as fields so other methods can access them
 
@@ -179,15 +182,7 @@ namespace Client
                 var loginForm = new LoginForm();
                 var result = loginForm.ShowDialog();
             }
-            if (!string.IsNullOrEmpty(ConfigManager.Current!.ProfileImagePath) && Path.Exists(Path.Combine("Cached", ConfigManager.Current!.ProfileImagePath)))
-            {
-                picAvatar.Image = Image.FromFile(Path.Combine("Cached", ConfigManager.Current!.ProfileImagePath));
-            }
-            else
-            {
-                picAvatar.OutlineWidth = 2;
-                picAvatar.OutlineColor = Color.FromArgb(222, 220, 218);
-            }
+            picAvatar.Image = Helpers.GetProfilePicture();
         }
 
         private void SetListening(bool v)
@@ -268,17 +263,9 @@ namespace Client
             }
         }
 
-        private void updateSettings(object? sender, EventArgs e)
+        private void updateSettings(object? sender, DialogResult res)
         {
-            if (!string.IsNullOrEmpty(ConfigManager.Current!.ProfileImagePath) && Path.Exists(Path.Combine("Cached", ConfigManager.Current!.ProfileImagePath)))
-            {
-                picAvatar.Image = Image.FromFile(Path.Combine("Cached", ConfigManager.Current!.ProfileImagePath));
-            }
-
-            if (this.hostedChatForm != null)
-            {
-                this.hostedChatForm.UpdateAvatarFromConfig();
-            }
+            picAvatar.Image = Helpers.GetProfilePicture();
         }
 
         private void btnSettings_Click(object sender, EventArgs e)

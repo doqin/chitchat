@@ -27,11 +27,13 @@ namespace Client
         private bool close = false;
 
         private readonly string username;
+        private readonly string serverName;
         public string serverIp { get; }
         public int serverPort { get; }
         private string profilePictureAttachment;
         private TcpClient tcpClient;
         private ReactionManager reactionManager;
+        private AlertForm alertForm;
 
         private SoundPlayer receivedMessageSound;
 
@@ -48,6 +50,7 @@ namespace Client
         public ChatForm(string username, string serverName, string ip, int port, string profilePicturePath)
         {
             this.username = username;
+            this.serverName = serverName;
             serverIp = ip;
             serverPort = port;
             reactionManager = new ReactionManager();
@@ -68,6 +71,7 @@ namespace Client
                     throw new TimeoutException("Connection timed out");
                 }
                 tcpClient.EndConnect(connectResult);
+                quickAlert($"Đã kết nối đến {serverName}!", AlertForm.enmAlertType.Success);
                 System.Diagnostics.Debug.WriteLine($"Connected to {serverName}");
                 Wrapper wrapper = new Wrapper
                 {
@@ -134,7 +138,7 @@ namespace Client
                     System.Diagnostics.Debug.WriteLine("Profile picture uploaded: " + profilePictureAttachment);
                 }
             }
-            // If is absolute path, it's a local file that needs to be uploaded
+            // If is absolute path, it's a local file that needs to be uploaded and downloaded from server
             else if (!string.IsNullOrEmpty(profilePicturePath) && Path.IsPathRooted(profilePicturePath))
             {
                 System.Diagnostics.Debug.WriteLine("Uploading profile picture to server...");
@@ -143,6 +147,7 @@ namespace Client
                 {
                     profilePictureAttachment = attachment[0].FileName;
                     System.Diagnostics.Debug.WriteLine("Profile picture uploaded: " + profilePictureAttachment);
+                    Helpers.GetProfilePicture(tcpClient, pendingAttachmentFetches, profilePictureAttachment);
                     ConfigManager.Current!.ProfileImagePath = profilePictureAttachment;
                     ConfigManager.Save();
                 }
@@ -315,6 +320,19 @@ namespace Client
                     }
                     streamReadLock.Release();
                 }
+                catch (SocketException e)
+                {
+                    if (e.SocketErrorCode == SocketError.NotConnected || e.SocketErrorCode == SocketError.ConnectionReset)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Socket disconnected\n{e.StackTrace}");
+                        Invoke(() => quickAlert($"Server {serverName} đã bị đóng!", AlertForm.enmAlertType.Error));
+                        break;
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"e.SocketErrorCode = {e.ErrorCode}");
+                    }
+                }
                 catch (Exception e)
                 {
                     if (streamReadLock.CurrentCount == 0)
@@ -325,6 +343,8 @@ namespace Client
                 }
             }
             System.Diagnostics.Debug.WriteLine("ChatForm | Disconnected from server");
+            Invoke(() => rndBtnCtrlClose.btnRoundButton.PerformClick());
+            //rndBtnCtrlClose.btnRoundButton.PerformClick();
         }
 
         private void HandleUpdateReaction(TcpClient client, Wrapper wrapper)
@@ -402,7 +422,7 @@ namespace Client
             }
             else
             {
-                var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, false);
+                var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, false, !sendToBack);
                 item.AttachmentCompleted += (s, e) =>
                 {
                     // Scroll to bottom when attachment is loaded
@@ -539,7 +559,13 @@ namespace Client
             };
             string finalJson = JsonSerializer.Serialize(wrapper);
             NetworkStream stream = tcpClient.GetStream();
-            Wrapper.SendJson(stream, finalJson);
+            try {
+                Wrapper.SendJson(stream, finalJson);
+            }
+            catch (OperationCanceledException e)
+            {
+                Invoke(() => quickAlert("nigga yo network slow", AlertForm.enmAlertType.Error));
+            }
         }
 
         /// <summary>
@@ -550,21 +576,29 @@ namespace Client
         {
             SetLoading(true);
             Invalidate();
-            SendFiles files = new()
+            SendFiles files;
+            try
             {
-                FileCount = filePaths.Length,
-                FileList = filePaths.Select(file =>
+                files = new SendFiles()
                 {
-                    System.IO.FileInfo fi = new System.IO.FileInfo(usingCached ? Path.Combine("Cached", file) : file);
-                    string fileName = usingCached ? file : fi.Name;
-                    return new Protocol.File
+                    FileCount = filePaths.Length,
+                    FileList = filePaths.Select(file =>
                     {
-                        FileName = fileName,
-                        FileSize = fi.Length
-                    };
-                }).ToList(),
-                MangleFileNames = mangleFileNames
-            };
+                        System.IO.FileInfo fi = new System.IO.FileInfo(usingCached ? Path.Combine("Cached", file) : file);
+                        string fileName = usingCached ? file : fi.Name;
+                        return new Protocol.File
+                        {
+                            FileName = fileName,
+                            FileSize = fi.Length
+                        };
+                    }).ToList(),
+                    MangleFileNames = mangleFileNames
+                };
+            } catch
+            {
+                return [];
+            }
+            
             string payload = JsonSerializer.Serialize(files);
             Wrapper wrapper = new()
             {
@@ -825,6 +859,12 @@ namespace Client
                 txtbxMessage.Multiline = false;
                 pnlChatPanel.Height = txtbxMessage.Height + pnlChatPanel.Padding.Top + pnlChatPanel.Padding.Bottom + txtbxMessage.Location.Y * 2;
             }
+        }
+
+        private void quickAlert(string msg, AlertForm.enmAlertType type, string avtPath = "")
+        {
+            alertForm = new AlertForm();
+            alertForm.showAlert(msg, type, avtPath);
         }
 
         private void label1_Click(object sender, EventArgs e)
