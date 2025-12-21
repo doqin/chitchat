@@ -285,6 +285,8 @@ namespace Client
                             {
                                 flowPanelAttachments.Controls.Add(picBox);
                             }));
+                            quickAlert($"{Username} đã gửi một ảnh!", AlertForm.enmAlertType.Info, cachedAttachmentPath);
+
                             continue;
                         }
 
@@ -324,6 +326,7 @@ namespace Client
                             {
                                 flowPanelAttachments.Controls.Add(picBox);
                             }));
+                            quickAlert($"{Username} đã gửi một ảnh!", AlertForm.enmAlertType.Info, cachedAttachmentPath);
                         }
                         catch { /* handle errors */ }
                     }

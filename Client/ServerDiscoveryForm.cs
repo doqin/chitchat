@@ -1,4 +1,5 @@
-﻿using Protocol;
+﻿using Client.Properties;
+using Protocol;
 using System.ComponentModel;
 using System.Windows.Forms;
 
@@ -78,11 +79,6 @@ namespace Client
                         hostedChatForm.Close();
                     }
                     catch { }
-                    try
-                    {
-                        hostedChatForm.Dispose();
-                    }
-                    catch { }
                     hostedChatForm = null;
                 }
 
@@ -156,8 +152,9 @@ namespace Client
             }
             else
             {
-                picAvatar.OutlineWidth = 2;
-                picAvatar.OutlineColor = Color.FromArgb(222, 220, 218);
+                picAvatar.Image = Resources.user;
+                // picAvatar.OutlineWidth = 2;
+                // picAvatar.OutlineColor = Color.FromArgb(222, 220, 218);
             }
         }
 
@@ -222,7 +219,7 @@ namespace Client
             }
         }
 
-        private void updateSettings(object? sender, EventArgs e)
+        private void updateSettings(object? sender, DialogResult res)
         {
             if (!string.IsNullOrEmpty(ConfigManager.Current!.ProfileImagePath) && Path.Exists(Path.Combine("Cached", ConfigManager.Current!.ProfileImagePath)))
             {

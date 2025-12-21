@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Client.Properties;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -15,7 +16,7 @@ namespace Client
         public string Username;
         public int ServerPort;
         public string file = "";
-        public EventHandler? eventHandler;
+        public EventHandler<DialogResult>? eventHandler;
         private AlertForm alertForm;
 
         public LoginForm()
@@ -43,16 +44,22 @@ namespace Client
         private void btnSubmit_Click(object sender, EventArgs e)
         {
             Username = string.IsNullOrWhiteSpace(rndTxtBxCtrlUsername?.Text) ? "username" : rndTxtBxCtrlUsername.Text.Trim();
-            DialogResult = DialogResult.OK;
+            
             ConfigManager.Current!.Username = Username;
             if (!string.IsNullOrEmpty(file))
             {
                 ConfigManager.Current!.ProfileImagePath = file;
+                quickAlert("Cập nhật thông tin thành công!", AlertForm.enmAlertType.Success);
+                DialogResult = DialogResult.OK;
             }
             else
+            {
                 quickAlert("Bạn chưa chọn avatar!", AlertForm.enmAlertType.Warning);
-                ConfigManager.Save();
-            eventHandler?.Invoke(this, e);
+                DialogResult = DialogResult.Abort;
+            }
+                
+            ConfigManager.Save();
+            eventHandler?.Invoke(this, DialogResult);
         }
 
         private void EnterPressed(object sender, KeyEventArgs e)

@@ -141,7 +141,7 @@ namespace Client
             }
             InitializeComponent();
             loadingAnimationControl1.Visible = false;
-            lblUserInfo.Text = $"Những người kết nối: {string.Join(", ", connectedUsers.Usernames)}";
+            lblUserInfo.Text = $"Những người kết nối: {string.Join(", ", connectedUsers?.Usernames ?? [])}";
             smthFlwLytPnlMessages.MouseWheel += SmthFlwLytPnlMessages_MouseWheel;
             smthFlwLytPnlMessages.Scroll += SmthFlwLytPnlMessages_Scroll;
             Text = $"{serverName} - {username} @ {serverName} | {serverIp}:{serverPort}";
@@ -301,16 +301,31 @@ namespace Client
                     }
                     streamReadLock.Release();
                 }
+                catch (SocketException e)
+                {
+                    if (e.SocketErrorCode == SocketError.NotConnected || e.SocketErrorCode == SocketError.ConnectionReset)
+                    {
+                        System.Diagnostics.Debug.WriteLine("socket dissconnected stfu");
+                        Invoke(() => quickAlert($"Server {serverName} đã bị đóng!", AlertForm.enmAlertType.Error));
+                        break;
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"e.SocketErrorCode = {e.ErrorCode}");
+                    }
+                }
                 catch (Exception e)
                 {
                     if (streamReadLock.CurrentCount == 0)
                     {
                         streamReadLock.Release();
                     }
-                    System.Diagnostics.Debug.WriteLine($"ChatForm | Error with listening for messages: {e.Message}");
+                    System.Diagnostics.Debug.WriteLine($"ChatForm | Error with listening for messages: {e.Message}, {e.GetType()}\n{e.StackTrace}");
                 }
             }
             System.Diagnostics.Debug.WriteLine("ChatForm | Disconnected from server");
+            Invoke(() => rndBtnCtrlClose.btnRoundButton.PerformClick());
+            //rndBtnCtrlClose.btnRoundButton.PerformClick();
         }
 
         private void HandleUpdateReaction(TcpClient client, Wrapper wrapper)
@@ -525,7 +540,13 @@ namespace Client
             };
             string finalJson = JsonSerializer.Serialize(wrapper);
             NetworkStream stream = tcpClient.GetStream();
-            Wrapper.SendJson(stream, finalJson);
+            try {
+                Wrapper.SendJson(stream, finalJson);
+            }
+            catch (OperationCanceledException e)
+            {
+                Invoke(() => quickAlert("nigga yo network slow", AlertForm.enmAlertType.Error));
+            }
         }
 
         /// <summary>
@@ -536,21 +557,29 @@ namespace Client
         {
             SetLoading(true);
             Invalidate();
-            SendFiles files = new()
+            SendFiles files;
+            try
             {
-                FileCount = filePaths.Length,
-                FileList = filePaths.Select(file =>
+                files = new SendFiles()
                 {
-                    System.IO.FileInfo fi = new System.IO.FileInfo(usingCached ? Path.Combine("Cached", file) : file);
-                    string fileName = usingCached ? file : fi.Name;
-                    return new Protocol.File
+                    FileCount = filePaths.Length,
+                    FileList = filePaths.Select(file =>
                     {
-                        FileName = fileName,
-                        FileSize = fi.Length
-                    };
-                }).ToList(),
-                MangleFileNames = mangleFileNames
-            };
+                        System.IO.FileInfo fi = new System.IO.FileInfo(usingCached ? Path.Combine("Cached", file) : file);
+                        string fileName = usingCached ? file : fi.Name;
+                        return new Protocol.File
+                        {
+                            FileName = fileName,
+                            FileSize = fi.Length
+                        };
+                    }).ToList(),
+                    MangleFileNames = mangleFileNames
+                };
+            } catch
+            {
+                return [];
+            }
+            
             string payload = JsonSerializer.Serialize(files);
             Wrapper wrapper = new()
             {
