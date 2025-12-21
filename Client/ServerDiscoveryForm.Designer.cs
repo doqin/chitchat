@@ -87,8 +87,8 @@
             splitContainerMain.Panel2.BackColor = SystemColors.Control;
             splitContainerMain.Panel2.Controls.Add(lblProceed);
             splitContainerMain.Panel2.Controls.Add(lblWelcome);
-            splitContainerMain.Size = new Size(1207, 617);
-            splitContainerMain.SplitterDistance = 389;
+            splitContainerMain.Size = new Size(1509, 771);
+            splitContainerMain.SplitterDistance = 486;
             splitContainerMain.SplitterWidth = 2;
             splitContainerMain.TabIndex = 5;
             splitContainerMain.Paint += splitContainerMain_Paint;
@@ -97,10 +97,11 @@
             // 
             pnlServers.Controls.Add(flwLytPnlServers);
             pnlServers.Dock = DockStyle.Fill;
-            pnlServers.Location = new Point(62, 104);
+            pnlServers.Location = new Point(78, 130);
+            pnlServers.Margin = new Padding(4);
             pnlServers.Name = "pnlServers";
-            pnlServers.Padding = new Padding(5);
-            pnlServers.Size = new Size(327, 513);
+            pnlServers.Padding = new Padding(6);
+            pnlServers.Size = new Size(408, 641);
             pnlServers.TabIndex = 4;
             // 
             // flwLytPnlServers
@@ -109,9 +110,10 @@
             flwLytPnlServers.BackColor = Color.Transparent;
             flwLytPnlServers.Dock = DockStyle.Fill;
             flwLytPnlServers.FlowDirection = FlowDirection.TopDown;
-            flwLytPnlServers.Location = new Point(5, 5);
+            flwLytPnlServers.Location = new Point(6, 6);
+            flwLytPnlServers.Margin = new Padding(4);
             flwLytPnlServers.Name = "flwLytPnlServers";
-            flwLytPnlServers.Size = new Size(317, 503);
+            flwLytPnlServers.Size = new Size(396, 629);
             flwLytPnlServers.TabIndex = 0;
             flwLytPnlServers.WrapContents = false;
             // 
@@ -120,10 +122,11 @@
             pnlTop.Controls.Add(searchControl1);
             pnlTop.Controls.Add(roundButtonControl1);
             pnlTop.Dock = DockStyle.Top;
-            pnlTop.Location = new Point(62, 52);
+            pnlTop.Location = new Point(78, 65);
+            pnlTop.Margin = new Padding(4);
             pnlTop.Name = "pnlTop";
-            pnlTop.Padding = new Padding(5);
-            pnlTop.Size = new Size(327, 52);
+            pnlTop.Padding = new Padding(6);
+            pnlTop.Size = new Size(408, 65);
             pnlTop.TabIndex = 3;
             // 
             // searchControl1
@@ -138,11 +141,11 @@
             searchControl1.Dock = DockStyle.Fill;
             searchControl1.IconPadding = new Padding(9);
             searchControl1.IconWidth = 50;
-            searchControl1.Location = new Point(5, 5);
+            searchControl1.Location = new Point(6, 6);
             searchControl1.Margin = new Padding(1);
             searchControl1.Name = "searchControl1";
             searchControl1.Radius = 20;
-            searchControl1.Size = new Size(275, 42);
+            searchControl1.Size = new Size(344, 53);
             searchControl1.TabIndex = 0;
             // 
             // roundButtonControl1
@@ -159,12 +162,12 @@
             roundButtonControl1.ButtonText = "";
             roundButtonControl1.ButtonTextColor = Color.Black;
             roundButtonControl1.Dock = DockStyle.Right;
-            roundButtonControl1.Location = new Point(280, 5);
+            roundButtonControl1.Location = new Point(350, 6);
             roundButtonControl1.Margin = new Padding(1);
             roundButtonControl1.MouseOverBackColor = SystemColors.ButtonHighlight;
             roundButtonControl1.Name = "roundButtonControl1";
             roundButtonControl1.Radius = 20;
-            roundButtonControl1.Size = new Size(42, 42);
+            roundButtonControl1.Size = new Size(52, 53);
             roundButtonControl1.TabIndex = 1;
             roundButtonControl1.UseMouseOverBackColor = true;
             roundButtonControl1.Click += roundButtonControl1_Click;
@@ -175,10 +178,11 @@
             panel3.Controls.Add(label1);
             panel3.Controls.Add(rndBtnCtrlAddServer);
             panel3.Dock = DockStyle.Top;
-            panel3.Location = new Point(62, 0);
+            panel3.Location = new Point(78, 0);
+            panel3.Margin = new Padding(4);
             panel3.Name = "panel3";
-            panel3.Padding = new Padding(5);
-            panel3.Size = new Size(327, 52);
+            panel3.Padding = new Padding(6);
+            panel3.Size = new Size(408, 65);
             panel3.TabIndex = 6;
             // 
             // label1
@@ -186,9 +190,10 @@
             label1.AutoSize = true;
             label1.Font = new Font("Microsoft YaHei UI", 14.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label1.ForeColor = Color.FromArgb(113, 96, 232);
-            label1.Location = new Point(11, 13);
+            label1.Location = new Point(14, 16);
+            label1.Margin = new Padding(4, 0, 4, 0);
             label1.Name = "label1";
-            label1.Size = new Size(95, 26);
+            label1.Size = new Size(119, 31);
             label1.TabIndex = 1;
             label1.Text = "ChitChat";
             // 
@@ -206,12 +211,12 @@
             rndBtnCtrlAddServer.ButtonText = "";
             rndBtnCtrlAddServer.ButtonTextColor = Color.Black;
             rndBtnCtrlAddServer.Dock = DockStyle.Right;
-            rndBtnCtrlAddServer.Location = new Point(280, 5);
+            rndBtnCtrlAddServer.Location = new Point(350, 6);
             rndBtnCtrlAddServer.Margin = new Padding(1);
             rndBtnCtrlAddServer.MouseOverBackColor = SystemColors.Control;
             rndBtnCtrlAddServer.Name = "rndBtnCtrlAddServer";
             rndBtnCtrlAddServer.Radius = 999;
-            rndBtnCtrlAddServer.Size = new Size(42, 42);
+            rndBtnCtrlAddServer.Size = new Size(52, 53);
             rndBtnCtrlAddServer.TabIndex = 5;
             rndBtnCtrlAddServer.UseMouseOverBackColor = true;
             rndBtnCtrlAddServer.Click += rndBtnCtrlAddServer_Click;
@@ -224,8 +229,9 @@
             pnlLeft.Dock = DockStyle.Left;
             pnlLeft.ForeColor = SystemColors.ActiveBorder;
             pnlLeft.Location = new Point(0, 0);
+            pnlLeft.Margin = new Padding(4);
             pnlLeft.Name = "pnlLeft";
-            pnlLeft.Size = new Size(62, 617);
+            pnlLeft.Size = new Size(78, 771);
             pnlLeft.TabIndex = 1;
             pnlLeft.Paint += pnlLeft_Paint;
             // 
@@ -234,10 +240,11 @@
             panel2.Controls.Add(btnSettings);
             panel2.Dock = DockStyle.Bottom;
             panel2.ForeColor = SystemColors.Control;
-            panel2.Location = new Point(0, 494);
+            panel2.Location = new Point(0, 617);
+            panel2.Margin = new Padding(4);
             panel2.Name = "panel2";
-            panel2.Padding = new Padding(5);
-            panel2.Size = new Size(62, 62);
+            panel2.Padding = new Padding(6);
+            panel2.Size = new Size(78, 78);
             panel2.TabIndex = 2;
             // 
             // btnSettings
@@ -254,12 +261,12 @@
             btnSettings.ButtonText = "";
             btnSettings.ButtonTextColor = SystemColors.ActiveBorder;
             btnSettings.Dock = DockStyle.Fill;
-            btnSettings.Location = new Point(5, 5);
+            btnSettings.Location = new Point(6, 6);
             btnSettings.Margin = new Padding(1);
             btnSettings.MouseOverBackColor = SystemColors.ButtonHighlight;
             btnSettings.Name = "btnSettings";
             btnSettings.Radius = 999;
-            btnSettings.Size = new Size(52, 52);
+            btnSettings.Size = new Size(66, 66);
             btnSettings.TabIndex = 1;
             btnSettings.UseMouseOverBackColor = true;
             btnSettings.Click += btnSettings_Click;
@@ -268,21 +275,23 @@
             // 
             panel1.Controls.Add(picAvatar);
             panel1.Dock = DockStyle.Bottom;
-            panel1.Location = new Point(0, 556);
+            panel1.Location = new Point(0, 695);
+            panel1.Margin = new Padding(4);
             panel1.Name = "panel1";
-            panel1.Padding = new Padding(10);
-            panel1.Size = new Size(62, 61);
+            panel1.Padding = new Padding(12);
+            panel1.Size = new Size(78, 76);
             panel1.TabIndex = 2;
             // 
             // picAvatar
             // 
             picAvatar.Dock = DockStyle.Fill;
             picAvatar.DrawOutline = true;
-            picAvatar.Location = new Point(10, 10);
+            picAvatar.Location = new Point(12, 12);
+            picAvatar.Margin = new Padding(4);
             picAvatar.Name = "picAvatar";
             picAvatar.OutlineColor = Color.Gray;
             picAvatar.OutlineWidth = 2F;
-            picAvatar.Size = new Size(41, 41);
+            picAvatar.Size = new Size(52, 52);
             picAvatar.TabIndex = 0;
             picAvatar.TabStop = false;
             // 
@@ -291,9 +300,10 @@
             lblProceed.Anchor = AnchorStyles.None;
             lblProceed.AutoSize = true;
             lblProceed.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblProceed.Location = new Point(267, 303);
+            lblProceed.Location = new Point(350, 379);
+            lblProceed.Margin = new Padding(4, 0, 4, 0);
             lblProceed.Name = "lblProceed";
-            lblProceed.Size = new Size(318, 17);
+            lblProceed.Size = new Size(420, 23);
             lblProceed.TabIndex = 1;
             lblProceed.Text = "Kết nối đến một máy chủ LAN để bắt đầu trò chuyện.";
             // 
@@ -302,9 +312,10 @@
             lblWelcome.Anchor = AnchorStyles.None;
             lblWelcome.AutoSize = true;
             lblWelcome.Font = new Font("Segoe UI", 18F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblWelcome.Location = new Point(237, 271);
+            lblWelcome.Location = new Point(313, 339);
+            lblWelcome.Margin = new Padding(4, 0, 4, 0);
             lblWelcome.Name = "lblWelcome";
-            lblWelcome.Size = new Size(379, 32);
+            lblWelcome.Size = new Size(469, 41);
             lblWelcome.TabIndex = 0;
             lblWelcome.Text = "Chào mừng bạn đến với ChitChat!";
             // 
@@ -316,9 +327,10 @@
             loadingAnimationControl1.DotHeight = 4;
             loadingAnimationControl1.DotPadding = 3;
             loadingAnimationControl1.DotWidth = 4;
-            loadingAnimationControl1.Location = new Point(4, 4);
+            loadingAnimationControl1.Location = new Point(5, 5);
+            loadingAnimationControl1.Margin = new Padding(4, 5, 4, 5);
             loadingAnimationControl1.Name = "loadingAnimationControl1";
-            loadingAnimationControl1.Size = new Size(28, 14);
+            loadingAnimationControl1.Size = new Size(35, 18);
             loadingAnimationControl1.TabIndex = 0;
             loadingAnimationControl1.TickRate = 4E-07D;
             loadingAnimationControl1.Visible = false;
@@ -329,10 +341,11 @@
             pnlBottom.Controls.Add(lblListening);
             pnlBottom.Controls.Add(loadingAnimationControl1);
             pnlBottom.Dock = DockStyle.Bottom;
-            pnlBottom.Location = new Point(0, 617);
+            pnlBottom.Location = new Point(0, 771);
+            pnlBottom.Margin = new Padding(4);
             pnlBottom.Name = "pnlBottom";
-            pnlBottom.Padding = new Padding(4);
-            pnlBottom.Size = new Size(1207, 22);
+            pnlBottom.Padding = new Padding(5);
+            pnlBottom.Size = new Size(1509, 28);
             pnlBottom.TabIndex = 0;
             // 
             // lblListening
@@ -341,9 +354,10 @@
             lblListening.Dock = DockStyle.Left;
             lblListening.Font = new Font("Arial", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblListening.ForeColor = Color.White;
-            lblListening.Location = new Point(32, 4);
+            lblListening.Location = new Point(40, 5);
+            lblListening.Margin = new Padding(4, 0, 4, 0);
             lblListening.Name = "lblListening";
-            lblListening.Size = new Size(136, 15);
+            lblListening.Size = new Size(162, 17);
             lblListening.TabIndex = 1;
             lblListening.Text = "Đang tìm kiếm máy chủ";
             // 
@@ -360,12 +374,13 @@
             // 
             // ServerDiscoveryForm
             // 
-            AutoScaleDimensions = new SizeF(96F, 96F);
+            AutoScaleDimensions = new SizeF(120F, 120F);
             AutoScaleMode = AutoScaleMode.Dpi;
-            ClientSize = new Size(1207, 639);
+            ClientSize = new Size(1509, 799);
             Controls.Add(splitContainerMain);
             Controls.Add(pnlBottom);
             ForeColor = Color.Black;
+            Margin = new Padding(4);
             Name = "ServerDiscoveryForm";
             Text = "ChitChat";
             FormClosed += ServerDiscoveryForm_FormClosed;

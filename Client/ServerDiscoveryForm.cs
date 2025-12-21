@@ -272,7 +272,8 @@ namespace Client
         {
             Form settingsForm = new SettingsForm(updateSettings);
             settingsForm.StartPosition = FormStartPosition.CenterParent;
-            DialogResult result = settingsForm.ShowDialog();
+            settingsForm.ShowDialog();
+
         }
 
         private void searchControl1_TextChanged(object? sender, EventArgs e)

@@ -7,6 +7,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
 	<ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+	<Configurations>Debug;Release;Preview</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
