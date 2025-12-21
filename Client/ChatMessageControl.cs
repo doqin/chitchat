@@ -136,6 +136,10 @@ namespace Client
             if (_isRight) { 
                 rctionRwCtrlRow.Anchor = AnchorStyles.Right;
                 rctionRwCtrlRow.FlowDirection = FlowDirection.RightToLeft;
+            } else
+            {
+                rndCtrlChatBubble.BackgroundColor = Color.White;
+                lblMessage.ForeColor = Color.Black;
             }
             Task.Run(() =>
             {
@@ -171,12 +175,12 @@ namespace Client
                 if (isSendAlert)
                     this.Invoke((MethodInvoker)(() => quickAlert($"{_chatMessage.Username}: {_chatMessage.Message}", AlertForm.enmAlertType.Info, string.IsNullOrEmpty(_chatMessage.ProfileImagePath) ? "" : Path.Combine("Cached", _chatMessage.ProfileImagePath))));
 
-                foreach (var attachment in _chatMessage.Attachments)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Checking attachment: {attachment.FileName}");
-                    var cacheDirectory = Path.Combine(Application.StartupPath, "Cached");
-                    Directory.CreateDirectory(cacheDirectory);
-                    var cachedAttachmentPath = Path.Combine(cacheDirectory, attachment.FileName);
+                    foreach (var attachment in _chatMessage.Attachments)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Checking attachment: {attachment.FileName}");
+                        var cacheDirectory = Path.Combine(Application.StartupPath, "Cached");
+                        Directory.CreateDirectory(cacheDirectory);
+                        var cachedAttachmentPath = Path.Combine(cacheDirectory, attachment.FileName);
 
                     if (attachment.IsImage)
                     {

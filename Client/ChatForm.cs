@@ -5,8 +5,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
+using System.Media;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
@@ -16,6 +18,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Net.Mime.MediaTypeNames;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Client
 {
@@ -31,6 +34,8 @@ namespace Client
         private TcpClient tcpClient;
         private ReactionManager reactionManager;
         private AlertForm alertForm;
+
+        private SoundPlayer receivedMessageSound;
 
         private Panel dummy;
 
@@ -50,12 +55,23 @@ namespace Client
             serverPort = port;
             reactionManager = new ReactionManager();
             tcpClient = new TcpClient();
+            receivedMessageSound = new SoundPlayer(Properties.Resources.received_message);
 
             bool needToUploadProfilePicture = false;
             try
             {
-                tcpClient.Connect(serverIp, serverPort);
-                quickAlert($"Đã kết nối tới {serverName}!", AlertForm.enmAlertType.Success);
+                System.Diagnostics.Debug.WriteLine($"Connecting to {serverName} at {serverIp}:{serverPort}...");
+                // Use async connect with timeout to avoid freezing when server is unavailable
+                var connectResult = tcpClient.BeginConnect(serverIp, serverPort, null, null);
+                bool connectedInTime = connectResult.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(5));
+                if (!connectedInTime)
+                {
+                    System.Diagnostics.Debug.WriteLine("ChatForm | Connect timed out");
+                    tcpClient.Close();
+                    throw new TimeoutException("Connection timed out");
+                }
+                tcpClient.EndConnect(connectResult);
+                quickAlert($"Đã kết nối đến {serverName}!", AlertForm.enmAlertType.Success);
                 System.Diagnostics.Debug.WriteLine($"Connected to {serverName}");
                 Wrapper wrapper = new Wrapper
                 {
@@ -107,7 +123,8 @@ namespace Client
             }
             catch (Exception)
             {
-                MessageBox.Show("Cannot connect to server! Try again.");
+                System.Diagnostics.Debug.WriteLine("ChatForm | Cannot connect to server!");
+                MessageBox.Show("Cannot connect to server! Server is either unavailable or connection timed out.");
                 this.DialogResult = DialogResult.Abort;
                 this.Close();
             }
@@ -249,6 +266,7 @@ namespace Client
                             case Types.ChatMessage:
                                 ChatMessage chatMessage = JsonSerializer.Deserialize<ChatMessage>(wrapper.Payload);
                                 AddMessage(client, chatMessage);
+                                receivedMessageSound.Play();
                                 break;
 
                             // If the message is a file confirmation, set result to the pending TaskCompletionSource
@@ -321,7 +339,7 @@ namespace Client
                     {
                         streamReadLock.Release();
                     }
-                    System.Diagnostics.Debug.WriteLine($"ChatForm | Error with listening for messages: {e.Message}, {e.GetType()}\n{e.StackTrace}");
+                    System.Diagnostics.Debug.WriteLine($"ChatForm | Error with listening for messages: {e.Message}");
                 }
             }
             System.Diagnostics.Debug.WriteLine("ChatForm | Disconnected from server");
@@ -724,6 +742,7 @@ namespace Client
         private void ChatForm_Load(object sender, EventArgs e)
         {
             smthFlwLytPnlMessages.VerticalScroll.Visible = true;
+            pnlChatPanel.Height = txtbxMessage.Height + pnlChatPanel.Padding.Top + pnlChatPanel.Padding.Bottom + txtbxMessage.Location.Y * 2;
             dummy = new Panel
             {
                 Width = smthFlwLytPnlMessages.Width - SystemInformation.VerticalScrollBarWidth,
@@ -760,6 +779,15 @@ namespace Client
 
         private void ChatForm_Paint(object sender, PaintEventArgs e)
         {
+            /*
+            var width = 60;
+            for (int i = 0; i < Width; i += width)
+            {
+                e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(231, 236, 239)), new Rectangle(i, 0, width / 2, Height));
+                e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(218, 65, 103)), new Rectangle(i + width / 2, 0, width / 2, Height));
+                // e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb(239, 62, 54)), new Rectangle(i + width * 2 / 3, 0, width / 3, Height));
+            }
+            */
         }
 
         private async void sendbutton_Click(object sender, EventArgs e)
@@ -769,7 +797,7 @@ namespace Client
 
         private void AddMouseDownToLoseFocus(Control parent)
         {
-            if (!(parent is Button) && !(parent is TextBox))
+            if (!(parent is System.Windows.Forms.Button) && !(parent is System.Windows.Forms.TextBox))
             {
                 parent.MouseDown += (s, e) =>
                 {
@@ -794,10 +822,42 @@ namespace Client
             }
             else
             {
-                send_roundbutton.BackgroundColor = Color.FromKnownColor(KnownColor.Control);
-                send_roundbutton.backgroundColor = Color.FromKnownColor(KnownColor.Control);
-                send_roundbutton.MouseOverBackColor = Color.FromKnownColor(KnownColor.ButtonHighlight);
+                send_roundbutton.BackgroundColor = Color.White;
+                send_roundbutton.backgroundColor = Color.White;
+                send_roundbutton.MouseOverBackColor = Color.White;
                 send_roundbutton.ButtonBackgroundImage = Properties.Resources.send_gray;
+            }
+            var g = CreateGraphics();
+            var size = g.MeasureString(txtbxMessage.Text, txtbxMessage.Font);
+            if (size.Width > txtbxMessage.Width)
+            {
+                txtbxMessage.Multiline = true;
+                bool continueProcess = true;
+                int i = 1; //Zero Based So Start from 1
+                int j = 0;
+                int lines = 0;
+                while (continueProcess)
+                {
+                    var index = txtbxMessage.GetFirstCharIndexFromLine(i);
+                    if (index != -1)
+                    {
+                        lines++;
+                        j = index;
+                        i++;
+                    }
+                    else
+                    {
+                        lines++;
+                        continueProcess = false;
+                    }
+                }
+                System.Diagnostics.Debug.WriteLine($"Lines: {lines}");
+                txtbxMessage.Height = txtbxMessage.Font.Height * lines;
+                pnlChatPanel.Height = txtbxMessage.Height + pnlChatPanel.Padding.Top + pnlChatPanel.Padding.Bottom + txtbxMessage.Location.Y * 2;
+            } else
+            {
+                txtbxMessage.Multiline = false;
+                pnlChatPanel.Height = txtbxMessage.Height + pnlChatPanel.Padding.Top + pnlChatPanel.Padding.Bottom + txtbxMessage.Location.Y * 2;
             }
         }
 
@@ -806,6 +866,7 @@ namespace Client
             alertForm = new AlertForm();
             alertForm.showAlert(msg, type, avtPath);
         }
+
         private void label1_Click(object sender, EventArgs e)
         {
 
@@ -846,7 +907,6 @@ namespace Client
         {
             Cursor = Cursors.Default;
         }
-
     }
 }
 

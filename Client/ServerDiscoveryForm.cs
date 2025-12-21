@@ -37,11 +37,15 @@ namespace Client
                     break;
                 case ListChangedType.ItemDeleted:
                     Console.WriteLine("Server removed from the list.");
-                    flwLytPnlServers.Controls.RemoveAt(e.NewIndex);
+                    flwLytPnlServers.Controls.RemoveAt(e.NewIndex + flwLytPnlServers.Controls.Count - serverList.Count - 1);
                     break;
                 case ListChangedType.Reset:
                     Console.WriteLine("Server list reset.");
                     flwLytPnlServers.Controls.Clear();
+                    foreach (Server server in ConfigManager.Current!.SavedServers)
+                    {
+                        AddServerControl(server, true);
+                    }
                     break;
                 default:
                     Console.WriteLine("Server list changed.");
@@ -49,23 +53,33 @@ namespace Client
             }
         }
 
-        private void AddServerControl(Server server)
+        private void AddServerControl(Server server, bool isUserCreated = false)
         {
             Console.WriteLine("Server added to the list.");
             var serverControl = new ServerControl();
             serverControl.ServerName = server.Name;
             serverControl.ServerAddress = $"{server.IPAddress}:{server.Port}";
             serverControl.Width = flwLytPnlServers.ClientSize.Width - 6; // Adjust width to fit within the panel
-            serverControl.BackgroundColor = Color.White;
-            serverControl.BorderColor = Color.White;
-            serverControl.MouseOverBackColor = Color.FromArgb(246, 245, 244);
+            
+            if (isUserCreated)
+            {
+                serverControl.BorderColor = Color.FromArgb(113, 96, 232);
+                serverControl.BackgroundColor = Color.FromArgb(240, 240, 255);
+                serverControl.MouseOverBackColor = Color.FromArgb(230, 230, 255);
+                serverControl.ActiveBorderColor = Color.FromArgb(90, 70, 200);
+            } else
+            {
+                serverControl.BorderColor = Color.White;
+                serverControl.BackgroundColor = Color.White;
+                serverControl.MouseOverBackColor = Color.FromArgb(246, 245, 244);
+            }
             //serverControl.BackgroundColor = Color.FromArgb(30, 30, 30);
             //serverControl.UseMouseOverBackColor = true;
             //serverControl.MouseOverBackColor = Color.FromArgb(50, 50, 50);
             //serverControl.ServerNameColor = Color.White;
             serverControl.Click += (s, args) =>
             {
-                serverControl.backgroundColor = Color.FromArgb(246, 245, 244);
+                //serverControl.backgroundColor = Color.FromArgb(246, 245, 244);
 
                 // Dispose any previously hosted chat
                 if (selectedServer != null)
@@ -93,9 +107,8 @@ namespace Client
                 // If ChatForm constructor signaled Abort (couldn't connect), do not host it
                 if (chatForm.DialogResult == DialogResult.Abort)
                 {
-                    // Optionally refresh the server list UI
-                    flwLytPnlServers.Controls.Clear();
                     chatForm.Dispose();
+                    selectedServer = null;
                     return;
                 }
 
@@ -116,12 +129,31 @@ namespace Client
                     return;
                 }
 
-                splitContainerMain.Panel2.Controls.Clear();
+                //splitContainerMain.Panel2.Controls.Clear();
                 splitContainerMain.Panel2.Controls.Add(chatForm);
+                chatForm.BringToFront();
                 chatForm.Show();
 
                 hostedChatForm = chatForm;
             };
+            if (isUserCreated)
+            {
+                serverControl.CloseClick += (s, args) =>
+                {
+                    ConfigManager.Current!.SavedServers = ConfigManager.Current!.SavedServers
+                        .Where(s => !(s.IPAddress == server.IPAddress && s.Port == server.Port))
+                        .ToArray();
+                    ConfigManager.Save();
+                    flwLytPnlServers.Controls.Remove(serverControl);
+                };
+            }
+            else
+            {
+                serverControl.CloseClick += (s, args) =>
+                { 
+                    serverList.Remove(server);
+                };
+            }
             flwLytPnlServers.Controls.Add(serverControl);
         }
 
@@ -134,13 +166,16 @@ namespace Client
         private void ServerDiscoveryForm_Load(object sender, EventArgs e)
         {
             //Extensions.DarkMode.EnableDarkTitleBar(this);
+            SetListening(true);
             serverList.Clear();
-            Cursor.Current = Cursors.WaitCursor;
 
             int udpPort = int.Parse(ConfigManager.Current!.UdpPort);
             Discoverer discoverer = new Discoverer(udpPort);
+            discoverer.ListeningCompleted += (s, args) =>
+            {
+                SetListening(false);
+            };
             discoverer.ListenForServer(serverList, timeoutMs);
-            Cursor.Current = Cursors.Default;
 
             if (string.IsNullOrEmpty(ConfigManager.Current!.Username))
             {
@@ -148,6 +183,21 @@ namespace Client
                 var result = loginForm.ShowDialog();
             }
             picAvatar.Image = Helpers.GetProfilePicture();
+        }
+
+        private void SetListening(bool v)
+        {
+            loadingAnimationControl1.Invoke(() =>
+            {
+                loadingAnimationControl1.Visible = v;
+                if (v)
+                {
+                    lblListening.Text = "Đang lắng nghe máy chủ";
+                } else
+                {
+                    lblListening.Text = "Hoàn tất lắng nghe";
+                }
+            });
         }
 
         private void splitContainerMain_Paint(object sender, PaintEventArgs e)
@@ -194,12 +244,14 @@ namespace Client
         private void roundButtonControl1_Click(object sender, EventArgs e)
         {
             serverList.Clear();
-            Cursor.Current = Cursors.WaitCursor;
-
+            SetListening(true);
             int udpPort = int.Parse(ConfigManager.Current!.UdpPort);
             Discoverer discoverer = new Discoverer(udpPort);
+            discoverer.ListeningCompleted += (s, args) =>
+            {
+                SetListening(false);
+            };
             discoverer.ListenForServer(serverList, timeoutMs);
-            Cursor.Current = Cursors.Default;
         }
 
         private void pnlLeft_Paint(object sender, PaintEventArgs e)
@@ -227,6 +279,13 @@ namespace Client
         {
             string searchText = searchControl1.Text.ToLower();
             flwLytPnlServers.Controls.Clear();
+            foreach (Server server in ConfigManager.Current!.SavedServers)
+            {
+                if (server.Name.ToLower().Contains(searchText) || server.IPAddress.ToLower().Contains(searchText))
+                {
+                    AddServerControl(server, true);
+                }
+            }
             foreach (var server in serverList)
             {
                 if (server.Name.ToLower().Contains(searchText) || server.IPAddress.ToLower().Contains(searchText))
@@ -266,6 +325,25 @@ namespace Client
             foreach (Control c in parent.Controls)
             {
                 AddMouseDownToLoseFocusExternal(c, chatForm);
+            }
+        }
+
+        private void rndBtnCtrlAddServer_Click(object sender, EventArgs e)
+        {
+            AddServerForm addServerForm = new AddServerForm();
+            addServerForm.StartPosition = FormStartPosition.CenterParent;
+            DialogResult result = addServerForm.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                flwLytPnlServers.Controls.Clear();
+                foreach (Server server in ConfigManager.Current!.SavedServers)
+                {
+                    AddServerControl(server, true);
+                }
+                foreach (Server server in serverList)
+                {
+                    AddServerControl(server);
+                }
             }
         }
     }
