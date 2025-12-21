@@ -24,26 +24,45 @@ namespace Client
             pictureBox.MouseMove += PictureBox_MouseMove;
             pictureBox.MouseUp += PictureBox_MouseUp;
 
+            typeof(Panel).InvokeMember("DoubleBuffered",
+                System.Reflection.BindingFlags.SetProperty |
+                System.Reflection.BindingFlags.Instance |
+                System.Reflection.BindingFlags.NonPublic,
+                null, panel1, new object[] { true });
+
+
+
+            panel1.Paint += Panel1_Paint;
+            pictureBox.Paint += PictureBox_Paint;
+
+
+            pictureBox.MouseMove += (s, e) => {
+                if (isDragging)
+                {
+                    panel1.Invalidate();   // Vẽ lại nền
+                    pictureBox.Invalidate(); // Vẽ lại ảnh
+                }
+            };
+
+            panel1.Resize += (s, e) => { panel1.Invalidate(); pictureBox.Invalidate(); };
+
+
             if (pictureBox.Image != null)
             {
                 originalImage = pictureBox.Image;
 
-                // Tính tỷ lệ để ảnh gốc thu về vừa với Panel
 
                 float ratioX = (float)panel1.Width / originalImage.Width;
                 float ratioY = (float)panel1.Height / originalImage.Height;
 
-                // Chọn tỷ lệ lớn hơn để đảm bảo ảnh lấp đầy khung (cover) chứ không bị hở
 
                 baseScale = Math.Max(ratioX, ratioY);
 
-                // Áp dụng kích thước ban đầu
                 ApplyZoom();
                 CenterImage();
             }
         }
 
-        // Hàm áp dụng Zoom dựa trên giá trị TrackBar
         private void ApplyZoom()
         {
             if (originalImage == null) return;
@@ -151,6 +170,61 @@ namespace Client
             catch (Exception ex)
             {
                 MessageBox.Show("Lỗi: " + ex.Message);
+            }
+        }
+
+        private void Panel1_Paint(object sender, PaintEventArgs e)
+        {
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+            int diameter = Math.Min(panel1.Width, panel1.Height) - 20;
+            int x = (panel1.Width - diameter) / 2;
+            int y = (panel1.Height - diameter) / 2;
+
+            Region overlay = new Region(panel1.ClientRectangle);
+
+            GraphicsPath hole = new GraphicsPath();
+            hole.AddEllipse(x, y, diameter, diameter);
+            overlay.Exclude(hole);
+
+            using (SolidBrush brush = new SolidBrush(Color.FromArgb(150, 0, 0, 0)))
+            {
+                e.Graphics.FillRegion(brush, overlay);
+            }
+
+            using (Pen pen = new Pen(Color.White, 2))
+            {
+                e.Graphics.DrawEllipse(pen, x, y, diameter, diameter);
+            }
+        }
+
+        private void PictureBox_Paint(object sender, PaintEventArgs e)
+        {
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+
+            int diameter = Math.Min(panel1.Width, panel1.Height) - 20;
+
+            int holeX_Panel = (panel1.Width - diameter) / 2;
+            int holeY_Panel = (panel1.Height - diameter) / 2;
+
+            int drawX = holeX_Panel - pictureBox.Left;
+            int drawY = holeY_Panel - pictureBox.Top;
+
+
+            Region overlay = new Region(pictureBox.ClientRectangle);
+
+            GraphicsPath hole = new GraphicsPath();
+            hole.AddEllipse(drawX, drawY, diameter, diameter);
+            overlay.Exclude(hole);
+
+            using (SolidBrush brush = new SolidBrush(Color.FromArgb(150, 0, 0, 0)))
+            {
+                e.Graphics.FillRegion(brush, overlay);
+            }
+
+            using (Pen pen = new Pen(Color.White, 2))
+            {
+                e.Graphics.DrawEllipse(pen, drawX, drawY, diameter, diameter);
             }
         }
 
