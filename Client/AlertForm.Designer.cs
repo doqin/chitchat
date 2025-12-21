@@ -51,7 +51,7 @@
             // 
             label1.Anchor = AnchorStyles.Left | AnchorStyles.Right;
             label1.AutoEllipsis = true;
-            label1.Font = new Font("Segoe UI Light", 15F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            label1.Font = new Font("Segoe UI Light", 10F);
             label1.ForeColor = SystemColors.ButtonFace;
             label1.Location = new Point(0, 6);
             label1.MaximumSize = new Size(340, 70);

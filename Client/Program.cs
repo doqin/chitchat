@@ -18,7 +18,7 @@ namespace Client
 #if DEBUG
             Application.Run(new ServerDiscoveryForm());
 #elif PREVIEW
-            Application.Run(new Crop_picturebox());
+            Application.Run(new SplashScreen());
 #else
             Application.Run(new SplashScreen());
 #endif

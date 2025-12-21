@@ -54,10 +54,10 @@
             lblUsername.AutoSize = true;
             lblUsername.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblUsername.ForeColor = SystemColors.ControlText;
-            lblUsername.Location = new Point(63, 60);
+            lblUsername.Location = new Point(55, 45);
             lblUsername.Margin = new Padding(2, 0, 2, 0);
             lblUsername.Name = "lblUsername";
-            lblUsername.Size = new Size(99, 23);
+            lblUsername.Size = new Size(79, 17);
             lblUsername.TabIndex = 1;
             lblUsername.Text = "Tên hiển thị";
             // 
@@ -66,10 +66,10 @@
             lblAvatar.AutoSize = true;
             lblAvatar.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblAvatar.ForeColor = SystemColors.ActiveCaptionText;
-            lblAvatar.Location = new Point(63, 156);
+            lblAvatar.Location = new Point(55, 117);
             lblAvatar.Margin = new Padding(2, 0, 2, 0);
             lblAvatar.Name = "lblAvatar";
-            lblAvatar.Size = new Size(60, 23);
+            lblAvatar.Size = new Size(48, 17);
             lblAvatar.TabIndex = 2;
             lblAvatar.Text = "Avatar";
             // 
@@ -79,10 +79,10 @@
             chatMessageControl1.AutoSize = true;
             chatMessageControl1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             chatMessageControl1.BackColor = Color.Transparent;
-            chatMessageControl1.Location = new Point(107, 73);
+            chatMessageControl1.Location = new Point(136, 73);
             chatMessageControl1.Margin = new Padding(3, 2, 3, 2);
             chatMessageControl1.Name = "chatMessageControl1";
-            chatMessageControl1.Size = new Size(185, 105);
+            chatMessageControl1.Size = new Size(156, 87);
             chatMessageControl1.TabIndex = 8;
             // 
             // roundControl1
@@ -95,11 +95,11 @@
             roundControl1.Controls.Add(chatMessageControl3);
             roundControl1.Controls.Add(chatMessageControl2);
             roundControl1.Controls.Add(chatMessageControl1);
-            roundControl1.Location = new Point(378, 87);
+            roundControl1.Location = new Point(331, 65);
             roundControl1.Margin = new Padding(1);
             roundControl1.Name = "roundControl1";
             roundControl1.Radius = 10;
-            roundControl1.Size = new Size(357, 288);
+            roundControl1.Size = new Size(312, 216);
             roundControl1.TabIndex = 9;
             // 
             // chatMessageControl3
@@ -108,10 +108,10 @@
             chatMessageControl3.AutoSize = true;
             chatMessageControl3.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             chatMessageControl3.BackColor = Color.Transparent;
-            chatMessageControl3.Location = new Point(107, 165);
+            chatMessageControl3.Location = new Point(136, 165);
             chatMessageControl3.Margin = new Padding(3, 2, 3, 2);
             chatMessageControl3.Name = "chatMessageControl3";
-            chatMessageControl3.Size = new Size(185, 105);
+            chatMessageControl3.Size = new Size(156, 87);
             chatMessageControl3.TabIndex = 10;
             // 
             // chatMessageControl2
@@ -120,10 +120,10 @@
             chatMessageControl2.AutoSize = true;
             chatMessageControl2.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             chatMessageControl2.BackColor = Color.Transparent;
-            chatMessageControl2.Location = new Point(107, -19);
+            chatMessageControl2.Location = new Point(136, -19);
             chatMessageControl2.Margin = new Padding(3, 2, 3, 2);
             chatMessageControl2.Name = "chatMessageControl2";
-            chatMessageControl2.Size = new Size(185, 105);
+            chatMessageControl2.Size = new Size(156, 87);
             chatMessageControl2.TabIndex = 9;
             // 
             // rndBtnCtrlChangeAvatar
@@ -139,12 +139,12 @@
             rndBtnCtrlChangeAvatar.ButtonPadding = new Padding(0);
             rndBtnCtrlChangeAvatar.ButtonText = "Thay Avatar";
             rndBtnCtrlChangeAvatar.ButtonTextColor = SystemColors.ControlText;
-            rndBtnCtrlChangeAvatar.Location = new Point(63, 183);
+            rndBtnCtrlChangeAvatar.Location = new Point(55, 137);
             rndBtnCtrlChangeAvatar.Margin = new Padding(1);
             rndBtnCtrlChangeAvatar.MouseOverBackColor = SystemColors.Control;
             rndBtnCtrlChangeAvatar.Name = "rndBtnCtrlChangeAvatar";
             rndBtnCtrlChangeAvatar.Radius = 10;
-            rndBtnCtrlChangeAvatar.Size = new Size(186, 51);
+            rndBtnCtrlChangeAvatar.Size = new Size(163, 38);
             rndBtnCtrlChangeAvatar.TabIndex = 10;
             rndBtnCtrlChangeAvatar.UseMouseOverBackColor = true;
             rndBtnCtrlChangeAvatar.Click += rndBtnCtrlChangeAvatar_Click;
@@ -155,10 +155,10 @@
             lblPreview.AutoSize = true;
             lblPreview.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblPreview.ForeColor = SystemColors.ControlText;
-            lblPreview.Location = new Point(378, 60);
+            lblPreview.Location = new Point(331, 45);
             lblPreview.Margin = new Padding(2, 0, 2, 0);
             lblPreview.Name = "lblPreview";
-            lblPreview.Size = new Size(70, 23);
+            lblPreview.Size = new Size(55, 17);
             lblPreview.TabIndex = 11;
             lblPreview.Text = "Preview";
             // 
@@ -169,11 +169,11 @@
             rndTxtBxCtrlUsername.BackgroundColor = Color.White;
             rndTxtBxCtrlUsername.BorderColor = SystemColors.ActiveBorder;
             rndTxtBxCtrlUsername.BorderWidth = 1F;
-            rndTxtBxCtrlUsername.Location = new Point(63, 87);
+            rndTxtBxCtrlUsername.Location = new Point(55, 73);
             rndTxtBxCtrlUsername.Margin = new Padding(1);
             rndTxtBxCtrlUsername.Name = "rndTxtBxCtrlUsername";
             rndTxtBxCtrlUsername.Radius = 10;
-            rndTxtBxCtrlUsername.Size = new Size(262, 52);
+            rndTxtBxCtrlUsername.Size = new Size(229, 36);
             rndTxtBxCtrlUsername.TabIndex = 12;
             rndTxtBxCtrlUsername.TextBoxBackgroundColor = Color.White;
             // 
@@ -191,12 +191,12 @@
             rndBtnCtrlSave.ButtonPadding = new Padding(0);
             rndBtnCtrlSave.ButtonText = "Lưu";
             rndBtnCtrlSave.ButtonTextColor = Color.FromArgb(239, 247, 242);
-            rndBtnCtrlSave.Location = new Point(646, 437);
+            rndBtnCtrlSave.Location = new Point(565, 328);
             rndBtnCtrlSave.Margin = new Padding(1);
             rndBtnCtrlSave.MouseOverBackColor = SystemColors.ControlDark;
             rndBtnCtrlSave.Name = "rndBtnCtrlSave";
             rndBtnCtrlSave.Radius = 10;
-            rndBtnCtrlSave.Size = new Size(89, 51);
+            rndBtnCtrlSave.Size = new Size(78, 38);
             rndBtnCtrlSave.TabIndex = 11;
             rndBtnCtrlSave.UseMouseOverBackColor = true;
             rndBtnCtrlSave.Click += btnSubmit_Click;
@@ -214,12 +214,12 @@
             rndBtnCtrlRemoveAvatar.ButtonPadding = new Padding(0);
             rndBtnCtrlRemoveAvatar.ButtonText = "Gỡ bỏ Avatar";
             rndBtnCtrlRemoveAvatar.ButtonTextColor = SystemColors.ControlText;
-            rndBtnCtrlRemoveAvatar.Location = new Point(63, 252);
+            rndBtnCtrlRemoveAvatar.Location = new Point(55, 189);
             rndBtnCtrlRemoveAvatar.Margin = new Padding(1);
             rndBtnCtrlRemoveAvatar.MouseOverBackColor = SystemColors.Control;
             rndBtnCtrlRemoveAvatar.Name = "rndBtnCtrlRemoveAvatar";
             rndBtnCtrlRemoveAvatar.Radius = 10;
-            rndBtnCtrlRemoveAvatar.Size = new Size(186, 51);
+            rndBtnCtrlRemoveAvatar.Size = new Size(163, 38);
             rndBtnCtrlRemoveAvatar.TabIndex = 11;
             rndBtnCtrlRemoveAvatar.UseMouseOverBackColor = true;
             rndBtnCtrlRemoveAvatar.Click += rndBtnCtrlRemoveAvatar_Click;
@@ -237,22 +237,22 @@
             rndBtnCtrlEditAvatar.ButtonPadding = new Padding(0);
             rndBtnCtrlEditAvatar.ButtonText = "Chỉnh sửa Avatar";
             rndBtnCtrlEditAvatar.ButtonTextColor = SystemColors.ControlText;
-            rndBtnCtrlEditAvatar.Location = new Point(63, 324);
+            rndBtnCtrlEditAvatar.Location = new Point(55, 243);
             rndBtnCtrlEditAvatar.Margin = new Padding(1);
             rndBtnCtrlEditAvatar.MouseOverBackColor = SystemColors.Control;
             rndBtnCtrlEditAvatar.Name = "rndBtnCtrlEditAvatar";
             rndBtnCtrlEditAvatar.Radius = 10;
-            rndBtnCtrlEditAvatar.Size = new Size(186, 51);
+            rndBtnCtrlEditAvatar.Size = new Size(163, 38);
             rndBtnCtrlEditAvatar.TabIndex = 12;
             rndBtnCtrlEditAvatar.UseMouseOverBackColor = true;
             rndBtnCtrlEditAvatar.Click += btnEditAvatar_Click;
             // 
             // LoginForm
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(247, 245, 243);
-            ClientSize = new Size(803, 553);
+            ClientSize = new Size(703, 415);
             ControlBox = false;
             Controls.Add(rndBtnCtrlEditAvatar);
             Controls.Add(rndBtnCtrlRemoveAvatar);
@@ -264,7 +264,7 @@
             Controls.Add(lblAvatar);
             Controls.Add(lblUsername);
             DoubleBuffered = true;
-            Margin = new Padding(2, 3, 2, 3);
+            Margin = new Padding(2, 2, 2, 2);
             MaximizeBox = false;
             Name = "LoginForm";
             Text = "Đăng nhập";
