@@ -18,6 +18,7 @@ namespace Client
         public EventHandler? eventHandler;
         private string originalFilePath = "";
 
+
         public LoginForm()
         {
             InitializeComponent();
@@ -62,8 +63,13 @@ namespace Client
             {
                 ConfigManager.Current!.ProfileImagePath = file;
             }
+            if (!string.IsNullOrEmpty(this.originalFilePath))
+            {
+                ConfigManager.Current.OriginalProfileImagePath = this.originalFilePath;
+            }
             ConfigManager.Save();
             eventHandler?.Invoke(this, e);
+            MessageBox.Show("Đã cập nhật ảnh đại diện!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void rndBtnCtrlChangeAvatar_Click(object sender, EventArgs e)
@@ -73,7 +79,7 @@ namespace Client
             {
                 originalFilePath = openFileDialog1.FileName;
 
-                file = originalFilePath;
+                file = openFileDialog1.FileName;
 
                 SetPreviewMessages(file);
             }
@@ -123,7 +129,7 @@ namespace Client
                         file = savePath;
                         SetPreviewMessages(file);
 
-                        MessageBox.Show("Đã cập nhật ảnh đại diện!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        
                     }
                 }
             }
@@ -132,10 +138,10 @@ namespace Client
                 MessageBox.Show("Lỗi khi chỉnh sửa ảnh: " + ex.Message, "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
 
-            ConfigManager.Current.ProfileImagePath = this.file; 
-            ConfigManager.Current.OriginalProfileImagePath = this.originalFilePath; 
+            //ConfigManager.Current.ProfileImagePath = this.file; 
+            //ConfigManager.Current.OriginalProfileImagePath = this.originalFilePath; 
 
-            ConfigManager.Save();
+            //ConfigManager.Save();
         }
     }
 }

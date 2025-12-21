@@ -29,7 +29,7 @@ namespace Client
         private readonly string username;
         public string serverIp { get; }
         public int serverPort { get; }
-        private readonly string profilePictureAttachment;
+        private string profilePictureAttachment;
         private TcpClient tcpClient;
         private ReactionManager reactionManager;
 
@@ -867,6 +867,22 @@ namespace Client
         {
             Cursor = Cursors.Default;
         }
+
+        public void UpdateAvatarFromConfig()
+        {
+            string path = ConfigManager.Current!.ProfileImagePath;
+            if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
+            {
+                try
+                {
+                    var serverFiles = SendFiles(new string[] { path });
+                    if (serverFiles != null && serverFiles.Length > 0)
+                        this.profilePictureAttachment = serverFiles[0].FileName;
+                }
+                catch { }
+            }
+        }
+
     }
 }
 

@@ -274,13 +274,19 @@ namespace Client
             {
                 picAvatar.Image = Image.FromFile(Path.Combine("Cached", ConfigManager.Current!.ProfileImagePath));
             }
+
+            if (this.hostedChatForm != null)
+            {
+                this.hostedChatForm.UpdateAvatarFromConfig();
+            }
         }
 
         private void btnSettings_Click(object sender, EventArgs e)
         {
             Form settingsForm = new SettingsForm(updateSettings);
             settingsForm.StartPosition = FormStartPosition.CenterParent;
-            DialogResult result = settingsForm.ShowDialog();
+            settingsForm.ShowDialog();
+
         }
 
         private void searchControl1_TextChanged(object? sender, EventArgs e)
