@@ -1,4 +1,5 @@
-﻿using Client.Properties;
+﻿using Client.Extensions;
+using Client.Properties;
 using Protocol;
 using System.ComponentModel;
 using System.Windows.Forms;
@@ -146,16 +147,7 @@ namespace Client
                 var loginForm = new LoginForm();
                 var result = loginForm.ShowDialog();
             }
-            if (!string.IsNullOrEmpty(ConfigManager.Current!.ProfileImagePath) && Path.Exists(Path.Combine("Cached", ConfigManager.Current!.ProfileImagePath)))
-            {
-                picAvatar.Image = Image.FromFile(Path.Combine("Cached", ConfigManager.Current!.ProfileImagePath));
-            }
-            else
-            {
-                picAvatar.Image = Resources.user;
-                // picAvatar.OutlineWidth = 2;
-                // picAvatar.OutlineColor = Color.FromArgb(222, 220, 218);
-            }
+            picAvatar.Image = Helpers.GetProfilePicture();
         }
 
         private void splitContainerMain_Paint(object sender, PaintEventArgs e)
@@ -221,10 +213,7 @@ namespace Client
 
         private void updateSettings(object? sender, DialogResult res)
         {
-            if (!string.IsNullOrEmpty(ConfigManager.Current!.ProfileImagePath) && Path.Exists(Path.Combine("Cached", ConfigManager.Current!.ProfileImagePath)))
-            {
-                picAvatar.Image = Image.FromFile(Path.Combine("Cached", ConfigManager.Current!.ProfileImagePath));
-            }
+            picAvatar.Image = Helpers.GetProfilePicture();
         }
 
         private void btnSettings_Click(object sender, EventArgs e)

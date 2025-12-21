@@ -121,7 +121,7 @@ namespace Client
                     System.Diagnostics.Debug.WriteLine("Profile picture uploaded: " + profilePictureAttachment);
                 }
             }
-            // If is absolute path, it's a local file that needs to be uploaded
+            // If is absolute path, it's a local file that needs to be uploaded and downloaded from server
             else if (!string.IsNullOrEmpty(profilePicturePath) && Path.IsPathRooted(profilePicturePath))
             {
                 System.Diagnostics.Debug.WriteLine("Uploading profile picture to server...");
@@ -130,6 +130,7 @@ namespace Client
                 {
                     profilePictureAttachment = attachment[0].FileName;
                     System.Diagnostics.Debug.WriteLine("Profile picture uploaded: " + profilePictureAttachment);
+                    Helpers.GetProfilePicture(tcpClient, pendingAttachmentFetches, profilePictureAttachment);
                     ConfigManager.Current!.ProfileImagePath = profilePictureAttachment;
                     ConfigManager.Save();
                 }
@@ -305,7 +306,7 @@ namespace Client
                 {
                     if (e.SocketErrorCode == SocketError.NotConnected || e.SocketErrorCode == SocketError.ConnectionReset)
                     {
-                        System.Diagnostics.Debug.WriteLine("socket dissconnected stfu");
+                        System.Diagnostics.Debug.WriteLine($"Socket disconnected\n{e.StackTrace}");
                         Invoke(() => quickAlert($"Server {serverName} đã bị đóng!", AlertForm.enmAlertType.Error));
                         break;
                     }
