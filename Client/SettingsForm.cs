@@ -13,8 +13,8 @@ namespace Client
     public partial class SettingsForm : Form
     {
         private LoginForm loginForm;
-        private EventHandler eventHandler;
-        public SettingsForm(EventHandler eventHandler)
+        private EventHandler<DialogResult> eventHandler;
+        public SettingsForm(EventHandler<DialogResult> eventHandler)
         {
             InitializeComponent();
             this.eventHandler = eventHandler;
@@ -53,7 +53,14 @@ namespace Client
             loginForm.TopLevel = false;
             loginForm.FormBorderStyle = FormBorderStyle.None;
             loginForm.Dock = DockStyle.Fill;
-            loginForm.eventHandler = eventHandler;
+            loginForm.eventHandler += eventHandler;
+            loginForm.eventHandler += (sender, result) =>
+            {
+                if (result == DialogResult.OK)
+                {
+                    Invoke(() => this.Close());
+                }
+            };
             splctnSettings.Panel2.Controls.Add(loginForm);
             loginForm.Show();
         }
