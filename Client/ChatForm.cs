@@ -388,7 +388,7 @@ namespace Client
             }
             else
             {
-                var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, false, true);
+                var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, false, !sendToBack);
                 item.AttachmentCompleted += (s, e) =>
                 {
                     // Scroll to bottom when attachment is loaded

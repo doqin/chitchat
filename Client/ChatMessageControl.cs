@@ -245,14 +245,14 @@ namespace Client
                                 System.Diagnostics.Debug.WriteLine($"Error fetching profile image: {ex.Message}");
                             }
                         }
-                        if (isSendAlert)
-                            this.Invoke((MethodInvoker)(() => quickAlert($"{_chatMessage.Username}: {_chatMessage.Message}", AlertForm.enmAlertType.Info, cachedImagePath)));
                     }
                     finally
                     {
                         _readCache.Release();
                     }
                 }
+                if (isSendAlert)
+                    this.Invoke((MethodInvoker)(() => quickAlert($"{_chatMessage.Username}: {_chatMessage.Message}", AlertForm.enmAlertType.Info, string.IsNullOrEmpty(_chatMessage.ProfileImagePath) ? "" : Path.Combine("Cached", _chatMessage.ProfileImagePath))));
 
                 foreach (var attachment in _chatMessage.Attachments)
                 {
