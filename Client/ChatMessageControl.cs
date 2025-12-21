@@ -22,9 +22,11 @@ namespace Client
         private static readonly SemaphoreSlim _readCache = new SemaphoreSlim(1, 1);
         private bool _isPreviewMode = false;
 
+        private AlertForm alertForm;
         private string messageId;
         private ReactionManager reactionManager;
         private string currentUserId;
+        private bool isSendAlert = false;
 
         public event EventHandler? AttachmentCompleted;
 
@@ -64,7 +66,8 @@ namespace Client
             ReactionManager manager,
             TcpClient client,
             ChatMessage chatMessage,
-            bool isRight
+            bool isRight,
+            bool isSendAlert = false
         )
         {
             reactionManager = manager ?? throw new ArgumentNullException(nameof(manager));
@@ -75,6 +78,7 @@ namespace Client
             var endpoint = client.Client.LocalEndPoint as IPEndPoint;
             currentUserId = endpoint.Address.ToString();
             messageId = chatMessage.Id;
+            this.isSendAlert = isSendAlert;
 
             InitializeComponent();
             if (_isRight)
@@ -251,9 +255,42 @@ namespace Client
                             _readCache.Release();
                         }
                     }
+                    finally
+                    {
+                        _readCache.Release();
+                    }
+                }
+                if (isSendAlert)
+                    this.Invoke((MethodInvoker)(() => quickAlert($"{_chatMessage.Username}: {_chatMessage.Message}", AlertForm.enmAlertType.Info, string.IsNullOrEmpty(_chatMessage.ProfileImagePath) ? "" : Path.Combine("Cached", _chatMessage.ProfileImagePath))));
 
                     foreach (var attachment in _chatMessage.Attachments)
                     {
+                        if (System.IO.File.Exists(cachedAttachmentPath))
+                        {
+                            System.Diagnostics.Debug.WriteLine($"Loading cached image attachment: {attachment.FileName}");
+                            Image image = Image.FromFile(cachedAttachmentPath);
+                            image = CorrectImageOrientation(image);
+                            PictureBox picBox = new PictureBox
+                            {
+                                Image = image,
+                                SizeMode = PictureBoxSizeMode.Zoom,
+                                Padding = new Padding(5),
+                                Size = new Size(400, image.Height * 400 / image.Width),
+                                BorderStyle = BorderStyle.FixedSingle
+                            };
+                            if (_isRight)
+                            {
+                                picBox.Anchor = AnchorStyles.Right;
+                            }
+                            // Update the UI on the main thread
+                            flowPanelAttachments.Invoke((MethodInvoker)(() =>
+                            {
+                                flowPanelAttachments.Controls.Add(picBox);
+                            }));
+                            quickAlert($"{Username} đã gửi một ảnh!", AlertForm.enmAlertType.Info, cachedAttachmentPath);
+
+                            continue;
+                        }
                         System.Diagnostics.Debug.WriteLine($"Checking attachment: {attachment.FileName}");
                         var cacheDirectory = Path.Combine(Application.StartupPath, "Cached");
                         Directory.CreateDirectory(cacheDirectory);
@@ -337,6 +374,7 @@ namespace Client
                             {
                                 flowPanelAttachments.Controls.Add(attachmentControl);
                             }));
+                            quickAlert($"{Username} đã gửi một ảnh!", AlertForm.enmAlertType.Info, cachedAttachmentPath);
                         }
                     }
                     if (_chatMessage.Attachments.Length > 0)
@@ -422,5 +460,12 @@ namespace Client
         }
 
         private void btnMainEmoji_Click_1(object sender, EventArgs e) => btnMainEmoji_Click(sender, e);
+
+        private void quickAlert(string msg, AlertForm.enmAlertType type, string avtPath = "")
+        {
+            alertForm = new AlertForm();
+            System.Diagnostics.Debug.WriteLine("newable");
+            alertForm.showAlert(msg, type, avtPath);
+        }
     }
 }

@@ -32,6 +32,7 @@ namespace Client
         private readonly string profilePictureAttachment;
         private TcpClient tcpClient;
         private ReactionManager reactionManager;
+        private AlertForm alertForm;
 
         private SoundPlayer receivedMessageSound;
 
@@ -57,6 +58,8 @@ namespace Client
             bool needToUploadProfilePicture = false;
             try
             {
+                tcpClient.Connect(serverIp, serverPort);
+                quickAlert($"Đã kết nối tới {serverName}!", AlertForm.enmAlertType.Success);
                 System.Diagnostics.Debug.WriteLine($"Connecting to {serverName} at {serverIp}:{serverPort}...");
                 // Use async connect with timeout to avoid freezing when server is unavailable
                 var connectResult = tcpClient.BeginConnect(serverIp, serverPort, null, null);
@@ -315,16 +318,31 @@ namespace Client
                     }
                     streamReadLock.Release();
                 }
+                catch (SocketException e)
+                {
+                    if (e.SocketErrorCode == SocketError.NotConnected || e.SocketErrorCode == SocketError.ConnectionReset)
+                    {
+                        System.Diagnostics.Debug.WriteLine("socket dissconnected stfu");
+                        Invoke(() => quickAlert($"Server {serverName} đã bị đóng!", AlertForm.enmAlertType.Error));
+                        break;
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"e.SocketErrorCode = {e.ErrorCode}");
+                    }
+                }
                 catch (Exception e)
                 {
                     if (streamReadLock.CurrentCount == 0)
                     {
                         streamReadLock.Release();
                     }
-                    System.Diagnostics.Debug.WriteLine($"ChatForm | Error with listening for messages: {e.Message}");
+                    System.Diagnostics.Debug.WriteLine($"ChatForm | Error with listening for messages: {e.Message}, {e.GetType()}\n{e.StackTrace}");
                 }
             }
             System.Diagnostics.Debug.WriteLine("ChatForm | Disconnected from server");
+            Invoke(() => rndBtnCtrlClose.btnRoundButton.PerformClick());
+            //rndBtnCtrlClose.btnRoundButton.PerformClick();
         }
 
         private void HandleUpdateReaction(TcpClient client, Wrapper wrapper)
@@ -402,7 +420,7 @@ namespace Client
             }
             else
             {
-                var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, false);
+                var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, false, !sendToBack);
                 item.AttachmentCompleted += (s, e) =>
                 {
                     // Scroll to bottom when attachment is loaded
@@ -539,7 +557,13 @@ namespace Client
             };
             string finalJson = JsonSerializer.Serialize(wrapper);
             NetworkStream stream = tcpClient.GetStream();
-            Wrapper.SendJson(stream, finalJson);
+            try {
+                Wrapper.SendJson(stream, finalJson);
+            }
+            catch (OperationCanceledException e)
+            {
+                Invoke(() => quickAlert("nigga yo network slow", AlertForm.enmAlertType.Error));
+            }
         }
 
         /// <summary>
@@ -550,21 +574,29 @@ namespace Client
         {
             SetLoading(true);
             Invalidate();
-            SendFiles files = new()
+            SendFiles files;
+            try
             {
-                FileCount = filePaths.Length,
-                FileList = filePaths.Select(file =>
+                files = new SendFiles()
                 {
-                    System.IO.FileInfo fi = new System.IO.FileInfo(usingCached ? Path.Combine("Cached", file) : file);
-                    string fileName = usingCached ? file : fi.Name;
-                    return new Protocol.File
+                    FileCount = filePaths.Length,
+                    FileList = filePaths.Select(file =>
                     {
-                        FileName = fileName,
-                        FileSize = fi.Length
-                    };
-                }).ToList(),
-                MangleFileNames = mangleFileNames
-            };
+                        System.IO.FileInfo fi = new System.IO.FileInfo(usingCached ? Path.Combine("Cached", file) : file);
+                        string fileName = usingCached ? file : fi.Name;
+                        return new Protocol.File
+                        {
+                            FileName = fileName,
+                            FileSize = fi.Length
+                        };
+                    }).ToList(),
+                    MangleFileNames = mangleFileNames
+                };
+            } catch
+            {
+                return [];
+            }
+            
             string payload = JsonSerializer.Serialize(files);
             Wrapper wrapper = new()
             {
@@ -827,6 +859,11 @@ namespace Client
             }
         }
 
+        private void quickAlert(string msg, AlertForm.enmAlertType type, string avtPath = "")
+        {
+            alertForm = new AlertForm();
+            alertForm.showAlert(msg, type, avtPath);
+        }
         private void label1_Click(object sender, EventArgs e)
         {
 
@@ -867,6 +904,7 @@ namespace Client
         {
             Cursor = Cursors.Default;
         }
+
     }
 }
 
