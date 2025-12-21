@@ -16,6 +16,7 @@ namespace Client
         public int ServerPort;
         public string file = "";
         public EventHandler? eventHandler;
+        private string originalFilePath = "";
 
         public LoginForm()
         {
@@ -52,20 +53,15 @@ namespace Client
             eventHandler?.Invoke(this, e);
         }
 
-        private void EnterPressed(object sender, KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Enter)
-            {
-                btnSubmit_Click(sender, e);
-            }
-        }
-
         private void rndBtnCtrlChangeAvatar_Click(object sender, EventArgs e)
         {
             var result = openFileDialog1.ShowDialog();
             if (result == DialogResult.OK)
             {
-                file = openFileDialog1.FileName;
+                originalFilePath = openFileDialog1.FileName;
+
+                file = originalFilePath;
+
                 SetPreviewMessages(file);
             }
         }
@@ -74,6 +70,54 @@ namespace Client
         {
             file = "";
             SetPreviewMessages(file);
+        }
+
+        private void btnEditAvatar_Click(object sender, EventArgs e)
+        {
+            string pathHeaderToLoad = "";
+            if (!string.IsNullOrEmpty(originalFilePath) && File.Exists(originalFilePath))
+            {
+                pathHeaderToLoad = originalFilePath; 
+            }
+            else if (!string.IsNullOrEmpty(file) && File.Exists(file))
+            {
+                pathHeaderToLoad = file; 
+            }
+            else
+            {
+                MessageBox.Show("Vui lòng chọn ảnh mới trước khi chỉnh sửa!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+
+                using (Image sourceImg = Image.FromFile(pathHeaderToLoad))
+                {
+
+                    Crop_picturebox cropForm = new Crop_picturebox(sourceImg);
+
+                    if (cropForm.ShowDialog() == DialogResult.OK)
+                    {
+
+                        Image newAvatar = cropForm.FinalAvatar;
+
+                        string newFileName = $"avatar_cropped_{DateTime.Now.Ticks}.png";
+                        string savePath = Path.Combine(Application.StartupPath, newFileName);
+
+                        newAvatar.Save(savePath, System.Drawing.Imaging.ImageFormat.Png);
+
+                        file = savePath;
+                        SetPreviewMessages(file);
+
+                        MessageBox.Show("Đã cập nhật ảnh đại diện!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khi chỉnh sửa ảnh: " + ex.Message, "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
     }
 }

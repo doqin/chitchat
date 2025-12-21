@@ -16,9 +16,11 @@ namespace Client
 
         public Image FinalAvatar { get; private set; }
 
-        public Crop_picturebox()
+        public Crop_picturebox(Image inputImage)
         {
             InitializeComponent();
+
+            pictureBox.Image = inputImage;
 
             pictureBox.MouseDown += PictureBox_MouseDown;
             pictureBox.MouseMove += PictureBox_MouseMove;

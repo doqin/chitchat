@@ -89,6 +89,7 @@
             btnSave.Size = new Size(209, 109);
             btnSave.TabIndex = 2;
             btnSave.UseMouseOverBackColor = true;
+            btnSave.Click += btnSave_Click;
             // 
             // PreviewAvatarForm
             // 
