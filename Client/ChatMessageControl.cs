@@ -188,62 +188,71 @@ namespace Client
             if (_isRight) { 
                 rctionRwCtrlRow.Anchor = AnchorStyles.Right;
                 rctionRwCtrlRow.FlowDirection = FlowDirection.RightToLeft;
-            }
-            Task.Run(() =>
+            } else
             {
-                if (!string.IsNullOrEmpty(_chatMessage.ProfileImagePath))
+                rndCtrlChatBubble.BackgroundColor = Color.White;
+                lblMessage.ForeColor = Color.Black;
+            }
+                Task.Run(() =>
                 {
-                    var cacheDirectory = Path.Combine(Application.StartupPath, "Cached");
-                    Directory.CreateDirectory(cacheDirectory);
-                    var cachedImagePath = Path.Combine(cacheDirectory, _chatMessage.ProfileImagePath);
-
-                    System.Diagnostics.Debug.WriteLine($"Waiting for cache lock to unlock: {_chatMessage.ProfileImagePath}");
-                    _readCache.Wait();
-                    try
+                    if (!string.IsNullOrEmpty(_chatMessage.ProfileImagePath))
                     {
-                        if (System.IO.File.Exists(cachedImagePath))
-                        {
-                            System.Diagnostics.Debug.WriteLine($"Loading cached profile image: {_chatMessage.ProfileImagePath}");
+                        var cacheDirectory = Path.Combine(Application.StartupPath, "Cached");
+                        Directory.CreateDirectory(cacheDirectory);
+                        var cachedImagePath = Path.Combine(cacheDirectory, _chatMessage.ProfileImagePath);
 
-                            Image profileImage = Image.FromFile(cachedImagePath);
-                            // Update the UI on the main thread
-                            crclrPicBoxProfilePicture.Invoke((MethodInvoker)(() =>
-                            {
-                                crclrPicBoxProfilePicture.Image = profileImage;
-                                crclrPicBoxProfilePicture.DrawOutline = false;
-                            }));
-                        }
-                        else
+                        System.Diagnostics.Debug.WriteLine($"Waiting for cache lock to unlock: {_chatMessage.ProfileImagePath}");
+                        _readCache.Wait();
+                        try
                         {
-                            try
+                            if (System.IO.File.Exists(cachedImagePath))
                             {
-                                System.Diagnostics.Debug.WriteLine($"Fetching profile image: {_chatMessage.ProfileImagePath}");
-                                var request = new Wrapper
-                                {
-                                    Type = Types.GetFile,
-                                    Payload = _chatMessage.ProfileImagePath
-                                };
-                                string requestJson = JsonSerializer.Serialize(request);
-                                // Fetch the profile image data from the server
-                                var filePath = Protocol.File.FetchFile(_client, pendingFetches, _chatMessage.ProfileImagePath, cachedImagePath, requestJson);
-                                if (string.IsNullOrEmpty(filePath) || (!string.IsNullOrEmpty(filePath) && filePath == "Not found"))
-                                {
-                                    throw new FileNotFoundException("Profile image not found on server.");
-                                }
-                                // Load image
-                                Image profileImage = Image.FromFile(filePath);
+                                System.Diagnostics.Debug.WriteLine($"Loading cached profile image: {_chatMessage.ProfileImagePath}");
+
+                                Image profileImage = Image.FromFile(cachedImagePath);
                                 // Update the UI on the main thread
                                 crclrPicBoxProfilePicture.Invoke((MethodInvoker)(() =>
                                 {
                                     crclrPicBoxProfilePicture.Image = profileImage;
                                     crclrPicBoxProfilePicture.DrawOutline = false;
                                 }));
-                                System.Diagnostics.Debug.WriteLine($"Profile image fetched and set: {_chatMessage.ProfileImagePath}");
                             }
-                            catch (Exception ex)
+                            else
                             {
-                                System.Diagnostics.Debug.WriteLine($"Error fetching profile image: {ex.Message}");
+                                try
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"Fetching profile image: {_chatMessage.ProfileImagePath}");
+                                    var request = new Wrapper
+                                    {
+                                        Type = Types.GetFile,
+                                        Payload = _chatMessage.ProfileImagePath
+                                    };
+                                    string requestJson = JsonSerializer.Serialize(request);
+                                    // Fetch the profile image data from the server
+                                    var filePath = Protocol.File.FetchFile(_client, pendingFetches, _chatMessage.ProfileImagePath, cachedImagePath, requestJson);
+                                    if (string.IsNullOrEmpty(filePath) || (!string.IsNullOrEmpty(filePath) && filePath == "Not found"))
+                                    {
+                                        throw new FileNotFoundException("Profile image not found on server.");
+                                    }
+                                    // Load image
+                                    Image profileImage = Image.FromFile(filePath);
+                                    // Update the UI on the main thread
+                                    crclrPicBoxProfilePicture.Invoke((MethodInvoker)(() =>
+                                    {
+                                        crclrPicBoxProfilePicture.Image = profileImage;
+                                        crclrPicBoxProfilePicture.DrawOutline = false;
+                                    }));
+                                    System.Diagnostics.Debug.WriteLine($"Profile image fetched and set: {_chatMessage.ProfileImagePath}");
+                                }
+                                catch (Exception ex)
+                                {
+                                    System.Diagnostics.Debug.WriteLine($"Error fetching profile image: {ex.Message}");
+                                }
                             }
+                        }
+                        finally
+                        {
+                            _readCache.Release();
                         }
                     }
                     finally
@@ -254,14 +263,7 @@ namespace Client
                 if (isSendAlert)
                     this.Invoke((MethodInvoker)(() => quickAlert($"{_chatMessage.Username}: {_chatMessage.Message}", AlertForm.enmAlertType.Info, string.IsNullOrEmpty(_chatMessage.ProfileImagePath) ? "" : Path.Combine("Cached", _chatMessage.ProfileImagePath))));
 
-                foreach (var attachment in _chatMessage.Attachments)
-                {
-                    System.Diagnostics.Debug.WriteLine($"Checking attachment: {attachment.FileName}");
-                    var cacheDirectory = Path.Combine(Application.StartupPath, "Cached");
-                    Directory.CreateDirectory(cacheDirectory);
-                    var cachedAttachmentPath = Path.Combine(cacheDirectory, attachment.FileName);
-
-                    if (attachment.IsImage)
+                    foreach (var attachment in _chatMessage.Attachments)
                     {
                         if (System.IO.File.Exists(cachedAttachmentPath))
                         {
@@ -289,66 +291,97 @@ namespace Client
 
                             continue;
                         }
+                        System.Diagnostics.Debug.WriteLine($"Checking attachment: {attachment.FileName}");
+                        var cacheDirectory = Path.Combine(Application.StartupPath, "Cached");
+                        Directory.CreateDirectory(cacheDirectory);
+                        var cachedAttachmentPath = Path.Combine(cacheDirectory, attachment.FileName);
 
-                        try
+                        if (attachment.IsImage)
                         {
-                            System.Diagnostics.Debug.WriteLine($"Fetching image attachment: {attachment.FileName}");
-                            var request = new Wrapper
+                            if (System.IO.File.Exists(cachedAttachmentPath))
                             {
-                                Type = Types.GetFile,
-                                Payload = attachment.FileName
-                            };
-                            string requestJson = JsonSerializer.Serialize(request);
-                            // Fetch the attachment data from the server
-                            var filePath = Protocol.File.FetchFile(_client, pendingFetches, attachment.FileName, cachedAttachmentPath, requestJson);
-                            if (string.IsNullOrEmpty(filePath) || (!string.IsNullOrEmpty(filePath) && filePath == "Not found"))
-                            {
-                                throw new FileNotFoundException("Image not found on server.");
+                                System.Diagnostics.Debug.WriteLine($"Loading cached image attachment: {attachment.FileName}");
+                                Image image = Image.FromFile(cachedAttachmentPath);
+                                image = CorrectImageOrientation(image);
+                                PictureBox picBox = new PictureBox
+                                {
+                                    Image = image,
+                                    SizeMode = PictureBoxSizeMode.Zoom,
+                                    Padding = new Padding(5),
+                                    Size = new Size(400, image.Height * 400 / image.Width),
+                                    BorderStyle = BorderStyle.FixedSingle
+                                };
+                                if (_isRight)
+                                {
+                                    picBox.Anchor = AnchorStyles.Right;
+                                }
+                                // Update the UI on the main thread
+                                flowPanelAttachments.Invoke((MethodInvoker)(() =>
+                                {
+                                    flowPanelAttachments.Controls.Add(picBox);
+                                }));
+                                continue;
                             }
-                            // Load image and correct orientation
-                            Image image = Image.FromFile(filePath);
-                            image = CorrectImageOrientation(image);
 
-                            PictureBox picBox = new PictureBox
+                            try
                             {
-                                Image = image,
-                                SizeMode = PictureBoxSizeMode.Zoom,
-                                Padding = new Padding(5),
-                                Size = new Size(400, image.Height * 400 / image.Width),
-                                BorderStyle = BorderStyle.FixedSingle
-                            };
+                                System.Diagnostics.Debug.WriteLine($"Fetching image attachment: {attachment.FileName}");
+                                var request = new Wrapper
+                                {
+                                    Type = Types.GetFile,
+                                    Payload = attachment.FileName
+                                };
+                                string requestJson = JsonSerializer.Serialize(request);
+                                // Fetch the attachment data from the server
+                                var filePath = Protocol.File.FetchFile(_client, pendingFetches, attachment.FileName, cachedAttachmentPath, requestJson);
+                                if (string.IsNullOrEmpty(filePath) || (!string.IsNullOrEmpty(filePath) && filePath == "Not found"))
+                                {
+                                    throw new FileNotFoundException("Image not found on server.");
+                                }
+                                // Load image and correct orientation
+                                Image image = Image.FromFile(filePath);
+                                image = CorrectImageOrientation(image);
+
+                                PictureBox picBox = new PictureBox
+                                {
+                                    Image = image,
+                                    SizeMode = PictureBoxSizeMode.Zoom,
+                                    Padding = new Padding(5),
+                                    Size = new Size(400, image.Height * 400 / image.Width),
+                                    BorderStyle = BorderStyle.FixedSingle
+                                };
+                                if (_isRight)
+                                {
+                                    picBox.Anchor = AnchorStyles.Right;
+                                }
+                                // Update the UI on the main thread
+                                flowPanelAttachments.Invoke((MethodInvoker)(() =>
+                                {
+                                    flowPanelAttachments.Controls.Add(picBox);
+                                }));
+                            }
+                            catch { /* handle errors */ }
+                        }
+                        else
+                        {
+                            AttachmentControl attachmentControl = new AttachmentControl(pendingFetches, _client, attachment.FileName);
                             if (_isRight)
                             {
-                                picBox.Anchor = AnchorStyles.Right;
+                                attachmentControl.Anchor = AnchorStyles.Right;
                             }
                             // Update the UI on the main thread
                             flowPanelAttachments.Invoke((MethodInvoker)(() =>
                             {
-                                flowPanelAttachments.Controls.Add(picBox);
+                                flowPanelAttachments.Controls.Add(attachmentControl);
                             }));
                             quickAlert($"{Username} đã gửi một ảnh!", AlertForm.enmAlertType.Info, cachedAttachmentPath);
                         }
-                        catch { /* handle errors */ }
                     }
-                    else
+                    if (_chatMessage.Attachments.Length > 0)
                     {
-                        AttachmentControl attachmentControl = new AttachmentControl(pendingFetches, _client, attachment.FileName);
-                        if (_isRight)
-                        {
-                            attachmentControl.Anchor = AnchorStyles.Right;
-                        }
-                        // Update the UI on the main thread
-                        flowPanelAttachments.Invoke((MethodInvoker)(() =>
-                        {
-                            flowPanelAttachments.Controls.Add(attachmentControl);
-                        }));
+                        AttachmentCompleted?.Invoke(this, EventArgs.Empty);
                     }
-                }
-                if (_chatMessage.Attachments.Length > 0)
-                {
-                    AttachmentCompleted?.Invoke(this, EventArgs.Empty);
-                }
-            });
+                });
         }
 
         private void UpdateReaction(string messageId, string emoji, string userId)

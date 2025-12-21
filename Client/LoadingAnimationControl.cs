@@ -18,7 +18,7 @@ namespace Client
             InitializeComponent();
         }
 
-        public int Padding { get; set; } = 5;
+        public int DotPadding { get; set; } = 5;
 
         public int DotWidth { get; set; } = 15;
         public int DotHeight { get; set; } = 15;
@@ -27,7 +27,7 @@ namespace Client
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
-            int xDot1 = Padding, xDot2 = Width / 2 - DotWidth / 2, xDot3 = Width - DotWidth - Padding,
+            int xDot1 = DotPadding, xDot2 = Width / 2 - DotWidth / 2, xDot3 = Width - DotWidth - DotPadding,
                 yDot1 = (int)(((Height - DotHeight) * Math.Sin(DateTime.Now.Ticks * TickRate) + Height - DotHeight) / 2),
                 yDot2 = (int)(((Height - DotHeight) * Math.Sin(DateTime.Now.Ticks * TickRate + Math.PI / 3) + Height - DotHeight) / 2),
                 yDot3 = (int)(((Height - DotHeight) * Math.Sin(DateTime.Now.Ticks * TickRate + Math.PI * 2 / 3) + Height - DotHeight) / 2);

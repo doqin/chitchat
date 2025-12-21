@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 namespace Client
 {
-    public partial class ServerControl : UserControl
+    public partial class ServerControl : RoundButtonControl
     {
         public string ServerName
         {
@@ -23,79 +23,41 @@ namespace Client
             get => clkTrghLblServerAddress.Text; set => clkTrghLblServerAddress.Text = value;
         }
 
-        public bool UseMouseOverBackColor
+        public event EventHandler CloseClick
         {
-            get => roundButtonControl1.UseMouseOverBackColor;
-            set => roundButtonControl1.UseMouseOverBackColor = value;
+            add => rndBtnCtrlClose.Click += value;
+            remove => rndBtnCtrlClose.Click -= value;
         }
-
-        public Color MouseOverBackColor
-        {
-            get => roundButtonControl1.MouseOverBackColor;
-            set => roundButtonControl1.MouseOverBackColor = value;
-        }
-
-        public Color ServerNameColor
-        {
-            get => clkTrghLblServerName.ForeColor;
-            set => clkTrghLblServerName.ForeColor = value;
-        }
-
-        public Color ServerAddressColor
-        {
-            get => clkTrghLblServerAddress.ForeColor;
-            set => clkTrghLblServerAddress.ForeColor = value;
-        }
-
-        public Color BackgroundColor
-        {
-            get => roundButtonControl1.BackgroundColor;
-            set
-            {
-                roundButtonControl1.BackgroundColor = value;
-                clkTrghLblServerName.BackColor = value;
-                clkTrghLblServerAddress.BackColor = value;
-            }
-        }
-
-        public Color backgroundColor;
-
-        public Color BorderColor
-        {
-            get => roundButtonControl1.BorderColor;
-            set => roundButtonControl1.BorderColor = value;
-        }
-
         public ServerControl()
         {
             InitializeComponent();
         }
 
-        private void roundButtonControl1_Click(object sender, EventArgs e) => InvokeOnClick(this, e);
-
-        private void lblServerAddress_Click(object sender, EventArgs e) => InvokeOnClick(this, e);
-
-        private void roundButtonControl1_MouseEnter(object sender, EventArgs e)
-        {
-            if (UseMouseOverBackColor)
-            {
-                BackgroundColor = MouseOverBackColor;
-            }
-        }
-
-        private void roundButtonControl1_MouseLeave(object sender, EventArgs e)
-        {
-            if (UseMouseOverBackColor)
-            {
-                BackgroundColor = backgroundColor;
-            }
-        }
-
         private void ServerControl_Load(object sender, EventArgs e)
         {
-            backgroundColor = BackgroundColor;
-            roundButtonControl1.btnRoundButton.MouseEnter += roundButtonControl1_MouseEnter;
-            roundButtonControl1.btnRoundButton.MouseLeave += roundButtonControl1_MouseLeave;
+            clkTrghLblServerName.BackColor = BackgroundColor;
+            clkTrghLblServerAddress.BackColor = BackgroundColor;
+            rndBtnCtrlClose.MouseOverBackColor = MouseOverBackColor;
+            rndBtnCtrlClose.BackgroundColor = BackgroundColor;
+            rndBtnCtrlClose.backgroundColor = BackgroundColor;
+            rndBtnCtrlClose.BorderColor = backgroundColor;
+            rndBtnCtrlClose.ActiveBorderColor = ActiveBorderColor;
+            btnRoundButton.MouseEnter += (s, ev) =>
+            {
+                clkTrghLblServerName.BackColor = MouseOverBackColor;
+                clkTrghLblServerAddress.BackColor = MouseOverBackColor;
+                rndBtnCtrlClose.BackgroundColor = MouseOverBackColor;
+                rndBtnCtrlClose.backgroundColor = MouseOverBackColor;
+                rndBtnCtrlClose.BorderColor = rndBtnCtrlClose.backgroundColor;
+            };
+            btnRoundButton.MouseLeave += (s, ev) =>
+            {
+                clkTrghLblServerName.BackColor = BackgroundColor;
+                clkTrghLblServerAddress.BackColor = BackgroundColor;
+                rndBtnCtrlClose.BackgroundColor = BackgroundColor;
+                rndBtnCtrlClose.backgroundColor = BackgroundColor;
+                rndBtnCtrlClose.BorderColor = rndBtnCtrlClose.backgroundColor;
+            };
         }
 
         private void clickThroughLabelControl1_Click(object sender, EventArgs e)

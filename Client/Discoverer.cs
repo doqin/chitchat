@@ -28,6 +28,8 @@ namespace Client
             this.udpPort = udpPort;
         }
 
+        public event EventHandler? ListeningCompleted;
+
         /// <summary>
         /// Lắng nghe các broadcast từ máy chủ. Cập nhật binding danh sách máy chủ tìm thấy.
         /// </summary>
@@ -104,6 +106,7 @@ namespace Client
                         break;
                     }
                 }
+                ListeningCompleted?.Invoke(this, EventArgs.Empty);
             });
         }
     }
