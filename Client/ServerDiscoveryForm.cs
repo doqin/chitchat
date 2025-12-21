@@ -1,5 +1,4 @@
-﻿using Client.Properties;
-using Protocol;
+﻿using Protocol;
 using System.ComponentModel;
 using System.Windows.Forms;
 
@@ -13,7 +12,6 @@ namespace Client
 
         private ChatForm? hostedChatForm;
         private Server selectedServer;
-        private AlertForm alertForm;
 
         // keep these as fields so other methods can access them
 
@@ -187,9 +185,8 @@ namespace Client
             }
             else
             {
-                picAvatar.Image = Resources.user;
-                // picAvatar.OutlineWidth = 2;
-                // picAvatar.OutlineColor = Color.FromArgb(222, 220, 218);
+                picAvatar.OutlineWidth = 2;
+                picAvatar.OutlineColor = Color.FromArgb(222, 220, 218);
             }
         }
 
@@ -271,7 +268,7 @@ namespace Client
             }
         }
 
-        private void updateSettings(object? sender, DialogResult res)
+        private void updateSettings(object? sender, EventArgs e)
         {
             if (!string.IsNullOrEmpty(ConfigManager.Current!.ProfileImagePath) && Path.Exists(Path.Combine("Cached", ConfigManager.Current!.ProfileImagePath)))
             {
