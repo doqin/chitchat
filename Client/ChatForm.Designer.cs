@@ -66,7 +66,7 @@
             txtbxMessage.Location = new Point(66, 19);
             txtbxMessage.Name = "txtbxMessage";
             txtbxMessage.PlaceholderText = "Gửi tin nhắn";
-            txtbxMessage.Size = new Size(660, 16);
+            txtbxMessage.Size = new Size(639, 16);
             txtbxMessage.TabIndex = 1;
             txtbxMessage.Click += txtbxMessage_Click;
             txtbxMessage.TextChanged += txtbxMessage_TextChanged;
@@ -110,7 +110,7 @@
             pnlAddButton.Location = new Point(0, 0);
             pnlAddButton.Name = "pnlAddButton";
             pnlAddButton.Padding = new Padding(5);
-            pnlAddButton.Size = new Size(52, 51);
+            pnlAddButton.Size = new Size(51, 51);
             pnlAddButton.TabIndex = 1;
             // 
             // addfile_roundbutton
@@ -122,8 +122,8 @@
             addfile_roundbutton.BorderColor = SystemColors.InactiveBorder;
             addfile_roundbutton.BorderWidth = 1F;
             addfile_roundbutton.ButtonBackgroundImage = Properties.Resources.plus;
-            addfile_roundbutton.ButtonBackgroundImageLayout = ImageLayout.None;
-            addfile_roundbutton.ButtonPadding = new Padding(10);
+            addfile_roundbutton.ButtonBackgroundImageLayout = ImageLayout.Zoom;
+            addfile_roundbutton.ButtonPadding = new Padding(7);
             addfile_roundbutton.ButtonText = "";
             addfile_roundbutton.ButtonTextColor = SystemColors.ControlText;
             addfile_roundbutton.Dock = DockStyle.Fill;
@@ -132,7 +132,7 @@
             addfile_roundbutton.MouseOverBackColor = SystemColors.ButtonHighlight;
             addfile_roundbutton.Name = "addfile_roundbutton";
             addfile_roundbutton.Radius = 999;
-            addfile_roundbutton.Size = new Size(42, 41);
+            addfile_roundbutton.Size = new Size(41, 41);
             addfile_roundbutton.TabIndex = 0;
             addfile_roundbutton.UseMouseOverBackColor = true;
             addfile_roundbutton.Click += roundButtonControl1_Click;
@@ -151,10 +151,10 @@
             // 
             send_roundbutton.ActiveBorderColor = SystemColors.ActiveBorder;
             send_roundbutton.BackColor = Color.Transparent;
-            send_roundbutton.backgroundColor = SystemColors.Control;
-            send_roundbutton.BackgroundColor = SystemColors.Control;
+            send_roundbutton.backgroundColor = Color.White;
+            send_roundbutton.BackgroundColor = Color.White;
             send_roundbutton.BackgroundImageLayout = ImageLayout.Zoom;
-            send_roundbutton.BorderColor = SystemColors.ActiveBorder;
+            send_roundbutton.BorderColor = Color.White;
             send_roundbutton.BorderWidth = 1F;
             send_roundbutton.ButtonBackgroundImage = Properties.Resources.send_gray;
             send_roundbutton.ButtonBackgroundImageLayout = ImageLayout.Zoom;
@@ -164,7 +164,7 @@
             send_roundbutton.Dock = DockStyle.Fill;
             send_roundbutton.Location = new Point(5, 0);
             send_roundbutton.Margin = new Padding(1);
-            send_roundbutton.MouseOverBackColor = SystemColors.ButtonHighlight;
+            send_roundbutton.MouseOverBackColor = Color.White;
             send_roundbutton.Name = "send_roundbutton";
             send_roundbutton.Radius = 9999;
             send_roundbutton.Size = new Size(51, 51);
@@ -177,7 +177,7 @@
             flwLytPnlAttachments.AutoSize = true;
             flwLytPnlAttachments.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             flwLytPnlAttachments.Dock = DockStyle.Bottom;
-            flwLytPnlAttachments.Location = new Point(0, 408);
+            flwLytPnlAttachments.Location = new Point(0, 479);
             flwLytPnlAttachments.Name = "flwLytPnlAttachments";
             flwLytPnlAttachments.Size = new Size(803, 0);
             flwLytPnlAttachments.TabIndex = 9;
@@ -280,6 +280,7 @@
             loadingAnimationControl1.BackColor = Color.Transparent;
             loadingAnimationControl1.BrushColor = Color.Gray;
             loadingAnimationControl1.DotHeight = 5;
+            loadingAnimationControl1.DotPadding = 5;
             loadingAnimationControl1.DotWidth = 5;
             loadingAnimationControl1.Location = new Point(391, 212);
             loadingAnimationControl1.Name = "loadingAnimationControl1";
@@ -291,14 +292,15 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.FromArgb(241, 235, 227);
+            BackColor = SystemColors.Control;
             BackgroundImageLayout = ImageLayout.Center;
             ClientSize = new Size(803, 479);
             Controls.Add(loadingAnimationControl1);
             Controls.Add(smthFlwLytPnlMessages);
+            Controls.Add(pnlChatPanel);
             Controls.Add(pnlTop);
             Controls.Add(flwLytPnlAttachments);
-            Controls.Add(pnlChatPanel);
+            DoubleBuffered = true;
             Name = "ChatForm";
             Text = "ChatForm";
             FormClosing += ChatForm_FormClosing;

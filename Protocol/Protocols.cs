@@ -8,6 +8,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text.Json;
 using System.Net;
+using System.Threading;
 
 namespace Protocol
 {
@@ -88,7 +89,7 @@ namespace Protocol
         /// <exception cref="ArgumentNullException">Thrown when stream is null</exception>
         /// <exception cref="IOException">Thrown when an I/O error occurs</exception>
         /// <exception cref="OperationCanceledException">Thrown when operation times out</exception>
-        public static string ReadJson(NetworkStream stream, int timeoutMs = 30000)
+        public static string ReadJson(NetworkStream stream, int timeoutMs = Timeout.Infinite)
         {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
