@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -16,13 +17,19 @@ namespace Client.Extensions
 
         public static void SuspendPaintingControl(Control control)
         {
-            SendMessage(control.Handle, WM_SETREDRAW, IntPtr.Zero, IntPtr.Zero);
+            if (!control.IsDisposed)
+            {
+                SendMessage(control.Handle, WM_SETREDRAW, IntPtr.Zero, IntPtr.Zero);
+            }
         }
 
         public static void ResumePaintingControl(Control control)
         {
-            SendMessage(control.Handle, WM_SETREDRAW, new IntPtr(1), IntPtr.Zero);
-            control.Refresh();
+            if (!control.IsDisposed)
+            {
+                SendMessage(control.Handle, WM_SETREDRAW, new IntPtr(1), IntPtr.Zero);
+                control.Refresh();
+            }
         }
     }
 }

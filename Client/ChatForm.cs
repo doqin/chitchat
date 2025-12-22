@@ -215,11 +215,31 @@ namespace Client
             isLoading = loading;
             if (loadingAnimationControl1 != null)
             {
-                smthFlwLytPnlMessages.Invoke(() =>
+                if (smthFlwLytPnlMessages.InvokeRequired)
+                {
+                    smthFlwLytPnlMessages.Invoke(() =>
+                    {
+                        smthFlwLytPnlMessages.Visible = !isLoading;
+                    });
+                }
+                else
                 {
                     smthFlwLytPnlMessages.Visible = !isLoading;
-                });
-                loadingAnimationControl1.Invoke(() =>
+                }
+                if (loadingAnimationControl1.InvokeRequired)
+                {
+                    loadingAnimationControl1.Invoke(() =>
+                    {
+                        loadingAnimationControl1.Visible = isLoading;
+                        /*
+                        if (isLoading)
+                        {
+                            loadingAnimationControl1.BringToFront();
+                        }
+                        */
+                    });
+                }
+                else
                 {
                     loadingAnimationControl1.Visible = isLoading;
                     /*
@@ -228,7 +248,7 @@ namespace Client
                         loadingAnimationControl1.BringToFront();
                     }
                     */
-                });
+                }
             }
         }
 
@@ -359,12 +379,21 @@ namespace Client
             {
                 SetLoading(true);
                 System.Diagnostics.Debug.WriteLine("ChatForm | Handling SendMessages...");
-                smthFlwLytPnlMessages.Invoke(() =>
+                if (smthFlwLytPnlMessages.InvokeRequired)
+                {
+                    smthFlwLytPnlMessages.Invoke(() =>
+                    {
+                        smthFlwLytPnlMessages.Controls.SetChildIndex(dummy, 0);
+                        smthFlwLytPnlMessages.SuspendLayout();
+                        SuspendPainting.SuspendPaintingControl(smthFlwLytPnlMessages);
+                    });
+                }
+                else
                 {
                     smthFlwLytPnlMessages.Controls.SetChildIndex(dummy, 0);
                     smthFlwLytPnlMessages.SuspendLayout();
                     SuspendPainting.SuspendPaintingControl(smthFlwLytPnlMessages);
-                });
+                }
                 SendMessages sendMessage = JsonSerializer.Deserialize<SendMessages>(wrapper.Payload);
                 System.Diagnostics.Debug.WriteLine($"ChatForm | Received {sendMessage?.Messages.Length} messages from server.");
                 //smthFlwLytPnlMessages.SuspendLayout();
@@ -372,18 +401,27 @@ namespace Client
                 {
                     AddMessage(client, chatMessage, true);
                 }
-                smthFlwLytPnlMessages.Invoke(() =>
+                if (smthFlwLytPnlMessages.InvokeRequired)
+                {
+                    smthFlwLytPnlMessages.Invoke(() =>
+                    {
+                        smthFlwLytPnlMessages.ResumeLayout(true);
+                        if (dummy != null)
+                        {
+                            smthFlwLytPnlMessages.ScrollControlIntoView(dummy);
+                        }
+                        SuspendPainting.ResumePaintingControl(smthFlwLytPnlMessages);
+                    });
+                }
+                else
                 {
                     smthFlwLytPnlMessages.ResumeLayout(true);
                     if (dummy != null)
                     {
                         smthFlwLytPnlMessages.ScrollControlIntoView(dummy);
                     }
-                });
-                smthFlwLytPnlMessages.Invoke(() =>
-                {
                     SuspendPainting.ResumePaintingControl(smthFlwLytPnlMessages);
-                });
+                }
                 // Hide loading after messages rendered
                 SetLoading(false);
             });
@@ -391,64 +429,71 @@ namespace Client
 
         private void AddMessage(TcpClient client, ChatMessage? chatMessage, bool sendToBack = false)
         {
-            var isImageInfo = chatMessage.Attachments.Length == 1 ? ("and is" + (!chatMessage.Attachments[0].IsImage ? " not " : "") + "image") : "";
-            System.Diagnostics.Debug.WriteLine($"ChatForm | Received: {chatMessage?.Message} from {chatMessage?.Username} at {chatMessage?.TimeSent} with {chatMessage.Attachments.Length} attachments {isImageInfo}");
-            var localEndPoint = tcpClient.Client.LocalEndPoint as IPEndPoint;
-            if (chatMessage.Address == localEndPoint.Address.ToString())
+            try
             {
-                var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, true);
-                item.AttachmentCompleted += (s, e) =>
+                var isImageInfo = chatMessage.Attachments.Length == 1 ? ("and is" + (!chatMessage.Attachments[0].IsImage ? " not " : "") + "image") : "";
+                System.Diagnostics.Debug.WriteLine($"ChatForm | Received: {chatMessage?.Message} from {chatMessage?.Username} at {chatMessage?.TimeSent} with {chatMessage.Attachments.Length} attachments {isImageInfo}");
+                var localEndPoint = tcpClient?.Client?.LocalEndPoint as IPEndPoint;
+                if (chatMessage.Address == localEndPoint?.Address?.ToString())
                 {
-                    // Scroll to bottom when attachment is loaded
-                    smthFlwLytPnlMessages.Invoke(() =>
+                    var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, true);
+                    item.AttachmentCompleted += (s, e) =>
                     {
-                        if (dummy != null)
+                        // Scroll to bottom when attachment is loaded
+                        smthFlwLytPnlMessages.Invoke(() =>
                         {
-                            smthFlwLytPnlMessages.ScrollControlIntoView(dummy);
-                        }
-                    });
-                };
-                smthFlwLytPnlMessages.Invoke(() =>
-                {
-                    smthFlwLytPnlMessages.Controls.Add(item);
-                });
-                if (sendToBack)
-                {
+                            if (dummy != null)
+                            {
+                                smthFlwLytPnlMessages.ScrollControlIntoView(dummy);
+                            }
+                        });
+                    };
                     smthFlwLytPnlMessages.Invoke(() =>
                     {
-                        smthFlwLytPnlMessages.Controls.SetChildIndex(item, 0);
+                        smthFlwLytPnlMessages.Controls.Add(item);
                     });
+                    if (sendToBack)
+                    {
+                        smthFlwLytPnlMessages.Invoke(() =>
+                        {
+                            smthFlwLytPnlMessages.Controls.SetChildIndex(item, 0);
+                        });
+                    }
+                }
+                else
+                {
+                    var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, false, !sendToBack);
+                    item.AttachmentCompleted += (s, e) =>
+                    {
+                        // Scroll to bottom when attachment is loaded
+                        smthFlwLytPnlMessages.Invoke(() =>
+                        {
+                            if (dummy != null)
+                            {
+                                smthFlwLytPnlMessages.ScrollControlIntoView(dummy);
+                            }
+                        });
+                    };
+                    smthFlwLytPnlMessages.Invoke(() =>
+                    {
+                        smthFlwLytPnlMessages.Controls.Add(item);
+                    });
+                    if (sendToBack)
+                    {
+                        smthFlwLytPnlMessages.Invoke(() =>
+                        {
+                            smthFlwLytPnlMessages.Controls.SetChildIndex(item, 0);
+                        });
+                    }
+                }
+                if (chatMessage.ReactionState != null)
+                {
+                    reactionManager.SetReactionState(chatMessage.Id, chatMessage.ReactionState);
                 }
             }
-            else
+            catch (Exception e)
             {
-                var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, false, !sendToBack);
-                item.AttachmentCompleted += (s, e) =>
-                {
-                    // Scroll to bottom when attachment is loaded
-                    smthFlwLytPnlMessages.Invoke(() =>
-                    {
-                        if (dummy != null)
-                        {
-                            smthFlwLytPnlMessages.ScrollControlIntoView(dummy);
-                        }
-                    });
-                };
-                smthFlwLytPnlMessages.Invoke(() =>
-                {
-                    smthFlwLytPnlMessages.Controls.Add(item);
-                });
-                if (sendToBack)
-                {
-                    smthFlwLytPnlMessages.Invoke(() =>
-                    {
-                        smthFlwLytPnlMessages.Controls.SetChildIndex(item, 0);
-                    });
-                }
-            }
-            if (chatMessage.ReactionState != null)
-            {
-                reactionManager.SetReactionState(chatMessage.Id, chatMessage.ReactionState);
+                System.Diagnostics.Debug.WriteLine($"ChatForm | Error adding message: {e.Message}");
             }
         }
 

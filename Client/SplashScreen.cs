@@ -53,6 +53,7 @@ namespace Client
 
             // Create and show the main form
             var mainForm = new ServerDiscoveryForm();
+            mainForm.StartPosition = FormStartPosition.CenterScreen;
             mainForm.Show();
         }
 

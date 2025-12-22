@@ -77,8 +77,8 @@ namespace Client
             _isRight = isRight;
             _chatMessage = chatMessage;
             _client = client;
-            var endpoint = client.Client.LocalEndPoint as IPEndPoint;
-            currentUserId = endpoint.Address.ToString();
+            var endpoint = client?.Client?.LocalEndPoint as IPEndPoint;
+            currentUserId = endpoint?.Address?.ToString();
             messageId = chatMessage.Id;
             this.isSendAlert = isSendAlert;
 
