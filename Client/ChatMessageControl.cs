@@ -1,4 +1,5 @@
-﻿using Protocol;
+﻿using Client.Properties;
+using Protocol;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -163,7 +164,7 @@ namespace Client
                 crclrPicBoxProfilePicture.DrawOutline = false;
             } else {
                 // Set a default image or leave it blank
-                crclrPicBoxProfilePicture.Image = null;
+                crclrPicBoxProfilePicture.Image = Resources.user;
                 crclrPicBoxProfilePicture.DrawOutline = true;
             }
             lblMessage.Text = username;
@@ -243,6 +244,12 @@ namespace Client
                             catch (Exception ex)
                             {
                                 System.Diagnostics.Debug.WriteLine($"Error fetching profile image: {ex.Message}");
+                                // Set default image on error
+                                crclrPicBoxProfilePicture.Invoke((MethodInvoker)(() =>
+                                {
+                                    crclrPicBoxProfilePicture.Image = Resources.user;
+                                    crclrPicBoxProfilePicture.DrawOutline = true;
+                                }));
                             }
                         }
                     }
@@ -251,6 +258,16 @@ namespace Client
                         _readCache.Release();
                     }
                 }
+                else
+                {
+                    // No profile image path provided, set default image
+                    crclrPicBoxProfilePicture.Invoke((MethodInvoker)(() =>
+                    {
+                        crclrPicBoxProfilePicture.Image = Resources.user;
+                        crclrPicBoxProfilePicture.DrawOutline = true;
+                    }));
+                }
+                
                 if (isSendAlert)
                     this.Invoke((MethodInvoker)(() => quickAlert($"{_chatMessage.Username}: {_chatMessage.Message}", AlertForm.enmAlertType.Info, string.IsNullOrEmpty(_chatMessage.ProfileImagePath) ? "" : Path.Combine("Cached", _chatMessage.ProfileImagePath))));
 

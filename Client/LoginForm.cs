@@ -27,8 +27,9 @@ namespace Client
             SetPreviewMessages(ConfigManager.Current!.ProfileImagePath);
         }
 
-        private void SetPreviewMessages(string profileImagePath)
+        private void SetPreviewMessages(string _profileImagePath)
         {
+            string profileImagePath = _profileImagePath;
             try
             {
                 chatMessageControl1.SetPreview(profileImagePath, ConfigManager.Current!.Username, "Xin chào", DateTime.Now);
@@ -44,30 +45,22 @@ namespace Client
         private void btnSubmit_Click(object sender, EventArgs e)
         {
             Username = string.IsNullOrWhiteSpace(rndTxtBxCtrlUsername?.Text) ? "username" : rndTxtBxCtrlUsername.Text.Trim();
-            
+
             ConfigManager.Current!.Username = Username;
-            if (!string.IsNullOrEmpty(file))
-            {
-                ConfigManager.Current!.ProfileImagePath = file;
-                quickAlert("Cập nhật thông tin thành công!", AlertForm.enmAlertType.Success);
-                DialogResult = DialogResult.OK;
-            }
-            else
-            {
-                quickAlert("Bạn chưa chọn avatar!", AlertForm.enmAlertType.Warning);
-                DialogResult = DialogResult.Abort;
-            }
-                
+            ConfigManager.Current!.ProfileImagePath = file;
+
+            quickAlert("Cập nhật thông tin thành công!", AlertForm.enmAlertType.Success);
+            if (file == "Resources/user.png")
+                quickAlert("Bạn đang sử dụng avatar mặc định!", AlertForm.enmAlertType.Warning);
+            DialogResult = DialogResult.OK;
+
             ConfigManager.Save();
             eventHandler?.Invoke(this, DialogResult);
         }
 
         private void EnterPressed(object sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Enter)
-            {
-                btnSubmit_Click(sender, e);
-            }
+            
         }
 
         private void rndBtnCtrlChangeAvatar_Click(object sender, EventArgs e)
@@ -82,7 +75,7 @@ namespace Client
 
         private void rndBtnCtrlRemoveAvatar_Click(object sender, EventArgs e)
         {
-            file = "";
+            file = "Resources/user.png";
             SetPreviewMessages(file);
         }
 

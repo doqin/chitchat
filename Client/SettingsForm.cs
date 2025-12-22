@@ -68,7 +68,6 @@ namespace Client
         private void SettingsForm_Load(object sender, EventArgs e)
         {
             btnUser.PerformClick();
-
         }
 
         private void btnOther_Click(object sender, EventArgs e)

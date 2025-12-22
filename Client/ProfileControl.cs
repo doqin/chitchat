@@ -47,7 +47,6 @@ namespace Client
                 {
                     using var loginForm = new LoginForm();
 
-                    // debug helpers: ensure visible and centered
                     loginForm.StartPosition = FormStartPosition.CenterParent;
                     // temporarily make it top-most while debugging to ensure it's not hidden
                     // loginForm.TopMost = true;
@@ -72,7 +71,7 @@ namespace Client
                         ConfigManager.Save();
 
                         lblUser.Text = txtUsername;
-                        lblUser.Visible = true;
+                        lblUser.Visible = true; 
 
                         lblStatus.Text = "Online";
                         lblStatus.Visible = true;

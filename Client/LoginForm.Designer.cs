@@ -129,6 +129,7 @@
             // 
             rndBtnCtrlChangeAvatar.ActiveBorderColor = SystemColors.ActiveBorder;
             rndBtnCtrlChangeAvatar.BackColor = Color.Transparent;
+            rndBtnCtrlChangeAvatar.backgroundColor = Color.White;
             rndBtnCtrlChangeAvatar.BackgroundColor = Color.White;
             rndBtnCtrlChangeAvatar.BorderColor = SystemColors.ActiveBorder;
             rndBtnCtrlChangeAvatar.BorderWidth = 1F;
@@ -180,6 +181,7 @@
             rndBtnCtrlSave.ActiveBorderColor = SystemColors.ActiveBorder;
             rndBtnCtrlSave.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
             rndBtnCtrlSave.BackColor = Color.Transparent;
+            rndBtnCtrlSave.backgroundColor = Color.FromArgb(12, 192, 66);
             rndBtnCtrlSave.BackgroundColor = Color.FromArgb(12, 192, 66);
             rndBtnCtrlSave.BorderColor = SystemColors.ActiveBorder;
             rndBtnCtrlSave.BorderWidth = 2F;
@@ -202,6 +204,7 @@
             // 
             rndBtnCtrlRemoveAvatar.ActiveBorderColor = SystemColors.ActiveBorder;
             rndBtnCtrlRemoveAvatar.BackColor = Color.Transparent;
+            rndBtnCtrlRemoveAvatar.backgroundColor = Color.White;
             rndBtnCtrlRemoveAvatar.BackgroundColor = Color.White;
             rndBtnCtrlRemoveAvatar.BorderColor = SystemColors.ActiveBorder;
             rndBtnCtrlRemoveAvatar.BorderWidth = 1F;

@@ -130,7 +130,22 @@ namespace Client
                 {
                     profilePictureAttachment = attachment[0].FileName;
                     System.Diagnostics.Debug.WriteLine("Profile picture uploaded: " + profilePictureAttachment);
-                    ConfigManager.Current!.ProfileImagePath = profilePictureAttachment;
+                    var request = new Wrapper
+                    {
+                        Type = Types.GetFile,
+                        Payload = profilePictureAttachment
+                    };
+                    string requestJson = JsonSerializer.Serialize(request);
+                    // Fetch the profile image data from the server
+                    var cacheDirectory = Path.Combine(System.Windows.Forms.Application.StartupPath, "Cached");
+                    Directory.CreateDirectory(cacheDirectory);
+                    var cachedImagePath = Path.Combine(cacheDirectory, profilePictureAttachment);
+                    var filePath = Protocol.File.FetchFile(tcpClient, pendingAttachmentFetches, profilePictureAttachment, cachedImagePath, requestJson);
+                    if (string.IsNullOrEmpty(filePath) || (!string.IsNullOrEmpty(filePath) && filePath == "Not found"))
+                    {
+                        throw new FileNotFoundException("Profile image not found on server.");
+                    }
+                    ConfigManager.Current!.ProfileImagePath = filePath;
                     ConfigManager.Save();
                 }
             }

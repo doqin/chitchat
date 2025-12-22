@@ -225,6 +225,8 @@ namespace Client
             {
                 picAvatar.Image = Image.FromFile(Path.Combine("Cached", ConfigManager.Current!.ProfileImagePath));
             }
+            else
+                picAvatar.Image = Resources.user;
         }
 
         private void btnSettings_Click(object sender, EventArgs e)
