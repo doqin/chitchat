@@ -1,12 +1,13 @@
-﻿<div style="display: flex; align-items: center; padding: 10px;">
-   <img src="./Client/Resources/chitchat_logo.png" alt="Description" width="250" height="250">
-   <div style="padding: 20px;">
-        <h1>chitchat</h1>
-        <p>Một ứng dụng nhắn tin local đơn giản sử dụng C# và Windows Forms.</p>
-        <h1>Tại sao lại nhắn tin qua LAN?</h1>
-        <p>Thời đại nay có nhiều ứng dụng nhắn tin qua một server thống nhất qua internet nhưng có những lúc mình chỉ cần hoạt động trong một mạng cục bộ và có tốc độ truyền tải nhanh nhẹn và vững chắc. Việc sử dụng LAN có thể cho phép được cài đặt trực tiếp trên một máy chủ của một tập thể, công ty và bảo mật được thông tin tin nhắn của người dùng khỏi một tập thể khác.</p>
-   </div>
-</div>
+<p align="center">
+  <img width="250" height="250" src="./Client/Resources/chitchat_logo.png">
+</p>
+
+# chitchat
+Một ứng dụng nhắn tin local đơn giản sử dụng C# và Windows Forms.
+
+# Tại sao lại nhắn tin qua LAN?
+
+Thời đại nay có nhiều ứng dụng nhắn tin qua một server thống nhất qua internet nhưng có những lúc mình chỉ cần hoạt động trong một mạng cục bộ và có tốc độ truyền tải nhanh nhẹn và vững chắc. Việc sử dụng LAN có thể cho phép được cài đặt trực tiếp trên một máy chủ của một tập thể, công ty và bảo mật được thông tin tin nhắn của người dùng khỏi một tập thể khác.
 
 # Thành viên nhóm
 
@@ -35,3 +36,12 @@
 Clone repo về máy rồi sử dụng Visual Studio hoặc VSCode hoặc Jetbrains Rider để mở tệp `.sln` rồi build solution. 
 
 Vào thư mục `bin\Debug` hoặc `bin\Release` của `Client` để mở ứng dụng trực tiếp từ tệp `.exe`, và của `Server` để mở một máy chủ cho mọi người kết nối. 
+
+# Một vài easter egg
+Splashscreen của ứng dụng sẽ tạo một hoạt ảnh ngẫu nhiên khi khởi động, thể hiện tính decentralization của cách các người dùng kết nối với nhau :)
+
+<p align="center">
+   <img width="750" height="398" alt="image" src="https://github.com/user-attachments/assets/4fb5ab69-7dc4-494a-a686-827b8784002f" />
+   <img width="714" height="355" alt="image" src="https://github.com/user-attachments/assets/b52e21cc-2b13-4a2b-bbda-5de94b49b974" />
+</p>
+
