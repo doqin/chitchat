@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Client.Properties;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -15,13 +16,27 @@ namespace Client
         public string Username;
         public int ServerPort;
         public string file = "";
-        public EventHandler? eventHandler;
+        public EventHandler<DialogResult>? eventHandler;
+        private AlertForm alertForm;
+        private string originalFilePath = "";
+
 
         public LoginForm()
         {
             InitializeComponent();
             this.StartPosition = FormStartPosition.CenterParent;
             rndTxtBxCtrlUsername.Text = ConfigManager.Current!.Username;
+
+            if (!string.IsNullOrEmpty(ConfigManager.Current!.ProfileImagePath))
+            {
+                this.file = ConfigManager.Current!.ProfileImagePath;
+            }
+
+            if (!string.IsNullOrEmpty(ConfigManager.Current!.OriginalProfileImagePath))
+            {
+                this.originalFilePath = ConfigManager.Current!.OriginalProfileImagePath;
+            }
+
             SetPreviewMessages(ConfigManager.Current!.ProfileImagePath);
         }
 
@@ -42,14 +57,25 @@ namespace Client
         private void btnSubmit_Click(object sender, EventArgs e)
         {
             Username = string.IsNullOrWhiteSpace(rndTxtBxCtrlUsername?.Text) ? "username" : rndTxtBxCtrlUsername.Text.Trim();
-            DialogResult = DialogResult.OK;
+            
             ConfigManager.Current!.Username = Username;
             if (!string.IsNullOrEmpty(file))
             {
                 ConfigManager.Current!.ProfileImagePath = file;
+                quickAlert("Cập nhật thông tin thành công!", AlertForm.enmAlertType.Success);
+                DialogResult = DialogResult.OK;
+            }
+            else
+            {
+                quickAlert("Bạn chưa chọn avatar!", AlertForm.enmAlertType.Warning);
+                DialogResult = DialogResult.Abort;
+            }
+            if (!string.IsNullOrEmpty(this.originalFilePath))
+            {
+                ConfigManager.Current.OriginalProfileImagePath = this.originalFilePath;
             }
             ConfigManager.Save();
-            eventHandler?.Invoke(this, e);
+            eventHandler?.Invoke(this, DialogResult);
         }
 
         private void EnterPressed(object sender, KeyEventArgs e)
@@ -65,7 +91,10 @@ namespace Client
             var result = openFileDialog1.ShowDialog();
             if (result == DialogResult.OK)
             {
+                originalFilePath = openFileDialog1.FileName;
+
                 file = openFileDialog1.FileName;
+
                 SetPreviewMessages(file);
             }
         }
@@ -74,6 +103,68 @@ namespace Client
         {
             file = "";
             SetPreviewMessages(file);
+        }
+
+        private void btnEditAvatar_Click(object sender, EventArgs e)
+        {
+            string pathHeaderToLoad = "";
+            if (!string.IsNullOrEmpty(originalFilePath) && File.Exists(originalFilePath))
+            {
+                pathHeaderToLoad = originalFilePath; 
+            }
+            else if (!string.IsNullOrEmpty(file) && File.Exists(file))
+            {
+                pathHeaderToLoad = file; 
+            }
+            else
+            {
+                MessageBox.Show("Vui lòng chọn ảnh mới trước khi chỉnh sửa!", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+
+            try
+            {
+
+                using (Image sourceImg = Image.FromFile(pathHeaderToLoad))
+                {
+
+                    Crop_picturebox cropForm = new Crop_picturebox(sourceImg);
+
+                    if (cropForm.ShowDialog() == DialogResult.OK)
+                    {
+
+                        Image newAvatar = cropForm.FinalAvatar;
+
+                        string newFileName = $"avatar_cropped_{Guid.NewGuid()}.png";
+                        string savePath = Path.Combine(Application.StartupPath, "Cropped", newFileName);
+                        if (!Path.Exists(Path.GetDirectoryName(savePath))) {
+                            Directory.CreateDirectory(Path.GetDirectoryName(savePath));
+                        }
+
+                        newAvatar.Save(savePath, System.Drawing.Imaging.ImageFormat.Png);
+
+                        file = savePath;
+                        SetPreviewMessages(file);
+
+                        
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi khi chỉnh sửa ảnh: " + ex.Message, "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
+            //ConfigManager.Current.ProfileImagePath = this.file; 
+            //ConfigManager.Current.OriginalProfileImagePath = this.originalFilePath; 
+
+            //ConfigManager.Save();
+        }
+
+        void quickAlert(string msg, AlertForm.enmAlertType type)
+        {
+            alertForm = new AlertForm();
+            alertForm.showAlert(msg, type);
         }
     }
 }

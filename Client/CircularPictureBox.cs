@@ -13,7 +13,7 @@ namespace Client
 {
     public partial class CircularPictureBox : PictureBox
     {
-        public Color OutlineColor { get; set; } = Color.White;
+        public Color OutlineColor { get; set; } = Color.Gray;
         public float OutlineWidth { get; set; } = 2.0f;
 
         public bool DrawOutline { get; set; } = false;
@@ -27,68 +27,91 @@ namespace Client
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
-            this.Width = this.Height; // Keep it a circle
+
+            if (this.Width != this.Height)
+            {
+                int side = Math.Min(this.Width, this.Height);
+                this.Size = new Size(side, side);
+            }
+
+            using (GraphicsPath path = GetCirclePath())
+            {
+                Region = new Region(path);
+            }
+
+            Invalidate();
         }
 
         protected override void OnPaint(PaintEventArgs pe)
         {
-            pe.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            this.Region = null; // Allow painting outside the region
-
-            using (var path = new GraphicsPath())
+            if (Image == null)
             {
-                path.AddEllipse(0, 0, this.Width, this.Height);
+                base.OnPaint(pe);
+                return;
+            }
 
-                // Fill the circle with the image
-                if (this.Image != null)
+            pe.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            pe.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            pe.Graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+            using (GraphicsPath path = GetCirclePath())
+            {
+                pe.Graphics.SetClip(path);
+
+                RectangleF sourceRect = GetCoverSourceRectangle(Image.Size);
+                Rectangle destRect = ClientRectangle;
+
+                pe.Graphics.DrawImage(Image, destRect, sourceRect, GraphicsUnit.Pixel);
+                pe.Graphics.ResetClip();
+
+                if (DrawOutline && OutlineWidth > 0f)
                 {
-                    using (var brush = new TextureBrush(this.Image, WrapMode.Clamp))
+                    using (Pen outlinePen = new Pen(OutlineColor, OutlineWidth))
                     {
-                        // Center the image inside the circle, maintaining aspect ratio and cropping.
-                        float rpb = (float)this.Width / this.Height;
-                        float rimg = (float)this.Image.Width / this.Image.Height;
-
-                        float scale;
-                        float dx = 0, dy = 0;
-
-                        if (rpb > rimg) // PictureBox is wider than image, so scale to width
-                        {
-                            scale = (float)this.Width / this.Image.Width;
-                            dy = (this.Height - this.Image.Height * scale) / 2;
-                        }
-                        else // PictureBox is taller or same aspect ratio, so scale to height
-                        {
-                            scale = (float)this.Height / this.Image.Height;
-                            dx = (this.Width - this.Image.Width * scale) / 2;
-                        }
-
-                        // Apply the transformation
-                        brush.ScaleTransform(scale, scale);
-                        brush.TranslateTransform(dx / scale, dy / scale);
-
-                        pe.Graphics.FillPath(brush, path);
-                    }
-                }
-
-                // Set the region to the circular path to clip the control's visible area
-                this.Region = new Region(path);
-
-                // Draws outline
-                if (DrawOutline)
-                {
-                    using (var pen = new Pen(OutlineColor, OutlineWidth))
-                    {
-                        // Adjust for pen width to draw inside the circle
-                        float halfPenWidth = pen.Width / 2;
-                        pe.Graphics.DrawEllipse(pen, halfPenWidth, halfPenWidth, this.Width - pen.Width, this.Height - pen.Width);
+                        outlinePen.Alignment = PenAlignment.Center;
+                        pe.Graphics.DrawPath(outlinePen, path);
                     }
                 }
             }
         }
 
+        private RectangleF GetCoverSourceRectangle(Size imageSize)
+        {
+            if (Width == 0 || Height == 0)
+            {
+                return new RectangleF(PointF.Empty, imageSize);
+            }
+
+            float imageRatio = (float)imageSize.Width / imageSize.Height;
+            float controlRatio = (float)Width / Height;
+
+            if (imageRatio > controlRatio)
+            {
+                float desiredWidth = imageSize.Height * controlRatio;
+                float offsetX = (imageSize.Width - desiredWidth) / 2f;
+                return new RectangleF(offsetX, 0, desiredWidth, imageSize.Height);
+            }
+            else
+            {
+                float desiredHeight = imageSize.Width / controlRatio;
+                float offsetY = (imageSize.Height - desiredHeight) / 2f;
+                return new RectangleF(0, offsetY, imageSize.Width, desiredHeight);
+            }
+        }
+
+        private GraphicsPath GetCirclePath()
+        {
+            GraphicsPath path = new GraphicsPath();
+            path.AddEllipse(0, 0, this.Width - 1, this.Height - 1);
+            return path;
+        }
+
         private void CircularPictureBox_Load(object sender, EventArgs e)
         {
-
+            using (GraphicsPath path = GetCirclePath())
+            {
+                Region = new Region(path);
+            }
         }
     }
 }

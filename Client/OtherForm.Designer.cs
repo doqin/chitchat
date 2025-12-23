@@ -34,7 +34,7 @@
             // 
             // txtbxPort
             // 
-            txtbxPort.Location = new Point(142, 131);
+            txtbxPort.Location = new Point(61, 132);
             txtbxPort.Name = "txtbxPort";
             txtbxPort.Size = new Size(98, 23);
             txtbxPort.TabIndex = 0;
@@ -42,11 +42,11 @@
             // lblPort
             // 
             lblPort.AutoSize = true;
-            lblPort.Font = new Font("Segoe UI Semibold", 11F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblPort.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold);
             lblPort.ForeColor = SystemColors.ControlText;
-            lblPort.Location = new Point(70, 129);
+            lblPort.Location = new Point(61, 91);
             lblPort.Name = "lblPort";
-            lblPort.Size = new Size(41, 20);
+            lblPort.Size = new Size(37, 17);
             lblPort.TabIndex = 1;
             lblPort.Text = "Port:";
             // 
@@ -55,7 +55,7 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(247, 245, 243);
-            ClientSize = new Size(657, 573);
+            ClientSize = new Size(657, 432);
             Controls.Add(lblPort);
             Controls.Add(txtbxPort);
             Name = "OtherForm";

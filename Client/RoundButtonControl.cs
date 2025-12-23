@@ -46,13 +46,13 @@ namespace Client
 
         public bool UseMouseOverBackColor { get; set; } = true;
 
-        public Color MouseOverBackColor { get; set; } = Color.FromKnownColor(KnownColor.Control);
+        public Color MouseOverBackColor { get; set; } = Color.FromKnownColor(KnownColor.ButtonHighlight);
 
         public Color ActiveBorderColor { get; set; } = Color.FromKnownColor(KnownColor.ActiveBorder);
 
         private Color borderColor;
 
-        private Color backgroundColor;
+        public Color backgroundColor { get; set; }
 
         public RoundButtonControl()
         {

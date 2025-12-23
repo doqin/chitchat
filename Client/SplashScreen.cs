@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace Client
@@ -8,9 +10,16 @@ namespace Client
     {
         private System.Windows.Forms.Timer mainTimer = new System.Windows.Forms.Timer();
         private System.Windows.Forms.Timer animationTimer = new System.Windows.Forms.Timer();
+        private readonly Random random = new Random();
+        private readonly List<(int From, int To)> currentConnections = new();
+        private const int ConnectionsPerPoint = 2;
 
         private int alpha = 0;   // Độ mờ chữ (fade-in)
         private int radius = 20; // Bán kính vòng sáng
+        private float[] orbitAngles;
+        private float[] orbitSpeeds;
+        private float[] orbitDistances;
+        private float[] orbitSizes;
 
         public SplashScreen()
         {
@@ -19,13 +28,16 @@ namespace Client
             this.FormBorderStyle = FormBorderStyle.None; // Gỡ viền form cho đẹp
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.FromArgb(11, 7, 17); // Nền giống app chính
-            this.ClientSize = new Size(800, 450);
-
+            InitializeOrbitData();
+            UpdateRandomConnections();
+#if PREVIEW
+            // Don't go to main form automatically in preview builds
+#else
             // Timer điều khiển thời gian hiển thị
             mainTimer.Interval = 3500; // 3.5s rồi chuyển sang form chính
             mainTimer.Tick += Timer_Tick;
             mainTimer.Start();
-
+#endif
             // Timer animation GDI+
             animationTimer.Interval = 40; // 25fps
             animationTimer.Tick += Animation_Tick;
@@ -41,6 +53,7 @@ namespace Client
 
             // Create and show the main form
             var mainForm = new ServerDiscoveryForm();
+            mainForm.StartPosition = FormStartPosition.CenterScreen;
             mainForm.Show();
         }
 
@@ -48,6 +61,15 @@ namespace Client
         {
             if (alpha < 255) alpha += 5;
             if (radius < 150) radius += 4;
+            for (int i = 0; i < orbitAngles.Length; i++)
+            {
+                orbitAngles[i] += orbitSpeeds[i];
+                if (orbitAngles[i] >= 360f)
+                {
+                    orbitAngles[i] -= 360f;
+                }
+            }
+            //UpdateRandomConnections();
             this.Invalidate(); // Gọi lại OnPaint để vẽ lại
         }
 
@@ -58,37 +80,80 @@ namespace Client
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
             // Vẽ nền gradient nhẹ (dark tech look)
-            using (var brush = new System.Drawing.Drawing2D.LinearGradientBrush(
+            using (var brush = new LinearGradientBrush(
                 this.ClientRectangle,
-                Color.FromArgb(15, 20, 35),
-                Color.FromArgb(10, 10, 20),
-                45f))
+                Color.FromArgb(113, 96, 232),
+                Color.FromArgb(81, 163, 163),
+                45f)
+                )
             {
                 g.FillRectangle(brush, this.ClientRectangle);
             }
 
-            // Vẽ vòng sáng xung quanh logo
-            using (Pen pen = new Pen(Color.FromArgb(60, 0, 180, 255), 4))
-            {
-                g.DrawEllipse(pen, this.Width / 2 - radius, this.Height / 2 - radius, radius * 2, radius * 2);
-            }
+            PointF clientCenter = new PointF(this.ClientSize.Width / 2f, this.ClientSize.Height / 2f);
 
-            // Vẽ chữ logo “ChitChat”
-            using (Font font = new Font("Segoe UI", 36, FontStyle.Bold))
-            using (SolidBrush brush = new SolidBrush(Color.FromArgb(alpha, 0, 200, 255)))
+/*            using (Font font = new Font("Segoe UI", 36, FontStyle.Bold))
             {
                 string text = "ChitChat";
                 SizeF textSize = g.MeasureString(text, font);
-                g.DrawString(text, font, brush, (this.Width - textSize.Width) / 2, (this.Height - textSize.Height) / 2 - 10);
+                float textX = clientCenter.X - (textSize.Width / 2f);
+                float textY = clientCenter.Y - (textSize.Height / 2f);
+                using (var textBrush = new SolidBrush(Color.FromArgb(Math.Min(alpha, 255), 255, 255, 255)))
+                {
+                    g.DrawString(text, font, textBrush, textX, textY);
+                }
+            }*/
+
+            PointF[] orbitPositions = new PointF[orbitAngles.Length];
+            for (int i = 0; i < orbitAngles.Length; i++)
+            {
+                float radians = orbitAngles[i] * (float)Math.PI / 180f;
+                float orbitRadius = orbitDistances[i];
+                float circleX = clientCenter.X + (float)Math.Cos(radians) * orbitRadius;
+                float circleY = clientCenter.Y + (float)Math.Sin(radians) * orbitRadius;
+                orbitPositions[i] = new PointF(circleX, circleY);
             }
 
-            // Vẽ phụ đề nhỏ hơn
-            using (Font subFont = new Font("Segoe UI", 12, FontStyle.Italic))
-            using (SolidBrush brush = new SolidBrush(Color.FromArgb(alpha, 150, 150, 150)))
+            if (orbitPositions.Length > 0)
             {
-                string sub = "Connecting through LAN";
-                SizeF size = g.MeasureString(sub, subFont);
-                g.DrawString(sub, subFont, brush, (this.Width - size.Width) / 2, (this.Height - size.Height) / 2 + 40);
+                float sumX = 0f;
+                float sumY = 0f;
+                for (int i = 0; i < orbitPositions.Length; i++)
+                {
+                    sumX += orbitPositions[i].X;
+                    sumY += orbitPositions[i].Y;
+                }
+
+                float offsetX = clientCenter.X - (sumX / orbitPositions.Length);
+                float offsetY = clientCenter.Y - (sumY / orbitPositions.Length);
+
+                for (int i = 0; i < orbitPositions.Length; i++)
+                {
+                    orbitPositions[i] = new PointF(orbitPositions[i].X + offsetX, orbitPositions[i].Y + offsetY);
+                }
+            }
+
+            Random rand = new Random(1000);
+            for (int i = 0; i < orbitAngles.Length; i++)
+            {
+                float circleSize = orbitSizes[i];
+                PointF circlePos = orbitPositions[i];
+                var circleRect = new RectangleF(circlePos.X - circleSize / 2, circlePos.Y - circleSize / 2, circleSize, circleSize);
+                using (var circleBrush = new SolidBrush(Color.FromArgb(rand.Next(120, 255), 255, 255, 255)))
+                {
+                    g.FillEllipse(circleBrush, circleRect);
+                }
+            }
+
+            foreach (var connection in currentConnections)
+            {
+                PointF pointI = orbitPositions[connection.From];
+                PointF pointJ = orbitPositions[connection.To];
+                using (var linePen = new Pen(Color.FromArgb(50, 255, 255, 255), 2))
+                {
+                    //linePen.DashStyle = DashStyle.Dot;
+                    g.DrawLine(linePen, pointI, pointJ);
+                }
             }
         }
 
@@ -110,6 +175,59 @@ namespace Client
         private void SplashScreen_Load(object sender, EventArgs e)
         {
 
+        }
+
+        private void InitializeOrbitData()
+        {
+            int numPoints = random.Next(6, 10);
+            orbitAngles = new float[numPoints];
+            orbitSpeeds = new float[numPoints];
+            orbitDistances = new float[numPoints];
+            orbitSizes = new float[numPoints];
+            for (int i = 0; i < orbitAngles.Length; i++)
+            {
+                orbitAngles[i] = random.Next(0, 360);
+                orbitSpeeds[i] = (float)(random.NextDouble() * 1.5 + 2.0);
+                orbitDistances[i] = random.Next(80, 150);
+                orbitSizes[i] = random.Next(15, 30);
+            }
+        }
+
+        private void UpdateRandomConnections()
+        {
+            currentConnections.Clear();
+            if (orbitAngles.Length < 2)
+            {
+                return;
+            }
+
+            int maxConnectionsPerNode = Math.Min(ConnectionsPerPoint, orbitAngles.Length - 1);
+            int[] nodeConnectionCounts = new int[orbitAngles.Length];
+            var uniqueConnections = new HashSet<(int, int)>();
+
+            for (int node = 0; node < orbitAngles.Length; node++)
+            {
+                int attempts = 0;
+                while (nodeConnectionCounts[node] < maxConnectionsPerNode && attempts < orbitAngles.Length * 2)
+                {
+                    int target = random.Next(orbitAngles.Length);
+                    if (target == node || nodeConnectionCounts[target] >= maxConnectionsPerNode)
+                    {
+                        attempts++;
+                        continue;
+                    }
+
+                    var normalized = node < target ? (node, target) : (target, node);
+                    if (uniqueConnections.Add(normalized))
+                    {
+                        nodeConnectionCounts[node]++;
+                        nodeConnectionCounts[target]++;
+                        currentConnections.Add(normalized);
+                    }
+
+                    attempts++;
+                }
+            }
         }
     }
 }

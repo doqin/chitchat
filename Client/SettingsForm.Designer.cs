@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             splctnSettings = new SplitContainer();
-            button1 = new Button();
+            btnAbout = new Button();
             btnOther = new Button();
             btnUser = new Button();
             panel1 = new Panel();
@@ -51,7 +51,7 @@
             // splctnSettings.Panel1
             // 
             splctnSettings.Panel1.BackColor = Color.Transparent;
-            splctnSettings.Panel1.Controls.Add(button1);
+            splctnSettings.Panel1.Controls.Add(btnAbout);
             splctnSettings.Panel1.Controls.Add(btnOther);
             splctnSettings.Panel1.Controls.Add(btnUser);
             splctnSettings.Panel1.Controls.Add(panel1);
@@ -63,23 +63,24 @@
             splctnSettings.SplitterDistance = 246;
             splctnSettings.TabIndex = 0;
             // 
-            // button1
+            // btnAbout
             // 
-            button1.Dock = DockStyle.Top;
-            button1.FlatAppearance.BorderSize = 0;
-            button1.FlatStyle = FlatStyle.Flat;
-            button1.Font = new Font("Arial", 8F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            button1.Image = Properties.Resources.about;
-            button1.ImageAlign = ContentAlignment.MiddleLeft;
-            button1.Location = new Point(0, 167);
-            button1.Name = "button1";
-            button1.Padding = new Padding(20, 0, 0, 0);
-            button1.Size = new Size(246, 51);
-            button1.TabIndex = 4;
-            button1.Text = "  About";
-            button1.TextAlign = ContentAlignment.MiddleRight;
-            button1.TextImageRelation = TextImageRelation.ImageBeforeText;
-            button1.UseVisualStyleBackColor = false;
+            btnAbout.Dock = DockStyle.Top;
+            btnAbout.FlatAppearance.BorderSize = 0;
+            btnAbout.FlatStyle = FlatStyle.Flat;
+            btnAbout.Font = new Font("Arial", 8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnAbout.Image = Properties.Resources.about;
+            btnAbout.ImageAlign = ContentAlignment.MiddleLeft;
+            btnAbout.Location = new Point(0, 167);
+            btnAbout.Name = "btnAbout";
+            btnAbout.Padding = new Padding(20, 0, 0, 0);
+            btnAbout.Size = new Size(246, 51);
+            btnAbout.TabIndex = 4;
+            btnAbout.Text = "  About";
+            btnAbout.TextAlign = ContentAlignment.MiddleRight;
+            btnAbout.TextImageRelation = TextImageRelation.ImageBeforeText;
+            btnAbout.UseVisualStyleBackColor = false;
+            btnAbout.Click += btnAbout_Click;
             // 
             // btnOther
             // 
@@ -167,6 +168,6 @@
         private Button btnUser;
         private Button btnOther;
         private Label label1;
-        private Button button1;
+        private Button btnAbout;
     }
 }

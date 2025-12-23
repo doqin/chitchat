@@ -8,6 +8,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Text.Json;
 using System.Net;
+using System.Threading;
 
 namespace Protocol
 {
@@ -50,62 +51,91 @@ namespace Protocol
         /// </summary>
         /// <param name="stream">The network stream to write to</param>
         /// <param name="json">The JSON string to send</param>
+        /// <param name="timeoutMs">Timeout in milliseconds (default: 30000ms)</param>
         /// <exception cref="ArgumentNullException">Thrown when stream or json is null</exception>
         /// <exception cref="IOException">Thrown when an I/O error occurs</exception>
-        public static void SendJson(NetworkStream stream, string json)
+        /// <exception cref="OperationCanceledException">Thrown when operation times out</exception>
+        public static void SendJson(NetworkStream stream, string json, int timeoutMs = 30000)
         {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
             if (json == null)
                 throw new ArgumentNullException(nameof(json));
 
-            byte[] data = Encoding.UTF8.GetBytes(json);
-            byte[] lengthPrefix = BitConverter.GetBytes(data.Length);
+            stream.WriteTimeout = timeoutMs;
 
-            // Send length prefix (4 bytes)
-            stream.Write(lengthPrefix, 0, lengthPrefix.Length);
-            // Send JSON data
-            stream.Write(data, 0, data.Length);
+            try
+            {
+                byte[] data = Encoding.UTF8.GetBytes(json);
+                byte[] lengthPrefix = BitConverter.GetBytes(data.Length);
+
+                // Send length prefix (4 bytes)
+                stream.Write(lengthPrefix, 0, lengthPrefix.Length);
+                // Send JSON data
+                stream.Write(data, 0, data.Length);
+            }
+            catch (IOException ex) when (ex.InnerException is TimeoutException)
+            {
+                throw new OperationCanceledException("Send operation timed out.", ex);
+            }
         }
 
         /// <summary>
         /// Reads JSON from the stream by first reading a 4-byte length prefix, then reading the exact number of bytes.
         /// </summary>
         /// <param name="stream">The network stream to read from</param>
+        /// <param name="timeoutMs">Timeout in milliseconds (default: 30000ms)</param>
         /// <returns>The JSON string, or null if the connection was closed</returns>
         /// <exception cref="ArgumentNullException">Thrown when stream is null</exception>
         /// <exception cref="IOException">Thrown when an I/O error occurs</exception>
-        public static string ReadJson(NetworkStream stream)
+        /// <exception cref="OperationCanceledException">Thrown when operation times out</exception>
+        public static string ReadJson(NetworkStream stream, int timeoutMs = Timeout.Infinite)
         {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
 
-            // Read the 4-byte length prefix
-            byte[] lengthBuffer = new byte[4];
-            int bytesRead = 0;
-            while (bytesRead < 4)
+            stream.ReadTimeout = timeoutMs;
+
+            try
             {
-                int read = stream.Read(lengthBuffer, bytesRead, 4 - bytesRead);
-                if (read == 0)
-                    return null; // Connection closed
-                bytesRead += read;
+                // Read the 4-byte length prefix
+                byte[] lengthBuffer = new byte[4];
+                int bytesRead = 0;
+                while (bytesRead < 4)
+                {
+                    try
+                    {
+                        int read = stream.Read(lengthBuffer, bytesRead, 4 - bytesRead);
+                        if (read == 0)
+                            return null; // Connection closed
+                        bytesRead += read;
+                    }
+                    catch
+                    {
+                        throw new SocketException((int)SocketError.ConnectionReset);
+                    }
+                }
+
+                int messageLength = BitConverter.ToInt32(lengthBuffer, 0);
+
+                // Read the exact message
+                byte[] buffer = new byte[messageLength];
+                bytesRead = 0;
+                while (bytesRead < messageLength)
+                {
+                    int read = stream.Read(buffer, bytesRead, messageLength - bytesRead);
+                    if (read == 0)
+                        return null; // Connection closed
+                    bytesRead += read;
+                }
+
+                string json = Encoding.UTF8.GetString(buffer, 0, messageLength);
+                return json;
             }
-
-            int messageLength = BitConverter.ToInt32(lengthBuffer, 0);
-
-            // Read the exact message
-            byte[] buffer = new byte[messageLength];
-            bytesRead = 0;
-            while (bytesRead < messageLength)
+            catch (IOException ex) when (ex.InnerException is TimeoutException)
             {
-                int read = stream.Read(buffer, bytesRead, messageLength - bytesRead);
-                if (read == 0)
-                    return null; // Connection closed
-                bytesRead += read;
+                throw new OperationCanceledException("Read operation timed out.", ex);
             }
-
-            string json = Encoding.UTF8.GetString(buffer, 0, messageLength);
-            return json;
         }
     }
 

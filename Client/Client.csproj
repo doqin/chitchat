@@ -7,7 +7,13 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
 	<ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
+	<Configurations>Debug;Release;Preview</Configurations>
+	<ApplicationIcon>chitchat_logo.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="chitchat_logo.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Text.Json" Version="9.0.10" />

@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -17,20 +18,25 @@ namespace Client
             InitializeComponent();
         }
 
-        private const int dotWidth = 20, dotHeight = 20;
-        private const double tickRate = 0.0000004;
+        public int DotPadding { get; set; } = 5;
+
+        public int DotWidth { get; set; } = 15;
+        public int DotHeight { get; set; } = 15;
+        public double TickRate { get; set; } = 0.0000004;
+        public Color BrushColor { get; set; } = Color.Gray;
         protected override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
-            Graphics graphics = e.Graphics;
-            int xDot1 = 0, xDot2 = Width / 2 - dotWidth / 2, xDot3 = Width - dotWidth,
-                yDot1 = (int)(((Height - dotHeight) * Math.Sin(DateTime.Now.Ticks * tickRate) + Height - dotHeight) / 2),
-                yDot2 = (int)(((Height - dotHeight) * Math.Sin(DateTime.Now.Ticks * tickRate + Math.PI / 3) + Height - dotHeight) / 2),
-                yDot3 = (int)(((Height - dotHeight) * Math.Sin(DateTime.Now.Ticks * tickRate + Math.PI * 2 / 3) + Height - dotHeight) / 2);
+            int xDot1 = DotPadding, xDot2 = Width / 2 - DotWidth / 2, xDot3 = Width - DotWidth - DotPadding,
+                yDot1 = (int)(((Height - DotHeight) * Math.Sin(DateTime.Now.Ticks * TickRate) + Height - DotHeight) / 2),
+                yDot2 = (int)(((Height - DotHeight) * Math.Sin(DateTime.Now.Ticks * TickRate + Math.PI / 3) + Height - DotHeight) / 2),
+                yDot3 = (int)(((Height - DotHeight) * Math.Sin(DateTime.Now.Ticks * TickRate + Math.PI * 2 / 3) + Height - DotHeight) / 2);
             // Draw the dots
-            e.Graphics.FillEllipse(Brushes.Black, xDot1, yDot1, dotWidth, dotHeight);
-            e.Graphics.FillEllipse(Brushes.Black, xDot2, yDot2, dotWidth, dotHeight);
-            e.Graphics.FillEllipse(Brushes.Black, xDot3, yDot3, dotWidth, dotHeight);
+            e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            Brush brush = new SolidBrush(BrushColor);
+            e.Graphics.FillEllipse(brush, xDot1, yDot1, DotWidth, DotHeight);
+            e.Graphics.FillEllipse(brush, xDot2, yDot2, DotWidth, DotHeight);
+            e.Graphics.FillEllipse(brush, xDot3, yDot3, DotWidth, DotHeight);
         }
 
         private void timer1_Tick(object sender, EventArgs e)

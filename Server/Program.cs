@@ -398,10 +398,32 @@ namespace Server
                             long totalRead = 0;
                             int bytesRead;
 
+                            if (excessBufferLength > 0)
+                            {
+                                Console.WriteLine("Detected excess buffer from previous read");
+                                // Write excess buffer first
+                                int bytesToWrite = excessBufferLength;
+                                if (excessBufferLength > file.FileSize)
+                                {
+                                    bytesToWrite = (int)file.FileSize;
+                                    excessBufferLength -= bytesToWrite;
+                                    fs.Write(excessBuffer, 0, bytesToWrite);
+                                    Array.Copy(excessBuffer, bytesToWrite, excessBuffer, 0, excessBufferLength);
+                                } else
+                                {
+                                    excessBufferLength = 0;
+                                    fs.Write(excessBuffer, 0, bytesToWrite);
+                                }
+                                totalRead += bytesToWrite;
+                                Console.WriteLine($"Wrote excess buffer of {bytesToWrite} bytes. Total read: {totalRead}");
+                            }
                             while (totalRead < file.FileSize && (bytesRead = ns.Read(buffer, 0, buffer.Length)) > 0)
                             {
+                                Console.WriteLine($"Reading data... ({bytesRead} bytes read)");
+                                
                                 if (excessBufferLength > 0)
                                 {
+                                    Console.WriteLine("Writing excess buffer data first...");
                                     // Write excess buffer first
                                     fs.Write(excessBuffer, 0, excessBufferLength);
                                     totalRead += excessBufferLength;
@@ -419,7 +441,7 @@ namespace Server
                                 }
                                 fs.Write(buffer, 0, bytesToWrite);
                                 totalRead += bytesToWrite;
-                                Console.WriteLine($"Read {bytesToWrite} bytes. Total read: {totalRead}");
+                                Console.WriteLine($"Read {bytesToWrite} bytes. Total read: {totalRead} / {file.FileSize}");
                             }
                         }
                         Console.WriteLine($"File received: {file.FileName} ({savedPath})");
