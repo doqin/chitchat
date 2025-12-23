@@ -37,10 +37,12 @@
             // 
             // pictureBoxPreview
             // 
+            pictureBoxPreview.Anchor = AnchorStyles.None;
             pictureBoxPreview.Image = (Image)resources.GetObject("pictureBoxPreview.Image");
-            pictureBoxPreview.Location = new Point(124, 39);
+            pictureBoxPreview.Location = new Point(20, 20);
+            pictureBoxPreview.Margin = new Padding(3, 2, 3, 2);
             pictureBoxPreview.Name = "pictureBoxPreview";
-            pictureBoxPreview.Size = new Size(555, 222);
+            pictureBoxPreview.Size = new Size(429, 166);
             pictureBoxPreview.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBoxPreview.TabIndex = 0;
             pictureBoxPreview.TabStop = false;
@@ -48,6 +50,7 @@
             // btnBack
             // 
             btnBack.ActiveBorderColor = SystemColors.ActiveBorder;
+            btnBack.Anchor = AnchorStyles.None;
             btnBack.BackColor = Color.Transparent;
             btnBack.backgroundColor = SystemColors.ActiveCaption;
             btnBack.BackgroundColor = SystemColors.ActiveCaption;
@@ -58,12 +61,12 @@
             btnBack.ButtonPadding = new Padding(0);
             btnBack.ButtonText = "Back";
             btnBack.ButtonTextColor = SystemColors.ControlText;
-            btnBack.Location = new Point(124, 289);
+            btnBack.Location = new Point(20, 198);
             btnBack.Margin = new Padding(1);
             btnBack.MouseOverBackColor = SystemColors.ButtonHighlight;
             btnBack.Name = "btnBack";
             btnBack.Radius = 1000;
-            btnBack.Size = new Size(209, 109);
+            btnBack.Size = new Size(139, 41);
             btnBack.TabIndex = 1;
             btnBack.UseMouseOverBackColor = true;
             btnBack.Click += btnBack_Click;
@@ -71,6 +74,7 @@
             // btnSave
             // 
             btnSave.ActiveBorderColor = SystemColors.ActiveBorder;
+            btnSave.Anchor = AnchorStyles.None;
             btnSave.BackColor = Color.Transparent;
             btnSave.backgroundColor = SystemColors.ActiveCaption;
             btnSave.BackgroundColor = SystemColors.ActiveCaption;
@@ -81,24 +85,25 @@
             btnSave.ButtonPadding = new Padding(0);
             btnSave.ButtonText = "Save";
             btnSave.ButtonTextColor = SystemColors.ControlText;
-            btnSave.Location = new Point(470, 289);
+            btnSave.Location = new Point(310, 198);
             btnSave.Margin = new Padding(1);
             btnSave.MouseOverBackColor = SystemColors.ButtonHighlight;
             btnSave.Name = "btnSave";
             btnSave.Radius = 1000;
-            btnSave.Size = new Size(209, 109);
+            btnSave.Size = new Size(139, 41);
             btnSave.TabIndex = 2;
             btnSave.UseMouseOverBackColor = true;
             btnSave.Click += btnSave_Click;
             // 
             // PreviewAvatarForm
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(474, 256);
             Controls.Add(btnSave);
             Controls.Add(btnBack);
             Controls.Add(pictureBoxPreview);
+            Margin = new Padding(3, 2, 3, 2);
             Name = "PreviewAvatarForm";
             Text = "PreviewAvatarForm";
             ((System.ComponentModel.ISupportInitialize)pictureBoxPreview).EndInit();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -9,13 +10,16 @@ namespace Client
     {
         private System.Windows.Forms.Timer mainTimer = new System.Windows.Forms.Timer();
         private System.Windows.Forms.Timer animationTimer = new System.Windows.Forms.Timer();
+        private readonly Random random = new Random();
+        private readonly List<(int From, int To)> currentConnections = new();
+        private const int ConnectionsPerPoint = 2;
 
         private int alpha = 0;   // Độ mờ chữ (fade-in)
         private int radius = 20; // Bán kính vòng sáng
-        private float[] orbitAngles = new float[6];
-        private float[] orbitSpeeds = new float[6];
-        private float[] orbitDistances = new float[6];
-        private float[] orbitSizes = new float[6];
+        private float[] orbitAngles;
+        private float[] orbitSpeeds;
+        private float[] orbitDistances;
+        private float[] orbitSizes;
 
         public SplashScreen()
         {
@@ -24,12 +28,8 @@ namespace Client
             this.FormBorderStyle = FormBorderStyle.None; // Gỡ viền form cho đẹp
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = Color.FromArgb(11, 7, 17); // Nền giống app chính
-            //this.ClientSize = new Size(800, 450);
-            Random rand = new Random(DateTime.Now.Millisecond);
-            orbitAngles.Select((angle, index) => orbitAngles[index] = rand.Next(0, 360)).ToArray();
-            orbitSpeeds.Select((speed, index) => orbitSpeeds[index] = (float)(rand.NextDouble() * 1.5 + 2.0)).ToArray();
-            orbitDistances.Select((distance, index) => orbitDistances[index] = rand.Next(160, 250)).ToArray();
-            orbitSizes.Select((size, index) => orbitSizes[index] = rand.Next(15, 30)).ToArray();
+            InitializeOrbitData();
+            UpdateRandomConnections();
 #if PREVIEW
             // Don't go to main form automatically in preview builds
 #else
@@ -69,6 +69,7 @@ namespace Client
                     orbitAngles[i] -= 360f;
                 }
             }
+            //UpdateRandomConnections();
             this.Invalidate(); // Gọi lại OnPaint để vẽ lại
         }
 
@@ -143,17 +144,15 @@ namespace Client
                     g.FillEllipse(circleBrush, circleRect);
                 }
             }
-            for (int i = 0; i < orbitAngles.Length; i++)
+
+            foreach (var connection in currentConnections)
             {
-                for (int j = i + 1; j < orbitAngles.Length; j++)
+                PointF pointI = orbitPositions[connection.From];
+                PointF pointJ = orbitPositions[connection.To];
+                using (var linePen = new Pen(Color.FromArgb(50, 255, 255, 255), 2))
                 {
-                    PointF pointI = orbitPositions[i];
-                    PointF pointJ = orbitPositions[j];
-                    using (var linePen = new Pen(Color.FromArgb(50, 255, 255, 255), 2))
-                    {
-                        linePen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dot;
-                        g.DrawLine(linePen, pointI, pointJ);
-                    }
+                    //linePen.DashStyle = DashStyle.Dot;
+                    g.DrawLine(linePen, pointI, pointJ);
                 }
             }
         }
@@ -176,6 +175,59 @@ namespace Client
         private void SplashScreen_Load(object sender, EventArgs e)
         {
 
+        }
+
+        private void InitializeOrbitData()
+        {
+            int numPoints = random.Next(6, 10);
+            orbitAngles = new float[numPoints];
+            orbitSpeeds = new float[numPoints];
+            orbitDistances = new float[numPoints];
+            orbitSizes = new float[numPoints];
+            for (int i = 0; i < orbitAngles.Length; i++)
+            {
+                orbitAngles[i] = random.Next(0, 360);
+                orbitSpeeds[i] = (float)(random.NextDouble() * 1.5 + 2.0);
+                orbitDistances[i] = random.Next(80, 150);
+                orbitSizes[i] = random.Next(15, 30);
+            }
+        }
+
+        private void UpdateRandomConnections()
+        {
+            currentConnections.Clear();
+            if (orbitAngles.Length < 2)
+            {
+                return;
+            }
+
+            int maxConnectionsPerNode = Math.Min(ConnectionsPerPoint, orbitAngles.Length - 1);
+            int[] nodeConnectionCounts = new int[orbitAngles.Length];
+            var uniqueConnections = new HashSet<(int, int)>();
+
+            for (int node = 0; node < orbitAngles.Length; node++)
+            {
+                int attempts = 0;
+                while (nodeConnectionCounts[node] < maxConnectionsPerNode && attempts < orbitAngles.Length * 2)
+                {
+                    int target = random.Next(orbitAngles.Length);
+                    if (target == node || nodeConnectionCounts[target] >= maxConnectionsPerNode)
+                    {
+                        attempts++;
+                        continue;
+                    }
+
+                    var normalized = node < target ? (node, target) : (target, node);
+                    if (uniqueConnections.Add(normalized))
+                    {
+                        nodeConnectionCounts[node]++;
+                        nodeConnectionCounts[target]++;
+                        currentConnections.Add(normalized);
+                    }
+
+                    attempts++;
+                }
+            }
         }
     }
 }

@@ -205,18 +205,18 @@
             // 
             rndBtnCtrlRemoveAvatar.ActiveBorderColor = SystemColors.ActiveBorder;
             rndBtnCtrlRemoveAvatar.BackColor = Color.Transparent;
-            rndBtnCtrlRemoveAvatar.backgroundColor = Color.White;
-            rndBtnCtrlRemoveAvatar.BackgroundColor = Color.White;
+            rndBtnCtrlRemoveAvatar.backgroundColor = Color.Red;
+            rndBtnCtrlRemoveAvatar.BackgroundColor = Color.Red;
             rndBtnCtrlRemoveAvatar.BorderColor = SystemColors.ActiveBorder;
             rndBtnCtrlRemoveAvatar.BorderWidth = 1F;
             rndBtnCtrlRemoveAvatar.ButtonBackgroundImage = null;
             rndBtnCtrlRemoveAvatar.ButtonBackgroundImageLayout = ImageLayout.Tile;
             rndBtnCtrlRemoveAvatar.ButtonPadding = new Padding(0);
             rndBtnCtrlRemoveAvatar.ButtonText = "Gỡ bỏ Avatar";
-            rndBtnCtrlRemoveAvatar.ButtonTextColor = SystemColors.ControlText;
-            rndBtnCtrlRemoveAvatar.Location = new Point(55, 189);
+            rndBtnCtrlRemoveAvatar.ButtonTextColor = Color.White;
+            rndBtnCtrlRemoveAvatar.Location = new Point(55, 243);
             rndBtnCtrlRemoveAvatar.Margin = new Padding(1);
-            rndBtnCtrlRemoveAvatar.MouseOverBackColor = SystemColors.Control;
+            rndBtnCtrlRemoveAvatar.MouseOverBackColor = Color.DarkRed;
             rndBtnCtrlRemoveAvatar.Name = "rndBtnCtrlRemoveAvatar";
             rndBtnCtrlRemoveAvatar.Radius = 10;
             rndBtnCtrlRemoveAvatar.Size = new Size(163, 38);
@@ -237,7 +237,7 @@
             rndBtnCtrlEditAvatar.ButtonPadding = new Padding(0);
             rndBtnCtrlEditAvatar.ButtonText = "Chỉnh sửa Avatar";
             rndBtnCtrlEditAvatar.ButtonTextColor = SystemColors.ControlText;
-            rndBtnCtrlEditAvatar.Location = new Point(55, 243);
+            rndBtnCtrlEditAvatar.Location = new Point(55, 187);
             rndBtnCtrlEditAvatar.Margin = new Padding(1);
             rndBtnCtrlEditAvatar.MouseOverBackColor = SystemColors.Control;
             rndBtnCtrlEditAvatar.Name = "rndBtnCtrlEditAvatar";
@@ -264,7 +264,7 @@
             Controls.Add(lblAvatar);
             Controls.Add(lblUsername);
             DoubleBuffered = true;
-            Margin = new Padding(2, 2, 2, 2);
+            Margin = new Padding(2);
             MaximizeBox = false;
             Name = "LoginForm";
             Text = "Đăng nhập";

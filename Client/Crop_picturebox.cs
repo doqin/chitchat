@@ -13,6 +13,7 @@ namespace Client
 
         // Biến lưu tỷ lệ cơ sở (tỷ lệ để ảnh vừa khít khung ban đầu)
         private float baseScale = 1.0f;
+        private float minScale = 1.0f;
 
         public Image FinalAvatar { get; private set; }
 
@@ -38,7 +39,8 @@ namespace Client
             pictureBox.Paint += PictureBox_Paint;
 
 
-            pictureBox.MouseMove += (s, e) => {
+            pictureBox.MouseMove += (s, e) =>
+            {
                 if (isDragging)
                 {
                     panel1.Invalidate();   // Vẽ lại nền
@@ -46,7 +48,7 @@ namespace Client
                 }
             };
 
-            panel1.Resize += (s, e) => { panel1.Invalidate(); pictureBox.Invalidate(); };
+            panel1.Resize += Panel1_Resize;
 
 
             if (pictureBox.Image != null)
@@ -59,6 +61,7 @@ namespace Client
 
 
                 baseScale = Math.Max(ratioX, ratioY);
+                minScale = Math.Min(ratioX, ratioY);
 
                 ApplyZoom();
                 CenterImage();
@@ -70,7 +73,9 @@ namespace Client
             if (originalImage == null) return;
 
             float zoomFactor = trackBar.Value / 100.0f;
-            float currentScale = baseScale * zoomFactor;
+            float range = trackBar.Maximum - trackBar.Minimum;
+            float sliderRatio = range <= 0 ? 0f : (trackBar.Value - trackBar.Minimum) / range;
+            float currentScale = minScale + sliderRatio * (baseScale - minScale);
 
             int newWidth = (int)(originalImage.Width * currentScale);
             int newHeight = (int)(originalImage.Height * currentScale);
@@ -91,8 +96,11 @@ namespace Client
 
         private void CenterImage()
         {
-            pictureBox.Left = (panel1.Width - pictureBox.Width) / 2;
-            pictureBox.Top = (panel1.Height - pictureBox.Height) / 2;
+            int newLeft = (panel1.Width - pictureBox.Width) / 2;
+            int newTop = (panel1.Height - pictureBox.Height) / 2;
+            ClampImageWithinCircle(ref newLeft, ref newTop);
+            pictureBox.Left = newLeft;
+            pictureBox.Top = newTop;
         }
 
 
@@ -116,10 +124,7 @@ namespace Client
                 int newLeft = pictureBox.Left + deltaX;
                 int newTop = pictureBox.Top + deltaY;
 
-                if (newLeft > 0) newLeft = 0;
-                if (newTop > 0) newTop = 0;
-                if (newLeft + pictureBox.Width < panel1.Width) newLeft = panel1.Width - pictureBox.Width;
-                if (newTop + pictureBox.Height < panel1.Height) newTop = panel1.Height - pictureBox.Height; 
+                ClampImageWithinCircle(ref newLeft, ref newTop);
 
                 pictureBox.Left = newLeft;
                 pictureBox.Top = newTop;
@@ -179,7 +184,8 @@ namespace Client
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
-            int diameter = panel1.Width - 20;
+            int availableSize = Math.Min(panel1.Width, panel1.Height);
+            int diameter = Math.Max(0, availableSize);
 
             int x = (panel1.Width - diameter) / 2;
             int y = (panel1.Height - diameter) / 2;
@@ -189,7 +195,7 @@ namespace Client
             hole.AddEllipse(x, y, diameter, diameter);
             overlay.Exclude(hole);
 
-            using (SolidBrush brush = new SolidBrush(Color.FromArgb(150, 0, 0, 0))) // Màu đen mờ
+            using (SolidBrush brush = new SolidBrush(Color.FromArgb(150, 0, 0, 0)))
             {
                 e.Graphics.FillRegion(brush, overlay);
             }
@@ -204,7 +210,8 @@ namespace Client
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
 
-            int diameter = panel1.Width - 20;
+            int availableSize = Math.Min(panel1.Width, panel1.Height);
+            int diameter = Math.Max(0, availableSize);
             int holeX_Panel = (panel1.Width - diameter) / 2;
             int holeY_Panel = (panel1.Height - diameter) / 2;
 
@@ -228,6 +235,54 @@ namespace Client
             }
         }
 
+        private void Crop_picturebox_Resize(object sender, EventArgs e)
+        {
+            UpdateImageLayout();
+        }
+
+        private void UpdateImageLayout()
+        {
+            if (originalImage == null || panel1.Width == 0 || panel1.Height == 0)
+            {
+                return;
+            }
+
+            float ratioX = (float)panel1.Width / originalImage.Width;
+            float ratioY = (float)panel1.Height / originalImage.Height;
+            baseScale = Math.Max(ratioX, ratioY);
+            minScale = Math.Min(ratioX, ratioY);
+
+            ApplyZoom();
+            CenterImage();
+            panel1.Invalidate();
+            pictureBox.Invalidate();
+        }
+
+        private void ClampImageWithinCircle(ref int newLeft, ref int newTop)
+        {
+            int availableSize = Math.Min(panel1.Width, panel1.Height);
+            int diameter = Math.Max(0, availableSize);
+
+            if (diameter <= 0 || pictureBox.Width <= 0 || pictureBox.Height <= 0)
+            {
+                return;
+            }
+
+            int holeX = (panel1.Width - diameter) / 2;
+            int holeY = (panel1.Height - diameter) / 2;
+            int holeRight = holeX + diameter;
+            int holeBottom = holeY + diameter;
+
+            if (newLeft > holeX) newLeft = holeX;
+            if (newTop > holeY) newTop = holeY;
+            if (newLeft + pictureBox.Width < holeRight) newLeft = holeRight - pictureBox.Width;
+            if (newTop + pictureBox.Height < holeBottom) newTop = holeBottom - pictureBox.Height;
+        }
+
+        private void Panel1_Resize(object sender, EventArgs e)
+        {
+            UpdateImageLayout();
+        }
     }
 
 
