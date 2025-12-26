@@ -266,6 +266,7 @@ namespace Client
         private void updateSettings(object? sender, DialogResult res)
         {
             picAvatar.Image = Helpers.GetProfilePicture();
+            hostedChatForm?.UpdateUserInfo();
         }
 
         private void btnSettings_Click(object sender, EventArgs e)

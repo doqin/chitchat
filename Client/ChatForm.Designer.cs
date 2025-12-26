@@ -39,19 +39,19 @@
             flwLytPnlAttachments = new FlowLayoutPanel();
             smthFlwLytPnlMessages = new SmoothFlowLayoutPanel();
             pnlTop = new Panel();
-            panel1 = new Panel();
-            rndBtnCtrlClose = new RoundButtonControl();
             flowLayoutPanel1 = new FlowLayoutPanel();
             lblServer = new Label();
-            lblUserInfo = new Label();
+            flwLytPnlUsers = new FlowLayoutPanel();
+            panel1 = new Panel();
+            rndBtnCtrlClose = new RoundButtonControl();
             loadingAnimationControl1 = new LoadingAnimationControl();
             pnlChatPanel.SuspendLayout();
             rndCtrlChatbox.SuspendLayout();
             pnlAddButton.SuspendLayout();
             pnlSendButton.SuspendLayout();
             pnlTop.SuspendLayout();
-            panel1.SuspendLayout();
             flowLayoutPanel1.SuspendLayout();
+            panel1.SuspendLayout();
             SuspendLayout();
             // 
             // openFileDialog1
@@ -201,13 +201,46 @@
             // pnlTop
             // 
             pnlTop.BackColor = SystemColors.Window;
-            pnlTop.Controls.Add(panel1);
             pnlTop.Controls.Add(flowLayoutPanel1);
+            pnlTop.Controls.Add(panel1);
             pnlTop.Dock = DockStyle.Top;
             pnlTop.Location = new Point(0, 0);
             pnlTop.Name = "pnlTop";
             pnlTop.Size = new Size(803, 47);
             pnlTop.TabIndex = 0;
+            // 
+            // flowLayoutPanel1
+            // 
+            flowLayoutPanel1.Controls.Add(lblServer);
+            flowLayoutPanel1.Controls.Add(flwLytPnlUsers);
+            flowLayoutPanel1.Location = new Point(10, 9);
+            flowLayoutPanel1.Name = "flowLayoutPanel1";
+            flowLayoutPanel1.Size = new Size(740, 28);
+            flowLayoutPanel1.TabIndex = 4;
+            flowLayoutPanel1.WrapContents = false;
+            // 
+            // lblServer
+            // 
+            lblServer.AutoSize = true;
+            lblServer.Font = new Font("Segoe UI", 8.25F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            lblServer.Location = new Point(3, 0);
+            lblServer.Name = "lblServer";
+            lblServer.Padding = new Padding(8);
+            lblServer.Size = new Size(67, 29);
+            lblServer.TabIndex = 1;
+            lblServer.Text = "lblServer";
+            lblServer.TextAlign = ContentAlignment.MiddleCenter;
+            lblServer.Click += label1_Click;
+            // 
+            // flwLytPnlUsers
+            // 
+            flwLytPnlUsers.AutoSize = true;
+            flwLytPnlUsers.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            flwLytPnlUsers.Location = new Point(76, 3);
+            flwLytPnlUsers.Name = "flwLytPnlUsers";
+            flwLytPnlUsers.Size = new Size(0, 0);
+            flwLytPnlUsers.TabIndex = 2;
+            flwLytPnlUsers.WrapContents = false;
             // 
             // panel1
             // 
@@ -242,37 +275,6 @@
             rndBtnCtrlClose.TabIndex = 0;
             rndBtnCtrlClose.UseMouseOverBackColor = true;
             rndBtnCtrlClose.Click += rndBtnCtrlClose_Click;
-            // 
-            // flowLayoutPanel1
-            // 
-            flowLayoutPanel1.AutoSize = true;
-            flowLayoutPanel1.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            flowLayoutPanel1.Controls.Add(lblServer);
-            flowLayoutPanel1.Controls.Add(lblUserInfo);
-            flowLayoutPanel1.Location = new Point(12, 16);
-            flowLayoutPanel1.Name = "flowLayoutPanel1";
-            flowLayoutPanel1.Size = new Size(128, 15);
-            flowLayoutPanel1.TabIndex = 2;
-            flowLayoutPanel1.WrapContents = false;
-            // 
-            // lblServer
-            // 
-            lblServer.AutoSize = true;
-            lblServer.Location = new Point(3, 0);
-            lblServer.Name = "lblServer";
-            lblServer.Size = new Size(52, 15);
-            lblServer.TabIndex = 1;
-            lblServer.Text = "lblServer";
-            lblServer.Click += label1_Click;
-            // 
-            // lblUserInfo
-            // 
-            lblUserInfo.AutoSize = true;
-            lblUserInfo.Location = new Point(61, 0);
-            lblUserInfo.Name = "lblUserInfo";
-            lblUserInfo.Size = new Size(64, 15);
-            lblUserInfo.TabIndex = 0;
-            lblUserInfo.Text = "lblUserInfo";
             // 
             // loadingAnimationControl1
             // 
@@ -313,10 +315,9 @@
             pnlAddButton.ResumeLayout(false);
             pnlSendButton.ResumeLayout(false);
             pnlTop.ResumeLayout(false);
-            pnlTop.PerformLayout();
-            panel1.ResumeLayout(false);
             flowLayoutPanel1.ResumeLayout(false);
             flowLayoutPanel1.PerformLayout();
+            panel1.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
         }
@@ -332,13 +333,13 @@
         private RoundButtonControl addfile_roundbutton;
         private SmoothFlowLayoutPanel smthFlwLytPnlMessages;
         private Panel pnlTop;
-        private Label lblUserInfo;
         private RoundButtonControl send_roundbutton;
         private Panel pnlSendButton;
         private Label lblServer;
-        private FlowLayoutPanel flowLayoutPanel1;
+        private FlowLayoutPanel flwLytPnlUsers;
         private Panel panel1;
         private RoundButtonControl rndBtnCtrlClose;
         private LoadingAnimationControl loadingAnimationControl1;
+        private FlowLayoutPanel flowLayoutPanel1;
     }
 }

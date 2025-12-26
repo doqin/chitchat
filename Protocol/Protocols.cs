@@ -38,6 +38,7 @@ namespace Protocol
         UpdateReaction,
         ConnectedUsers,
         UserConnected,
+        UserUpdated,
         UserDisconnected,
     }
 
@@ -141,23 +142,31 @@ namespace Protocol
 
     public class User
     {
-        public string Username { get; set; }
         public TcpClient Client { get; set; }
     }
 
     public class ConnectedUsers
     {
-        public List<string> Usernames { get; set; }
+        public List<UserConnected> Users { get; set; } = new List<UserConnected>();
     }
 
     public class UserConnected
     {
         public string Username { get; set; }
+        public string ProfileImagePath { get; set; }
+        public string Address { get; set; }
     }
 
     public class UserDisconnected
     {
+        public string Address { get; set; }
+    }
+
+    public class UserUpdated
+    {
         public string Username { get; set; }
+        public string ProfileImagePath { get; set; }
+        public string Address { get; set; }
     }
 
     public class UpdateReaction

@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using ToolTip = System.Windows.Forms.ToolTip;
 
 namespace Client
 {
@@ -26,7 +27,7 @@ namespace Client
     {
         private bool close = false;
 
-        private readonly string username;
+        private string username;
         private readonly string serverName;
         public string serverIp { get; }
         public int serverPort { get; }
@@ -46,6 +47,15 @@ namespace Client
         private ConnectedUsers connectedUsers = new();
 
         private bool isLoading = false;
+        private ToolTip toolTip = new ToolTip();
+
+        private static string GetLocalIPv4(IPEndPoint? ep) =>
+            ep?.Address switch
+            {
+                IPAddress addr when addr.IsIPv4MappedToIPv6 => addr.MapToIPv4().ToString(),
+                IPAddress addr => addr.ToString(),
+                _ => string.Empty
+            };
 
         public ChatForm(string username, string serverName, string ip, int port, string profilePicturePath)
         {
@@ -73,26 +83,9 @@ namespace Client
                 tcpClient.EndConnect(connectResult);
                 quickAlert($"Đã kết nối đến {serverName}!", AlertForm.enmAlertType.Success);
                 System.Diagnostics.Debug.WriteLine($"Connected to {serverName}");
-                Wrapper wrapper = new Wrapper
-                {
-                    Type = Types.UserConnected,
-                    Payload = JsonSerializer.Serialize(new UserConnected
-                    {
-                        Username = username,
-                    })
-                };
-                string json = JsonSerializer.Serialize(wrapper);
-                NetworkStream stream = tcpClient.GetStream();
-                Wrapper.SendJson(stream, json);
-                // Get connected users information
-                json = Wrapper.ReadJson(stream);
-                wrapper = JsonSerializer.Deserialize<Wrapper>(json);
-                if (wrapper.Type == Types.ConnectedUsers)
-                {
-                    connectedUsers = JsonSerializer.Deserialize<ConnectedUsers>(wrapper.Payload);
-                    System.Diagnostics.Debug.WriteLine($"Những người kết nối: {string.Join(", ", connectedUsers.Usernames)}");
-                }
-                // Check if profile picture needs to be uploaded to this server
+                var stream = tcpClient.GetStream();
+                GetConnectedUsers(stream, username);
+                // Check if profile picture needs to be uploaded to this server (when it's a cached image)
                 if (!string.IsNullOrEmpty(profilePicturePath) && !Path.IsPathRooted(profilePicturePath))
                 {
                     Wrapper pfpPicWrapper = new Wrapper
@@ -128,7 +121,7 @@ namespace Client
                 this.DialogResult = DialogResult.Abort;
                 this.Close();
             }
-            // Handle profile picture upload if server doesn't have it
+            // Handle profile picture upload if server doesn't the already cached image
             if (needToUploadProfilePicture)
             {
                 Attachment[] attachment = SendFiles([profilePicturePath], true, false);
@@ -141,16 +134,7 @@ namespace Client
             // If is absolute path, it's a local file that needs to be uploaded and downloaded from server
             else if (!string.IsNullOrEmpty(profilePicturePath) && Path.IsPathRooted(profilePicturePath))
             {
-                System.Diagnostics.Debug.WriteLine("Uploading profile picture to server...");
-                Attachment[] attachment = SendFiles([profilePicturePath]);
-                if (attachment.Length > 0)
-                {
-                    profilePictureAttachment = attachment[0].FileName;
-                    System.Diagnostics.Debug.WriteLine("Profile picture uploaded: " + profilePictureAttachment);
-                    Helpers.GetProfilePicture(tcpClient, pendingAttachmentFetches, profilePictureAttachment);
-                    ConfigManager.Current!.ProfileImagePath = profilePictureAttachment;
-                    ConfigManager.Save();
-                }
+                UploadNewProfilePicture();
             }
             else
             {
@@ -159,13 +143,89 @@ namespace Client
             }
             InitializeComponent();
             loadingAnimationControl1.Visible = false;
-            lblUserInfo.Text = $"Những người kết nối: {string.Join(", ", connectedUsers?.Usernames ?? [])}";
+            foreach(var user in connectedUsers.Users)
+            {
+                CircularPictureBox userPfp = new CircularPictureBox();
+                userPfp.Image = Helpers.GetProfilePicture(tcpClient, pendingAttachmentFetches, user.ProfileImagePath);
+                userPfp.Width = 20;
+                userPfp.Height = 20;
+                toolTip.SetToolTip(userPfp, user.Username);
+                userPfp.Tag = user;
+                flwLytPnlUsers.Controls.Add(userPfp);
+            }
             smthFlwLytPnlMessages.MouseWheel += SmthFlwLytPnlMessages_MouseWheel;
             smthFlwLytPnlMessages.Scroll += SmthFlwLytPnlMessages_Scroll;
             Text = $"{serverName} - {username} @ {serverName} | {serverIp}:{serverPort}";
             lblServer.Text = $"{serverName} @ {serverIp}:{serverPort}";
             this.DoubleBuffered = true;
 
+        }
+
+        private void UploadNewProfilePicture()
+        {
+            System.Diagnostics.Debug.WriteLine("Uploading profile picture to server...");
+            Attachment[] attachment = SendFiles([ConfigManager.Current!.ProfileImagePath]);
+            if (attachment.Length > 0)
+            {
+                profilePictureAttachment = attachment[0].FileName;
+                System.Diagnostics.Debug.WriteLine("Profile picture uploaded: " + profilePictureAttachment);
+                Helpers.GetProfilePicture(tcpClient, pendingAttachmentFetches, profilePictureAttachment);
+                ConfigManager.Current!.ProfileImagePath = profilePictureAttachment;
+                ConfigManager.Save();
+            }
+        }
+
+        private void GetConnectedUsers(NetworkStream stream, string username)
+        {
+            Wrapper wrapper = new Wrapper
+            {
+                Type = Types.UserConnected,
+                Payload = JsonSerializer.Serialize(new UserConnected
+                {
+                    Username = username,
+                    ProfileImagePath = ConfigManager.Current!.ProfileImagePath,
+                    Address = GetLocalIPv4(tcpClient.Client.LocalEndPoint as IPEndPoint)
+                })
+            };
+            string json = JsonSerializer.Serialize(wrapper);
+            Wrapper.SendJson(stream, json);
+            // Get connected users information
+            json = Wrapper.ReadJson(stream);
+            wrapper = JsonSerializer.Deserialize<Wrapper>(json);
+            if (wrapper.Type == Types.ConnectedUsers)
+            {
+                connectedUsers = JsonSerializer.Deserialize<ConnectedUsers>(wrapper.Payload);
+                System.Diagnostics.Debug.WriteLine($"Những người kết nối: {string.Join(", ", connectedUsers?.Users?.Select(u => u.Username) ?? [])}");
+            }
+        }
+
+        public void UpdateUserInfo()
+        {
+            if (!string.IsNullOrEmpty(ConfigManager.Current!.ProfileImagePath))
+            {
+                System.Diagnostics.Debug.WriteLine("Updating profile picture...");
+                UploadNewProfilePicture();
+            } else
+            {
+                profilePictureAttachment = "";
+            }
+            username = ConfigManager.Current!.Username;
+            Wrapper wrapper = new Wrapper
+            {
+                Type = Types.UserUpdated,
+                Payload = JsonSerializer.Serialize(
+                    new UserUpdated
+                    {
+                        Username = username,
+                        ProfileImagePath = profilePictureAttachment,
+                        Address = GetLocalIPv4(tcpClient?.Client?.LocalEndPoint as IPEndPoint)
+                    }
+                )
+            };
+            string json = JsonSerializer.Serialize(wrapper);
+            NetworkStream stream = tcpClient.GetStream();
+            System.Diagnostics.Debug.WriteLine("Sending updated user info to server...");
+            Wrapper.SendJson(stream, json);
         }
 
         private void SmthFlwLytPnlMessages_MouseWheel(object? sender, MouseEventArgs e)
@@ -317,20 +377,64 @@ namespace Client
                                 break;
                             case Types.UserConnected:
                                 UserConnected userConnected = JsonSerializer.Deserialize<UserConnected>(wrapper.Payload);
-                                connectedUsers.Usernames.Add(userConnected.Username);
+                                connectedUsers.Users.Add(userConnected);
                                 System.Diagnostics.Debug.WriteLine($"ChatForm | User connected: {userConnected.Username}");
-                                lblUserInfo.Invoke(() =>
+                                CircularPictureBox userPfp = new CircularPictureBox();
+                                userPfp.Image = Helpers.GetProfilePicture(tcpClient, pendingAttachmentFetches, userConnected.ProfileImagePath);
+                                userPfp.Width = 20;
+                                userPfp.Height = 20;
+                                userPfp.Tag = userConnected;
+                                if (flwLytPnlUsers.InvokeRequired)
                                 {
-                                    lblUserInfo.Text = $"Những người kết nối: {string.Join(", ", connectedUsers.Usernames)}";
-                                });
+                                    flwLytPnlUsers.Invoke(() =>
+                                    {
+                                        flwLytPnlUsers.Controls.Add(userPfp);
+                                    });
+                                }
+                                else
+                                {
+                                    flwLytPnlUsers.Controls.Add(userPfp);
+                                }
                                 break;
                             case Types.UserDisconnected:
                                 UserConnected userDisconnected = JsonSerializer.Deserialize<UserConnected>(wrapper.Payload);
-                                connectedUsers.Usernames.Remove(userDisconnected.Username);
+                                connectedUsers.Users.RemoveAll(u => u.Address == userDisconnected.Address);
                                 System.Diagnostics.Debug.WriteLine($"ChatForm | User disconnected: {userDisconnected.Username}");
-                                lblUserInfo.Invoke(() =>
+                                flwLytPnlUsers.Invoke(() =>
                                 {
-                                    lblUserInfo.Text = $"Những người kết nối: {string.Join(", ", connectedUsers.Usernames)}";
+                                    var userPfpToRemove = flwLytPnlUsers.Controls.OfType<CircularPictureBox>().FirstOrDefault(p =>
+                                    {
+                                        var tag = p.Tag as UserConnected;
+                                        return tag != null && tag.Address == userDisconnected.Address;
+                                    });
+                                    if (userPfpToRemove != null)
+                                    {
+                                        flwLytPnlUsers.Controls.Remove(userPfpToRemove);
+                                    }
+                                });
+                                break;
+                            case Types.UserUpdated:
+                                UserUpdated userUpdated = JsonSerializer.Deserialize<UserUpdated>(wrapper.Payload);
+                                System.Diagnostics.Debug.WriteLine($"ChatForm | User updated: {userUpdated.Username}");
+                                UserConnected user = connectedUsers.Users.FirstOrDefault(u => u.Address == userUpdated.Address);
+                                if (user != null)
+                                {
+                                    user.Username = userUpdated.Username;
+                                    user.ProfileImagePath = userUpdated.ProfileImagePath;
+                                }
+                                flwLytPnlUsers.Invoke(() =>
+                                {
+                                    var userPfpToUpdate = flwLytPnlUsers.Controls.OfType<CircularPictureBox>().FirstOrDefault(p =>
+                                    {
+                                        var tag = p.Tag as UserConnected;
+                                        return tag != null && tag.Address == userUpdated.Address;
+                                    });
+                                    if (userPfpToUpdate != null)
+                                    {
+                                        System.Diagnostics.Debug.WriteLine($"Updating {userUpdated.Username}'s profile picture");
+                                        userPfpToUpdate.Image = Helpers.GetProfilePicture(tcpClient, pendingAttachmentFetches, userUpdated.ProfileImagePath);
+                                        toolTip.SetToolTip(userPfpToUpdate, userUpdated.Username);
+                                    }
                                 });
                                 break;
                             default:
@@ -434,7 +538,8 @@ namespace Client
                 var isImageInfo = chatMessage.Attachments.Length == 1 ? ("and is" + (!chatMessage.Attachments[0].IsImage ? " not " : "") + "image") : "";
                 System.Diagnostics.Debug.WriteLine($"ChatForm | Received: {chatMessage?.Message} from {chatMessage?.Username} at {chatMessage?.TimeSent} with {chatMessage.Attachments.Length} attachments {isImageInfo}");
                 var localEndPoint = tcpClient?.Client?.LocalEndPoint as IPEndPoint;
-                if (chatMessage.Address == localEndPoint?.Address?.ToString())
+                var localIPv4 = GetLocalIPv4(localEndPoint);
+                if (chatMessage.Address == localIPv4)
                 {
                     var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, true);
                     item.AttachmentCompleted += (s, e) =>
@@ -593,7 +698,7 @@ namespace Client
                 Username = username,
                 Message = message,
                 Attachments = attachments,
-                Address = endPoint.Address.ToString(),
+                Address = GetLocalIPv4(endPoint),
                 ProfileImagePath = profilePictureAttachment,
             };
             string payload = JsonSerializer.Serialize(chatMessage);
@@ -952,22 +1057,6 @@ namespace Client
         {
             Cursor = Cursors.Default;
         }
-
-        public void UpdateAvatarFromConfig()
-        {
-            string path = ConfigManager.Current!.ProfileImagePath;
-            if (!string.IsNullOrEmpty(path) && System.IO.File.Exists(path))
-            {
-                try
-                {
-                    var serverFiles = SendFiles(new string[] { path });
-                    if (serverFiles != null && serverFiles.Length > 0)
-                        this.profilePictureAttachment = serverFiles[0].FileName;
-                }
-                catch { }
-            }
-        }
-
     }
 }
 

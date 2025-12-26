@@ -46,7 +46,7 @@ namespace Client.Extensions
             {
                 return CorrectImageOrientation(Image.FromFile(Path.Combine("Cached", imagePath)));
             }
-            else
+            else if (!string.IsNullOrEmpty(imagePath))
             {
                 try
                 {
