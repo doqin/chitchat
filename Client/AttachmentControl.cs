@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
@@ -15,17 +16,17 @@ namespace Client
 {
     public partial class AttachmentControl : UserControl
     {
-        private TcpClient _client;
-        private Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingFetches;
+        private IPAddress _address;
+        private int _port;
         private string _fileName;
 
-        public AttachmentControl(Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingAttachmentFetches, TcpClient client, string fileName)
+        public AttachmentControl(IPAddress address, int port, string fileName)
         {
             InitializeComponent();
+            _address = address;
+            _port = port;
             _fileName = fileName;
-            _client = client;
             toolTip1.ToolTipTitle = _fileName;
-            pendingFetches = pendingAttachmentFetches;
             lblFileName.Text = Path.GetFileName(fileName);
         }
 
@@ -43,7 +44,7 @@ namespace Client
                     Payload = _fileName
                 };
                 string requestJson = JsonSerializer.Serialize(request);
-                var filePath = Protocol.File.FetchFile(_client, pendingFetches, _fileName, saveFileDialog1.FileName, requestJson);
+                var filePath = Protocol.File.FetchFile(_address, _port, _fileName, saveFileDialog1.FileName);
                 if (string.IsNullOrEmpty(filePath) || (!string.IsNullOrEmpty(filePath) && filePath == "Not found"))
                 {
                     MessageBox.Show("File not found on server.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);

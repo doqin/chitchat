@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Drawing;
 using System.IO;
-using System.Net.Sockets;
-using System.Text.Json;
+using System.Linq;
 using System.Net;
+using System.Net.Sockets;
+using System.Runtime.InteropServices.ComTypes;
+using System.Text;
+using System.Text.Json;
 using System.Threading;
+using System.Threading.Tasks;
+using SixLabors.ImageSharp;
 
 namespace Protocol
 {
@@ -29,7 +31,7 @@ namespace Protocol
         /// <summary>
         /// Means server sending saved messages to requesting client
         /// </summary>
-        SendMessages, 
+        SendMessages,
         SendFiles,
         GetFile,
         CheckFileExists,
@@ -155,6 +157,7 @@ namespace Protocol
         public string Username { get; set; }
         public string ProfileImagePath { get; set; }
         public string Address { get; set; }
+        public int Port { get; set; }
     }
 
     public class UserDisconnected
@@ -256,35 +259,76 @@ namespace Protocol
 
         public long FileSize { get; set; }
 
-        public static async Task<string> FetchFileAsync(TcpClient client, Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingFetches, string filePath, string savePath, string json)
+        public static string FetchFile(IPAddress address, int port, string filePath, string savePath)
         {
             try
             {
-                NetworkStream ns = client.GetStream();
-                Wrapper.SendJson(ns, json);
-                var tcs = new TaskCompletionSource<string>();
-                var tuple = new Tuple<TaskCompletionSource<string>, string>(tcs, savePath);
-                pendingFetches[filePath] = tuple;
-                return await tcs.Task;
-            }
-            catch (Exception e)
-            {
-                System.Diagnostics.Debug.WriteLine($"Error fetching file: {e.Message}");
-                return "Not found";
-            }
-        }
+                using (TcpClient client = new TcpClient())
+                {
+                    var connectResult = client.BeginConnect(address, port, null, null).AsyncWaitHandle.WaitOne(5000); // 5 seconds timeout
+                    if (!connectResult)
+                    {
+                        throw new TimeoutException("Connection timed out.");
+                    }
+                    var stream = client.GetStream();
+                    var request = new Wrapper
+                    {
+                        Type = Types.GetFile,
+                        Payload = filePath
+                    };
+                    var json = JsonSerializer.Serialize(request);
+                    Wrapper.SendJson(stream, json);
+                    var wrapperJson = Wrapper.ReadJson(stream, 10000); // 10 seconds timeout
+                    var wrapper = JsonSerializer.Deserialize<Wrapper>(wrapperJson);
+                    if (wrapper.Type != Types.SendFiles)
+                    {
+                        System.Diagnostics.Debug.WriteLine("Unexpected response type when fetching file.");
+                        return "Not found";
+                    }
+                    SendFiles files = JsonSerializer.Deserialize<SendFiles>(wrapper.Payload);
+                    System.Diagnostics.Debug.WriteLine($"Client is ready to receive {files?.FileCount} file(s).");
+                    var file = files.FileList[0]; // Most likely only one file
+                    System.Diagnostics.Debug.WriteLine($"Preparing to receive file: {file.FileName} ({file.FileSize} bytes)");
+                    // Ensure the directory exists
+                    string directoryPath = Path.GetDirectoryName(savePath);
+                    if (!string.IsNullOrEmpty(directoryPath))
+                    {
+                        Directory.CreateDirectory(directoryPath);
+                    }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine("Invalid file path: no directory specified.");
+                        return "Not found";
+                    }
+                    // Saving files
+                    using (FileStream fs = new FileStream(savePath, FileMode.Create, FileAccess.Write))
+                    {
+                        byte[] buffer = new byte[8192];
+                        long totalRead = 0;
+                        int bytesRead;
 
-        public static string FetchFile(TcpClient client, Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingFetches, string filePath, string savePath, string json)
-        {
-            try
+                        // Read exactly the declared file size to avoid consuming the next protocol frame
+                        while (totalRead < file.FileSize)
+                        {
+                            int toRead = (int)Math.Min(buffer.Length, file.FileSize - totalRead);
+                            bytesRead = stream.Read(buffer, 0, toRead);
+                            System.Diagnostics.Debug.WriteLine($"Read {bytesRead} bytes");
+                            if (bytesRead <= 0)
+                            {
+                                break; // connection closed
+                            }
+                            fs.Write(buffer, 0, bytesRead);
+                            totalRead += bytesRead;
+                        }
+                    }
+                    System.Diagnostics.Debug.WriteLine($"File received: {file.FileName}");
+                    return savePath;
+                }
+            }
+            catch (TimeoutException)
             {
-                NetworkStream ns = client.GetStream();
-                Wrapper.SendJson(ns, json);
-                var tcs = new TaskCompletionSource<string>();
-                var tuple = new Tuple<TaskCompletionSource<string>, string>(tcs, savePath);
-                pendingFetches[filePath] = tuple;
-                tcs.Task.Wait();
-                return tcs.Task.Result;
+                System.Diagnostics.Debug.WriteLine("Connection timed out.");
+                return "Not found";
             }
             catch (Exception e)
             {
@@ -306,22 +350,12 @@ namespace Protocol
             try
             {
                 // Attempt to load the file as an image
-                using (var img = Image.FromFile(filePath))
+                using (var img = Image.Load(filePath))
                 {
                     return true;
                 }
             }
-            catch (OutOfMemoryException)
-            {
-                // Thrown by Image.FromFile if the file is not a valid image format
-                return false;
-            }
-            catch (FileNotFoundException)
-            {
-                // File does not exist
-                return false;
-            }
-            catch (Exception)
+            catch (Exception) 
             {
                 // Other exceptions
                 return false;

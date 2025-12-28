@@ -554,8 +554,9 @@ namespace Server
                 if (user != null)
                 {
                     users.Remove(user);
-                    UserConnected disconnectedUser = connectedUsers.Users.FirstOrDefault(u => u.Address == (client.Client.RemoteEndPoint as IPEndPoint).Address.ToString());
-                    string username = disconnectedUser != null ? new string(disconnectedUser.Username.ToCharArray()) : "Unknown";
+                    UserConnected disconnectedUser = connectedUsers.Users.FirstOrDefault(u => u.Address == (client.Client.RemoteEndPoint as IPEndPoint).Address.ToString() && u.Port == (client.Client.RemoteEndPoint as IPEndPoint).Port);
+                    if (disconnectedUser == null) return;
+                    string username = new string(disconnectedUser.Username.ToCharArray());
                     bool res = connectedUsers.Users.Remove(disconnectedUser);
                     Console.WriteLine($"Removed user from connected users: {username}, success: {res}");
                     Console.WriteLine($"Client disconnected: {client.Client.RemoteEndPoint}");
