@@ -67,8 +67,9 @@ namespace Client
             }
             else
             {
+                ConfigManager.Current!.ProfileImagePath = "";
                 quickAlert("Bạn chưa chọn avatar!", AlertForm.enmAlertType.Warning);
-                DialogResult = DialogResult.Abort;
+                DialogResult = DialogResult.OK;
             }
             if (!string.IsNullOrEmpty(this.originalFilePath))
             {

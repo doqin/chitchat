@@ -21,6 +21,7 @@ namespace Server
         static readonly List<User> users = new List<User>();
         static readonly object clientsLock = new object();
         static TcpListener listener;
+        static ConnectedUsers connectedUsers = new ConnectedUsers();
 
         static void Main(string[] args)
         {
@@ -118,6 +119,9 @@ namespace Server
                                 case Types.UserConnected:
                                     HandleUserConnected(client, wrapper);
                                     break;
+                                case Types.UserUpdated:
+                                    HandleUserUpdated(client, wrapper);
+                                    break;
                                 case Types.CheckFileExists:
                                     HandleCheckFileExists(client, wrapper);
                                     break;
@@ -135,6 +139,35 @@ namespace Server
                 finally
                 {
                     HandleClientDisconnect(client);
+                }
+            }
+        }
+
+        private static void HandleUserUpdated(TcpClient client, Wrapper wrapper)
+        {
+            var payload = JsonSerializer.Deserialize<UserUpdated>(wrapper.Payload);
+            if (payload != null)
+            {
+                Console.WriteLine($"Received user update from {client.Client.RemoteEndPoint}: {payload}");
+                UserConnected user = connectedUsers.Users.FirstOrDefault(u => u.Address == payload.Address);
+                if (user != null)
+                {
+                    user.Username = payload.Username;
+                    user.ProfileImagePath = payload.ProfileImagePath;
+                }
+                foreach (var u in users)
+                {
+                    try
+                    {
+                        NetworkStream stream = u.Client.GetStream();
+                        Wrapper.SendJson(stream, JsonSerializer.Serialize(wrapper));
+                        Console.WriteLine($"Sent user update to {u.Client.Client.RemoteEndPoint}");
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine($"Error sending user update to client: {e.Message}");
+                        // Ignore dead clients
+                    }
                 }
             }
         }
@@ -167,15 +200,8 @@ namespace Server
             UserConnected payload = JsonSerializer.Deserialize<UserConnected>(wrapper.Payload);
             if (payload != null)
             {
-                Console.WriteLine($"Client {client.Client.RemoteEndPoint} identified as user: {payload.Username}");
-                lock (clientsLock)
-                {
-                    User user = users.FirstOrDefault(u => u.Client == client);
-                    if (user != null)
-                    {
-                        user.Username = payload.Username;
-                    }
-                }
+                Console.WriteLine($"Client {(client.Client.RemoteEndPoint as IPEndPoint).ToString()} identified as user: {payload.Username} with {payload.Address} as address");
+                connectedUsers.Users.Add(payload);
                 foreach (var u in users)
                 {
                     if (u.Client != client)
@@ -194,11 +220,6 @@ namespace Server
                     }
                     else
                     {
-                        List<string> existingUsers = users.Select(user => user.Username).Where(name => name != null).ToList();
-                        ConnectedUsers connectedUsers = new ConnectedUsers
-                        {
-                            Usernames = existingUsers
-                        };
                         string responsePayload = JsonSerializer.Serialize(connectedUsers);
                         Wrapper responseWrapper = new Wrapper
                         {
@@ -533,11 +554,19 @@ namespace Server
                 if (user != null)
                 {
                     users.Remove(user);
+                    UserConnected disconnectedUser = connectedUsers.Users.FirstOrDefault(u => u.Address == (client.Client.RemoteEndPoint as IPEndPoint).Address.ToString());
+                    string username = disconnectedUser != null ? new string(disconnectedUser.Username.ToCharArray()) : "Unknown";
+                    bool res = connectedUsers.Users.Remove(disconnectedUser);
+                    Console.WriteLine($"Removed user from connected users: {username}, success: {res}");
                     Console.WriteLine($"Client disconnected: {client.Client.RemoteEndPoint}");
                     Wrapper wrapper = new Wrapper
                     {
                         Type = Types.UserDisconnected,
-                        Payload = JsonSerializer.Serialize(new UserDisconnected { Username = user.Username })
+                        Payload = JsonSerializer.Serialize(
+                            new UserDisconnected {
+                                Address = (user.Client.Client.RemoteEndPoint as IPEndPoint).Address.ToString()
+                            }
+                        )
                     };
                     string finalJson = JsonSerializer.Serialize(wrapper);
                     foreach (var u in users)
@@ -546,7 +575,7 @@ namespace Server
                         {
                             NetworkStream stream = u.Client.GetStream();
                             Wrapper.SendJson(stream, finalJson);
-                            Console.WriteLine($"Notified {u.Client.Client.RemoteEndPoint} of user disconnection: {user.Username}");
+                            Console.WriteLine($"Notified {u.Client.Client.RemoteEndPoint} of user disconnection: {username}");
                         }
                         catch (Exception e)
                         {
