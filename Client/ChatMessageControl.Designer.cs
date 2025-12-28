@@ -39,13 +39,15 @@
             flowPanelLayout = new FlowLayoutPanel();
             crclrPicBoxProfilePicture = new CircularPictureBox();
             flowPanelMessage = new FlowLayoutPanel();
+            flowPanelMessageAndReaction = new FlowLayoutPanel();
+            pnlReaction = new Panel();
             rctionRwCtrlRow = new ReactionRowControl();
             flowPanelAttachments = new FlowLayoutPanel();
-            pnlReaction = new Panel();
             rndCtrlChatBubble.SuspendLayout();
             flowPanelLayout.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)crclrPicBoxProfilePicture).BeginInit();
             flowPanelMessage.SuspendLayout();
+            flowPanelMessageAndReaction.SuspendLayout();
             pnlReaction.SuspendLayout();
             SuspendLayout();
             // 
@@ -92,7 +94,7 @@
             // reactionControl1
             // 
             reactionControl1.AutoSize = true;
-            reactionControl1.Location = new Point(226, 2);
+            reactionControl1.Location = new Point(169, 2);
             reactionControl1.Margin = new Padding(3, 2, 3, 2);
             reactionControl1.Name = "reactionControl1";
             reactionControl1.Size = new Size(133, 26);
@@ -106,7 +108,7 @@
             lblTimestamp.AutoSize = true;
             lblTimestamp.Font = new Font("Segoe UI", 7F);
             lblTimestamp.ForeColor = Color.Gray;
-            lblTimestamp.Location = new Point(3, 67);
+            lblTimestamp.Location = new Point(3, 76);
             lblTimestamp.Name = "lblTimestamp";
             lblTimestamp.Padding = new Padding(0, 2, 0, 0);
             lblTimestamp.Size = new Size(51, 14);
@@ -119,12 +121,10 @@
             flowPanelLayout.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             flowPanelLayout.Controls.Add(crclrPicBoxProfilePicture);
             flowPanelLayout.Controls.Add(flowPanelMessage);
-            flowPanelLayout.Controls.Add(pnlReaction);
-            flowPanelLayout.Controls.Add(reactionControl1);
             flowPanelLayout.Location = new Point(0, 2);
             flowPanelLayout.Margin = new Padding(0);
             flowPanelLayout.Name = "flowPanelLayout";
-            flowPanelLayout.Size = new Size(362, 85);
+            flowPanelLayout.Size = new Size(368, 94);
             flowPanelLayout.TabIndex = 4;
             flowPanelLayout.WrapContents = false;
             // 
@@ -144,27 +144,50 @@
             // 
             flowPanelMessage.AutoSize = true;
             flowPanelMessage.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            flowPanelMessage.Controls.Add(rndCtrlChatBubble);
-            flowPanelMessage.Controls.Add(rctionRwCtrlRow);
+            flowPanelMessage.Controls.Add(flowPanelMessageAndReaction);
             flowPanelMessage.Controls.Add(flowPanelAttachments);
+            flowPanelMessage.Controls.Add(rctionRwCtrlRow);
             flowPanelMessage.Controls.Add(lblTimestamp);
             flowPanelMessage.FlowDirection = FlowDirection.TopDown;
             flowPanelMessage.Location = new Point(54, 2);
             flowPanelMessage.Margin = new Padding(3, 2, 3, 2);
             flowPanelMessage.Name = "flowPanelMessage";
-            flowPanelMessage.Size = new Size(99, 81);
+            flowPanelMessage.Size = new Size(311, 90);
             flowPanelMessage.TabIndex = 5;
             flowPanelMessage.WrapContents = false;
+            // 
+            // flowPanelMessageAndReaction
+            // 
+            flowPanelMessageAndReaction.AutoSize = true;
+            flowPanelMessageAndReaction.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+            flowPanelMessageAndReaction.Controls.Add(rndCtrlChatBubble);
+            flowPanelMessageAndReaction.Controls.Add(pnlReaction);
+            flowPanelMessageAndReaction.Controls.Add(reactionControl1);
+            flowPanelMessageAndReaction.Location = new Point(3, 3);
+            flowPanelMessageAndReaction.Name = "flowPanelMessageAndReaction";
+            flowPanelMessageAndReaction.Size = new Size(305, 62);
+            flowPanelMessageAndReaction.TabIndex = 0;
+            flowPanelMessageAndReaction.WrapContents = false;
+            // 
+            // pnlReaction
+            // 
+            pnlReaction.Controls.Add(btnMainEmoji);
+            pnlReaction.Location = new Point(102, 3);
+            pnlReaction.Name = "pnlReaction";
+            pnlReaction.Size = new Size(61, 56);
+            pnlReaction.TabIndex = 7;
+            pnlReaction.MouseEnter += pnlReaction_MouseEnter;
+            pnlReaction.MouseLeave += pnlReaction_MouseLeave;
             // 
             // rctionRwCtrlRow
             // 
             rctionRwCtrlRow.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             rctionRwCtrlRow.AutoSize = true;
             rctionRwCtrlRow.AutoSizeMode = AutoSizeMode.GrowAndShrink;
-            rctionRwCtrlRow.Location = new Point(3, 61);
+            rctionRwCtrlRow.Location = new Point(3, 74);
             rctionRwCtrlRow.Margin = new Padding(3, 2, 3, 2);
             rctionRwCtrlRow.Name = "rctionRwCtrlRow";
-            rctionRwCtrlRow.Size = new Size(93, 0);
+            rctionRwCtrlRow.Size = new Size(305, 0);
             rctionRwCtrlRow.TabIndex = 5;
             rctionRwCtrlRow.WrapContents = false;
             // 
@@ -173,22 +196,12 @@
             flowPanelAttachments.AutoSize = true;
             flowPanelAttachments.AutoSizeMode = AutoSizeMode.GrowAndShrink;
             flowPanelAttachments.FlowDirection = FlowDirection.TopDown;
-            flowPanelAttachments.Location = new Point(3, 65);
+            flowPanelAttachments.Location = new Point(3, 70);
             flowPanelAttachments.Margin = new Padding(3, 2, 3, 2);
             flowPanelAttachments.Name = "flowPanelAttachments";
             flowPanelAttachments.Size = new Size(0, 0);
             flowPanelAttachments.TabIndex = 1;
             flowPanelAttachments.WrapContents = false;
-            // 
-            // pnlReaction
-            // 
-            pnlReaction.Controls.Add(btnMainEmoji);
-            pnlReaction.Location = new Point(159, 3);
-            pnlReaction.Name = "pnlReaction";
-            pnlReaction.Size = new Size(61, 56);
-            pnlReaction.TabIndex = 7;
-            pnlReaction.MouseEnter += pnlReaction_MouseEnter;
-            pnlReaction.MouseLeave += pnlReaction_MouseLeave;
             // 
             // ChatMessageControl
             // 
@@ -201,7 +214,7 @@
             DoubleBuffered = true;
             Margin = new Padding(3, 2, 3, 2);
             Name = "ChatMessageControl";
-            Size = new Size(362, 87);
+            Size = new Size(368, 96);
             Load += ChatMessageControl_Load;
             rndCtrlChatBubble.ResumeLayout(false);
             rndCtrlChatBubble.PerformLayout();
@@ -210,6 +223,8 @@
             ((System.ComponentModel.ISupportInitialize)crclrPicBoxProfilePicture).EndInit();
             flowPanelMessage.ResumeLayout(false);
             flowPanelMessage.PerformLayout();
+            flowPanelMessageAndReaction.ResumeLayout(false);
+            flowPanelMessageAndReaction.PerformLayout();
             pnlReaction.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
@@ -226,6 +241,7 @@
         private CircularPictureBox crclrPicBoxProfilePicture;
         public FlowLayoutPanel flowPanelLayout;
         private Panel pnlReaction;
+        private FlowLayoutPanel flowPanelMessageAndReaction;
     }
 }
 

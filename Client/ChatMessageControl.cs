@@ -18,7 +18,6 @@ namespace Client
     public partial class ChatMessageControl : UserControl
     {
         private readonly ChatMessage _chatMessage;
-        private TcpClient _client;
         private bool _isRight;
         private static readonly SemaphoreSlim _readCache = new SemaphoreSlim(1, 1);
         private bool _isPreviewMode = false;
@@ -27,6 +26,7 @@ namespace Client
         private ReactionManager reactionManager;
         private readonly string _currentUserId;
         private bool isSendAlert = false;
+        private TcpClient client;
 
         public event EventHandler? AttachmentCompleted;
 
@@ -65,6 +65,7 @@ namespace Client
         }
 
         public ChatMessageControl(
+            TcpClient chatFormClient,
             IPAddress address,
             int port,
             string currentUserId,
@@ -82,15 +83,9 @@ namespace Client
             _currentUserId = currentUserId;
             messageId = chatMessage.Id;
             this.isSendAlert = isSendAlert;
+            client = chatFormClient;
 
             InitializeComponent();
-            if (_isRight)
-            {
-                this.Anchor = AnchorStyles.Right;
-                this.flowPanelLayout.FlowDirection = FlowDirection.RightToLeft;
-                this.rndCtrlChatBubble.Anchor = AnchorStyles.Right;
-                this.lblTimestamp.Anchor = AnchorStyles.Right;
-            }
             var tooltip = new ToolTip();
             tooltip.SetToolTip(crclrPicBoxProfilePicture, _chatMessage.Username);
 
@@ -127,6 +122,9 @@ namespace Client
             if (string.IsNullOrEmpty(_chatMessage.Message))
             {
                 rndCtrlChatBubble.Visible = false;
+                flowPanelLayout.Controls.Add(pnlReaction);
+                flowPanelLayout.Controls.Add(reactionControl1);
+                flowPanelMessageAndReaction.Controls.Clear();
             }
             lblTimestamp.Text = DateTime.Now.Subtract(_chatMessage.TimeSent).Days > 0 ? _chatMessage.TimeSent.ToString("g") : _chatMessage.TimeSent.ToString("t");
             foreach (Control c in pnlReaction.Controls)
@@ -134,9 +132,15 @@ namespace Client
                 c.MouseEnter += pnlReaction_MouseEnter;
                 c.MouseLeave += pnlReaction_MouseLeave;
             }
-            if (_isRight) { 
+            if (_isRight) {
+                Anchor = AnchorStyles.Right;
+                flowPanelLayout.FlowDirection = FlowDirection.RightToLeft;
+                rndCtrlChatBubble.Anchor = AnchorStyles.Right;
+                lblTimestamp.Anchor = AnchorStyles.Right;
                 rctionRwCtrlRow.Anchor = AnchorStyles.Right;
                 rctionRwCtrlRow.FlowDirection = FlowDirection.RightToLeft;
+                flowPanelMessageAndReaction.FlowDirection = FlowDirection.RightToLeft;
+                flowPanelMessageAndReaction.Anchor = AnchorStyles.Right;
             } else
             {
                 rndCtrlChatBubble.BackgroundColor = Color.White;
@@ -144,35 +148,11 @@ namespace Client
             }
             Task.Run(() =>
             {
-                if (!string.IsNullOrEmpty(_chatMessage.ProfileImagePath))
+                crclrPicBoxProfilePicture.Invoke((MethodInvoker)(() =>
                 {
-                    var cacheDirectory = Path.Combine(Application.StartupPath, "Cached");
-                    Directory.CreateDirectory(cacheDirectory);
-                    var cachedImagePath = Path.Combine(cacheDirectory, _chatMessage.ProfileImagePath);
-
-                    System.Diagnostics.Debug.WriteLine($"Waiting for cache lock to unlock: {_chatMessage.ProfileImagePath}");
-                    _readCache.Wait();
-                    try
-                    {
-                        crclrPicBoxProfilePicture.Invoke((MethodInvoker)(() =>
-                        {
-                            crclrPicBoxProfilePicture.Image = Helpers.GetProfilePicture(_address, _port, _chatMessage.ProfileImagePath);
-                            crclrPicBoxProfilePicture.DrawOutline = false;
-                        }));
-                    }
-                    finally
-                    {
-                        _readCache.Release();
-                    }
-                }
-                else
-                {
-                    crclrPicBoxProfilePicture.Invoke((MethodInvoker)(() =>
-                    {
-                        crclrPicBoxProfilePicture.Image = Resources.user;
-                        crclrPicBoxProfilePicture.DrawOutline = false;
-                    }));
-                }
+                    crclrPicBoxProfilePicture.Image = ProfilePicturePool.GetProfilePicture(_address, _port, _chatMessage.ProfileImagePath);
+                    crclrPicBoxProfilePicture.DrawOutline = false;
+                }));
                 if (isSendAlert)
                     this.Invoke((MethodInvoker)(() => quickAlert($"{_chatMessage.Username}: {_chatMessage.Message}", AlertForm.enmAlertType.Info, string.IsNullOrEmpty(_chatMessage.ProfileImagePath) ? "" : Path.Combine("Cached", _chatMessage.ProfileImagePath))));
 
@@ -275,7 +255,7 @@ namespace Client
 
         private void UpdateReaction(string messageId, string emoji, string userId)
         {
-            var stream = _client.GetStream();
+            var stream = client.GetStream();
             var reactionUpdate = new Wrapper
             {
                 Type = Types.UpdateReaction,

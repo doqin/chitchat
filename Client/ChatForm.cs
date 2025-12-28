@@ -1,4 +1,5 @@
 ﻿using Client.Extensions;
+using Client.Properties;
 using Protocol;
 using System;
 using System.Collections.Generic;
@@ -17,12 +18,58 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Net.Mime.MediaTypeNames;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using ToolTip = System.Windows.Forms.ToolTip;
 
 namespace Client
 {
+    /// <summary>
+    /// Provides a cache-backed pool for retrieving profile pictures from a remote server.
+    /// </summary>
+    /// <remarks>ProfilePicturePool manages profile picture retrieval and caching to minimize repeated network
+    /// requests. All members are static, allowing profile pictures to be accessed and cached globally within the
+    /// application. This class is not thread-safe; concurrent access from multiple threads may result in inconsistent
+    /// cache state.</remarks>
+    public class ProfilePicturePool
+    {
+        private static readonly Dictionary<string, Image> profilePictureCache = new Dictionary<string, Image>();
+        private static readonly SemaphoreSlim readCached = new SemaphoreSlim(1, 1);
+        private static readonly SemaphoreSlim readRemote = new SemaphoreSlim(1, 1);
+        public static Image GetProfilePicture(IPAddress serverIp, int serverPort, string imagePath)
+        {
+            var cacheDirectory = Path.Combine(Application.StartupPath, "Cached");
+            Directory.CreateDirectory(cacheDirectory);
+            var cachedImagePath = Path.Combine(cacheDirectory, imagePath);
+            if (string.IsNullOrEmpty(imagePath))
+            {
+                System.Diagnostics.Debug.WriteLine("ProfilePicturePool | Using default profile picture");
+                return Resources.user;
+            }
+            if (profilePictureCache.ContainsKey(imagePath))
+            {
+                System.Diagnostics.Debug.WriteLine("ProfilePicturePool | Retrieved profile picture from cache: " + imagePath);
+                return profilePictureCache[imagePath];
+            }
+            else if (Path.Exists(cachedImagePath))
+            {
+                readCached.Wait();
+                System.Diagnostics.Debug.WriteLine("ProfilePicturePool | Retrieved profile picture from local cache: " + imagePath);
+                Image profilePicture = Helpers.GetProfilePicture(cachedImagePath);
+                readCached.Release();
+                profilePictureCache[imagePath] = profilePicture;
+                return profilePicture;
+            }
+            else
+            {
+                readRemote.Wait();
+                System.Diagnostics.Debug.WriteLine("ProfilePicturePool | Retrieved profile picture from remote server: " + imagePath);
+                Image profilePicture = Helpers.GetProfilePicture(serverIp, serverPort, imagePath);
+                readRemote.Release();
+                profilePictureCache[imagePath] = profilePicture;
+                return profilePicture;
+            }
+        }
+    }
+
     public partial class ChatForm : Form
     {
         private bool close = false;
@@ -154,7 +201,7 @@ namespace Client
             foreach(var user in connectedUsers.Users)
             {
                 CircularPictureBox userPfp = new CircularPictureBox();
-                userPfp.Image = Helpers.GetProfilePicture(serverIp, serverPort, user.ProfileImagePath);
+                userPfp.Image = ProfilePicturePool.GetProfilePicture(serverIp, serverPort, user.ProfileImagePath);
                 userPfp.Width = 20;
                 userPfp.Height = 20;
                 toolTip.SetToolTip(userPfp, user.Username);
@@ -368,7 +415,7 @@ namespace Client
                                 connectedUsers.Users.Add(userConnected);
                                 System.Diagnostics.Debug.WriteLine($"ChatForm | User connected: {userConnected.Username}");
                                 CircularPictureBox userPfp = new CircularPictureBox();
-                                userPfp.Image = Helpers.GetProfilePicture(serverIp, serverPort, userConnected.ProfileImagePath);
+                                userPfp.Image = ProfilePicturePool.GetProfilePicture(serverIp, serverPort, userConnected.ProfileImagePath);
                                 userPfp.Width = 20;
                                 userPfp.Height = 20;
                                 userPfp.Tag = userConnected;
@@ -530,6 +577,7 @@ namespace Client
                 if (chatMessage.Address == localIPv4)
                 {
                     var item = new ChatMessageControl(
+                        client,
                         serverIp, 
                         serverPort, 
                         localIPv4, 
@@ -563,12 +611,13 @@ namespace Client
                 else
                 {
                     var item = new ChatMessageControl(
-                        serverIp, 
-                        serverPort, 
-                        localIPv4, 
-                        reactionManager, 
-                        chatMessage, 
-                        false, 
+                        client,
+                        serverIp,
+                        serverPort,
+                        localIPv4,
+                        reactionManager,
+                        chatMessage,
+                        false,
                         !sendToBack
                     );
                     item.AttachmentCompleted += (s, e) =>
