@@ -3,6 +3,7 @@ using Protocol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Text.Json;
@@ -37,8 +38,8 @@ namespace Client.Extensions
         }
 
         public static Image GetProfilePicture(
-            TcpClient tcpClient, 
-            Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingFetches, 
+            IPAddress address,
+            int port,
             string imagePath
             ) 
         {
@@ -58,7 +59,7 @@ namespace Client.Extensions
                     };
                     string requestJson = JsonSerializer.Serialize(request);
                     // Fetch the profile image data from the server
-                    var filePath = Protocol.File.FetchFile(tcpClient, pendingFetches, imagePath, Path.Combine("Cached", imagePath), requestJson);
+                    var filePath = Protocol.File.FetchFile(address, port, imagePath, Path.Combine("Cached", imagePath));
                     if (string.IsNullOrEmpty(filePath) || (!string.IsNullOrEmpty(filePath) && filePath == "Not found"))
                     {
                         throw new FileNotFoundException("Profile image not found on server.");

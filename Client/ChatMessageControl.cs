@@ -19,15 +19,13 @@ namespace Client
     {
         private readonly ChatMessage _chatMessage;
         private TcpClient _client;
-        private Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingFetches;
         private bool _isRight;
         private static readonly SemaphoreSlim _readCache = new SemaphoreSlim(1, 1);
         private bool _isPreviewMode = false;
-
         private AlertForm alertForm;
         private string messageId;
         private ReactionManager reactionManager;
-        private string currentUserId;
+        private readonly string _currentUserId;
         private bool isSendAlert = false;
 
         public event EventHandler? AttachmentCompleted;
@@ -52,6 +50,9 @@ namespace Client
             }
         }
 
+        IPAddress _address;
+        int _port;
+
         public ChatMessageControl()
         {
             _isPreviewMode = true;
@@ -64,21 +65,21 @@ namespace Client
         }
 
         public ChatMessageControl(
-            Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingAttachmentFetches,
+            IPAddress address,
+            int port,
+            string currentUserId,
             ReactionManager manager,
-            TcpClient client,
             ChatMessage chatMessage,
             bool isRight,
             bool isSendAlert = false
         )
         {
             reactionManager = manager ?? throw new ArgumentNullException(nameof(manager));
-            pendingFetches = pendingAttachmentFetches;
             _isRight = isRight;
             _chatMessage = chatMessage;
-            _client = client;
-            var endpoint = client?.Client?.LocalEndPoint as IPEndPoint;
-            currentUserId = endpoint?.Address?.ToString();
+            _address = address;
+            _port = port;
+            _currentUserId = currentUserId;
             messageId = chatMessage.Id;
             this.isSendAlert = isSendAlert;
 
@@ -97,7 +98,7 @@ namespace Client
             reactionManager.On_Reaction_Updated += ReactionManager_OnReactionChanged;
 
             // Initialize reaction row
-            rctionRwCtrlRow.SetCurrentUserId(currentUserId);
+            rctionRwCtrlRow.SetCurrentUserId(_currentUserId);
             rctionRwCtrlRow.ReactionClicked += rctionRwCtrlRow_ReactionClicked;
 
 
@@ -155,7 +156,7 @@ namespace Client
                     {
                         crclrPicBoxProfilePicture.Invoke((MethodInvoker)(() =>
                         {
-                            crclrPicBoxProfilePicture.Image = Helpers.GetProfilePicture(_client, pendingFetches, _chatMessage.ProfileImagePath);
+                            crclrPicBoxProfilePicture.Image = Helpers.GetProfilePicture(_address, _port, _chatMessage.ProfileImagePath);
                             crclrPicBoxProfilePicture.DrawOutline = false;
                         }));
                     }
@@ -221,7 +222,7 @@ namespace Client
                             };
                             string requestJson = JsonSerializer.Serialize(request);
                             // Fetch the attachment data from the server
-                            var filePath = Protocol.File.FetchFile(_client, pendingFetches, attachment.FileName, cachedAttachmentPath, requestJson);
+                            var filePath = Protocol.File.FetchFile(_address, _port, attachment.FileName, cachedAttachmentPath);
                             if (string.IsNullOrEmpty(filePath) || (!string.IsNullOrEmpty(filePath) && filePath == "Not found"))
                             {
                                 throw new FileNotFoundException("Image not found on server.");
@@ -253,7 +254,7 @@ namespace Client
                     }
                     else
                     {
-                        AttachmentControl attachmentControl = new AttachmentControl(pendingFetches, _client, attachment.FileName);
+                        AttachmentControl attachmentControl = new AttachmentControl(_address, _port, attachment.FileName);
                         if (_isRight)
                         {
                             attachmentControl.Anchor = AnchorStyles.Right;
@@ -307,14 +308,14 @@ namespace Client
         {
             //MessageBox.Show($"Bạn vừa chọn emoji: {emoji}");
             System.Diagnostics.Debug.WriteLine($"{emoji}");
-            UpdateReaction(messageId, emoji, currentUserId);
+            UpdateReaction(messageId, emoji, _currentUserId);
             HideReactionControl();
         }
 
         private void rctionRwCtrlRow_ReactionClicked(string emoji)
         {
             System.Diagnostics.Debug.WriteLine($"Reaction row emoji clicked: {emoji}");
-            UpdateReaction(messageId, emoji, currentUserId);
+            UpdateReaction(messageId, emoji, _currentUserId);
         }
 
         private void ReactionManager_OnReactionChanged(string changedMessageId)

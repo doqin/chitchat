@@ -29,7 +29,7 @@ namespace Client
 
         private string username;
         private readonly string serverName;
-        public string serverIp { get; }
+        public IPAddress serverIp { get; }
         public int serverPort { get; }
         private string profilePictureAttachment;
         private TcpClient tcpClient;
@@ -40,8 +40,6 @@ namespace Client
 
         private Panel dummy;
 
-        private TaskCompletionSource<Attachment[]>? fileConfirmationTcs;
-        private Dictionary<string, Tuple<TaskCompletionSource<string>, string>> pendingAttachmentFetches = new();
         private readonly SemaphoreSlim streamReadLock = new(1, 1);
 
         private ConnectedUsers connectedUsers = new();
@@ -61,7 +59,17 @@ namespace Client
         {
             this.username = username;
             this.serverName = serverName;
-            serverIp = ip;
+            try
+            {
+                serverIp = IPAddress.Parse(ip);
+            }
+            catch (FormatException)
+            {
+                System.Diagnostics.Debug.WriteLine("ChatForm | Cannot connect to server!");
+                MessageBox.Show("Cannot connect to server! Server is either unavailable or connection timed out.");
+                this.DialogResult = DialogResult.Abort;
+                this.Close();
+            }
             serverPort = port;
             reactionManager = new ReactionManager();
             tcpClient = new TcpClient();
@@ -146,7 +154,7 @@ namespace Client
             foreach(var user in connectedUsers.Users)
             {
                 CircularPictureBox userPfp = new CircularPictureBox();
-                userPfp.Image = Helpers.GetProfilePicture(tcpClient, pendingAttachmentFetches, user.ProfileImagePath);
+                userPfp.Image = Helpers.GetProfilePicture(serverIp, serverPort, user.ProfileImagePath);
                 userPfp.Width = 20;
                 userPfp.Height = 20;
                 toolTip.SetToolTip(userPfp, user.Username);
@@ -169,7 +177,7 @@ namespace Client
             {
                 profilePictureAttachment = attachment[0].FileName;
                 System.Diagnostics.Debug.WriteLine("Profile picture uploaded: " + profilePictureAttachment);
-                Helpers.GetProfilePicture(tcpClient, pendingAttachmentFetches, profilePictureAttachment);
+                Helpers.GetProfilePicture(serverIp, serverPort, profilePictureAttachment);
                 ConfigManager.Current!.ProfileImagePath = profilePictureAttachment;
                 ConfigManager.Save();
             }
@@ -184,7 +192,8 @@ namespace Client
                 {
                     Username = username,
                     ProfileImagePath = ConfigManager.Current!.ProfileImagePath,
-                    Address = GetLocalIPv4(tcpClient.Client.LocalEndPoint as IPEndPoint)
+                    Address = GetLocalIPv4(tcpClient.Client.LocalEndPoint as IPEndPoint),
+                    Port = ((IPEndPoint)tcpClient.Client.LocalEndPoint).Port
                 })
             };
             string json = JsonSerializer.Serialize(wrapper);
@@ -348,27 +357,6 @@ namespace Client
                                 AddMessage(client, chatMessage);
                                 receivedMessageSound.Play();
                                 break;
-
-                            // If the message is a file confirmation, set result to the pending TaskCompletionSource
-                            case Types.FileConfirmation:
-                                FileConfirmation confirmation = JsonSerializer.Deserialize<FileConfirmation>(wrapper.Payload);
-                                System.Diagnostics.Debug.WriteLine($"ChatForm | Received confirmation: {confirmation?.AcceptedFiles.Length}");
-                                foreach (var file in confirmation?.AcceptedFiles ?? [])
-                                {
-                                    System.Diagnostics.Debug.WriteLine($"ChatForm | File: {file.FileName}");
-                                }
-                                // If someone is waiting for the confirmation, deliver attachments
-                                if (fileConfirmationTcs != null)
-                                {
-                                    var result = fileConfirmationTcs.TrySetResult(confirmation?.AcceptedFiles ?? []);
-                                    System.Diagnostics.Debug.WriteLine($"ChatForm | Set Result: {result}");
-                                }
-                                break;
-                            // If the message is a file sending prompt, prepare to receive it
-                            case Types.SendFiles:
-                                streamReadLock.Release(); // Release before calling HandleFiles
-                                HandleFiles(stream, wrapper);
-                                continue; // Continue to next loop to acquire lock
                             case Types.SendMessages:
                                 HandleSendMessages(client, wrapper);
                                 break;
@@ -380,7 +368,7 @@ namespace Client
                                 connectedUsers.Users.Add(userConnected);
                                 System.Diagnostics.Debug.WriteLine($"ChatForm | User connected: {userConnected.Username}");
                                 CircularPictureBox userPfp = new CircularPictureBox();
-                                userPfp.Image = Helpers.GetProfilePicture(tcpClient, pendingAttachmentFetches, userConnected.ProfileImagePath);
+                                userPfp.Image = Helpers.GetProfilePicture(serverIp, serverPort, userConnected.ProfileImagePath);
                                 userPfp.Width = 20;
                                 userPfp.Height = 20;
                                 userPfp.Tag = userConnected;
@@ -432,7 +420,7 @@ namespace Client
                                     if (userPfpToUpdate != null)
                                     {
                                         System.Diagnostics.Debug.WriteLine($"Updating {userUpdated.Username}'s profile picture");
-                                        userPfpToUpdate.Image = Helpers.GetProfilePicture(tcpClient, pendingAttachmentFetches, userUpdated.ProfileImagePath);
+                                        userPfpToUpdate.Image = Helpers.GetProfilePicture(serverIp, serverPort, userUpdated.ProfileImagePath);
                                         toolTip.SetToolTip(userPfpToUpdate, userUpdated.Username);
                                     }
                                 });
@@ -541,7 +529,14 @@ namespace Client
                 var localIPv4 = GetLocalIPv4(localEndPoint);
                 if (chatMessage.Address == localIPv4)
                 {
-                    var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, true);
+                    var item = new ChatMessageControl(
+                        serverIp, 
+                        serverPort, 
+                        localIPv4, 
+                        reactionManager, 
+                        chatMessage, 
+                        true
+                    );
                     item.AttachmentCompleted += (s, e) =>
                     {
                         // Scroll to bottom when attachment is loaded
@@ -567,7 +562,15 @@ namespace Client
                 }
                 else
                 {
-                    var item = new ChatMessageControl(pendingAttachmentFetches, reactionManager, client, chatMessage, false, !sendToBack);
+                    var item = new ChatMessageControl(
+                        serverIp, 
+                        serverPort, 
+                        localIPv4, 
+                        reactionManager, 
+                        chatMessage, 
+                        false, 
+                        !sendToBack
+                    );
                     item.AttachmentCompleted += (s, e) =>
                     {
                         // Scroll to bottom when attachment is loaded
@@ -599,89 +602,6 @@ namespace Client
             catch (Exception e)
             {
                 System.Diagnostics.Debug.WriteLine($"ChatForm | Error adding message: {e.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Sử lý việc nhận file từ máy chủ
-        /// </summary>
-        /// <param name="stream">Network Stream</param>
-        /// <param name="wrapper">Đối tượng cần giải nén</param>
-        private void HandleFiles(NetworkStream stream, Wrapper wrapper)
-        {
-            streamReadLock.Wait();
-            try
-            {
-                SendFiles files = JsonSerializer.Deserialize<SendFiles>(wrapper.Payload);
-                if (files?.FileCount == 0)
-                {
-                    var fileName = files.FileList[0].FileName;
-                    if (pendingAttachmentFetches.TryGetValue(fileName, out var tuple))
-                    {
-                        var tcs = tuple.Item1;
-                        tcs.SetResult("Not found");
-                        pendingAttachmentFetches.Remove(fileName);
-                    }
-                    return;
-                }
-                System.Diagnostics.Debug.WriteLine($"ChatForm | Client is ready to receive {files?.FileCount} file(s).");
-                try
-                {
-                    foreach (var file in files.FileList)
-                    {
-                        // Notify any pending fetches for this attachment
-                        if (pendingAttachmentFetches.TryGetValue(file.FileName, out var tuple))
-                        {
-                            System.Diagnostics.Debug.WriteLine($"ChatForm | Preparing to receive file: {file.FileName} ({file.FileSize} bytes)");
-                            var path = tuple.Item2;
-                            // Ensure the directory exists
-                            string directoryPath = Path.GetDirectoryName(path);
-                            if (!string.IsNullOrEmpty(directoryPath))
-                            {
-                                Directory.CreateDirectory(directoryPath);
-                            }
-                            else
-                            {
-                                System.Diagnostics.Debug.WriteLine("ChatForm | Invalid file path: no directory specified.");
-                                return;
-                            }
-                            // Saving files
-                            using (FileStream fs = new FileStream(path, FileMode.Create, FileAccess.Write))
-                            {
-                                byte[] buffer = new byte[8192];
-                                long totalRead = 0;
-                                int bytesRead;
-
-                                // Read exactly the declared file size to avoid consuming the next protocol frame
-                                while (totalRead < file.FileSize)
-                                {
-                                    int toRead = (int)Math.Min(buffer.Length, file.FileSize - totalRead);
-                                    bytesRead = stream.Read(buffer, 0, toRead);
-                                    System.Diagnostics.Debug.WriteLine($"ChatForm | Read {bytesRead} bytes");
-                                    if (bytesRead <= 0)
-                                    {
-                                        break; // connection closed
-                                    }
-                                    fs.Write(buffer, 0, bytesRead);
-                                    totalRead += bytesRead;
-                                }
-                            }
-                            System.Diagnostics.Debug.WriteLine($"ChatForm | File received: {file.FileName}");
-                            var tcs = tuple.Item1;
-                            tcs.SetResult(path);
-                            pendingAttachmentFetches.Remove(file.FileName);
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    System.Diagnostics.Debug.WriteLine($"ChatForm | Error receiving files: {e.Message}");
-                    return;
-                }
-            }
-            finally
-            {
-                streamReadLock.Release();
             }
         }
 
@@ -756,46 +676,62 @@ namespace Client
                 Payload = payload
             };
             string finalJson = JsonSerializer.Serialize(wrapper);
-            NetworkStream stream = tcpClient.GetStream();
-            Wrapper.SendJson(stream, finalJson);
-            try
+            using (TcpClient client = new TcpClient())
             {
-                foreach (var filePath in filePaths)
+                var connectResult = client.BeginConnect(serverIp, serverPort, null, null).AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(5));
+                if (!connectResult)
                 {
-                    System.Diagnostics.Debug.WriteLine($"ChatForm | Preparing to send file: {filePath}");
-                    using (FileStream fs = new FileStream(
-                            usingCached ? Path.Combine("Cached", filePath) : filePath,
-                            FileMode.Open,
-                            FileAccess.Read
-                            )
-                        )
+                    System.Diagnostics.Debug.WriteLine("ChatForm | Connect timed out while sending files");
+                    MessageBox.Show("An error has occurred", "Error connecting to server. Please try again", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return Array.Empty<Attachment>();
+                }
+                var stream = client.GetStream();
+                Wrapper.SendJson(stream, finalJson);
+                try
+                {
+                    foreach (var filePath in filePaths)
                     {
-                        byte[] fileBuffer = new byte[8192];
-                        int fileBytesRead;
-                        while ((fileBytesRead = fs.Read(fileBuffer, 0, fileBuffer.Length)) > 0)
+                        System.Diagnostics.Debug.WriteLine($"ChatForm | Preparing to send file: {filePath}");
+                        using (FileStream fs = new FileStream(
+                                usingCached ? Path.Combine("Cached", filePath) : filePath,
+                                FileMode.Open,
+                                FileAccess.Read
+                                )
+                            )
                         {
-                            stream.Write(fileBuffer, 0, fileBytesRead);
-                            System.Diagnostics.Debug.WriteLine($"Wrote {fileBytesRead} bytes.");
+                            byte[] fileBuffer = new byte[8192];
+                            int fileBytesRead;
+                            while ((fileBytesRead = fs.Read(fileBuffer, 0, fileBuffer.Length)) > 0)
+                            {
+                                stream.Write(fileBuffer, 0, fileBytesRead);
+                                System.Diagnostics.Debug.WriteLine($"Wrote {fileBytesRead} bytes.");
+                            }
                         }
                     }
+                    System.Diagnostics.Debug.WriteLine("ChatForm | File data sent successfully.");
+                    System.Diagnostics.Debug.WriteLine("ChatForm | Waiting file confirmation from server...");
+                    var responseJson = Wrapper.ReadJson(stream);
+                    Wrapper responseWrapper = JsonSerializer.Deserialize<Wrapper>(responseJson);
+                    if (responseWrapper.Type != Types.FileConfirmation)
+                    {
+                        System.Diagnostics.Debug.WriteLine("ChatForm | Invalid response type for file confirmation.");
+                        MessageBox.Show("An error has occurred", "Error sending files to server. Please try again", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return Array.Empty<Attachment>();
+                    }
+                    FileConfirmation fileConfirmation = JsonSerializer.Deserialize<FileConfirmation>(responseWrapper.Payload);
+                    var result = fileConfirmation.AcceptedFiles.ToArray();
+                    System.Diagnostics.Debug.WriteLine($"ChatForm | File confirmation received from server. ({string.Join(", ", result.Select(attachment => attachment.FileName))})");
+                    return result;
                 }
-                System.Diagnostics.Debug.WriteLine("ChatForm | File data sent successfully.");
-                System.Diagnostics.Debug.WriteLine("ChatForm | Waiting file confirmation from server...");
-                fileConfirmationTcs = new TaskCompletionSource<Attachment[]>();
-                var confirmationTask = fileConfirmationTcs.Task;
-                confirmationTask.Wait();
-                var result = confirmationTask.Result;
-                System.Diagnostics.Debug.WriteLine($"ChatForm | File confirmation received from server. ({string.Join(", ", result.Select(attachment => attachment.FileName))})");
-                return result;
-            }
-            catch (Exception e)
-            {
-                System.Diagnostics.Debug.WriteLine($"ChatForm | Error sending file data: {e.Message}");
-                MessageBox.Show("An error has occurred", "Error sending files to server. Please try again", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                SetLoading(false);
+                catch (Exception e)
+                {
+                    System.Diagnostics.Debug.WriteLine($"ChatForm | Error sending file data: {e.Message}");
+                    MessageBox.Show("An error has occurred", "Error sending files to server. Please try again", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                finally
+                {
+                    SetLoading(false);
+                }
             }
             return Array.Empty<Attachment>();
         }
